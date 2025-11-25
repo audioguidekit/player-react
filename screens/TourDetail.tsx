@@ -12,6 +12,8 @@ interface TourDetailProps {
   onTogglePlay: () => void;
   onStopPlayPause: (stopId: string) => void;
   tourProgress: number;
+  completedStopsCount: number;
+  isStopCompleted: (stopId: string) => boolean;
 }
 
 // Helper component for animating numbers smoothly
@@ -34,7 +36,9 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   onStopClick,
   onTogglePlay,
   onStopPlayPause,
-  tourProgress
+  tourProgress,
+  completedStopsCount,
+  isStopCompleted
 }) => {
   // Slower spring: reduced stiffness from 75 to 35 to match counter
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
@@ -72,12 +76,12 @@ export const TourDetail: React.FC<TourDetailProps> = ({
         <div className="flex justify-between text-sm font-semibold text-gray-400 uppercase tracking-wider">
           <div className="flex items-center gap-1.5">
             <Clock3 size={16} />
-            <span className="text-gray-900">10</span>
-            <span>/ {tour.totalDuration.split(' ')[0]} mins</span>
+            <span className="text-gray-900">{tour.totalDuration.split(' ')[0]}</span>
+            <span>mins total</span>
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin size={16} />
-            <span className="text-gray-900">12</span>
+            <span className="text-gray-900">{completedStopsCount}</span>
             <span>/ {tour.totalStops} stops</span>
           </div>
         </div>
@@ -97,6 +101,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
             isLast={index === tour.stops.length - 1}
             isActive={stop.id === currentStopId}
             isPlaying={isPlaying}
+            isCompleted={isStopCompleted(stop.id)}
             onClick={() => onStopClick(stop.id)}
             onPlayPause={() => onStopPlayPause(stop.id)}
           />

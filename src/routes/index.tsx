@@ -1,9 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import App from '../../App';
-
-// Default tour ID for now - in the future this could be a tour list page
-const DEFAULT_TOUR_ID = 'rome-01';
+import { DEFAULT_TOUR_ID } from '../config/tours';
 
 /**
  * Route structure:

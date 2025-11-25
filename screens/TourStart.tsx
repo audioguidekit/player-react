@@ -18,8 +18,11 @@ export const TourStart: React.FC<TourStartProps> = ({
   sheetY,
   collapsedY = 0
 }) => {
+  // Check if the media is a video
+  const isVideo = tour.image.match(/\.(mp4|webm|ogg)$/i);
+
   // Animation Transforms
-  
+
   // 1. Scale image up to 110% when dragging down
   const scale = useTransform(
     sheetY || new MotionValue(0),
@@ -57,15 +60,26 @@ export const TourStart: React.FC<TourStartProps> = ({
   return (
     <motion.div className="absolute inset-0 w-full h-full bg-black z-0 overflow-hidden">
       {/* Background Image Area */}
-      <motion.div 
+      <motion.div
         style={{ scale, y, filter: blurFilter }}
         className="relative w-full h-full origin-center"
       >
-        <img 
-          src={tour.image} 
-          alt={tour.title} 
-          className="w-full h-full object-cover"
-        />
+        {isVideo ? (
+          <video
+            src={tour.image}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <img
+            src={tour.image}
+            alt={tour.title}
+            className="w-full h-full object-cover"
+          />
+        )}
         
         {/* Existing Gradients for text readability (always present) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10" />

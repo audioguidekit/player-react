@@ -1,11 +1,11 @@
 {
   "tours": [
     {
-      "id": "rome-01",
-      "filename": "ancient-rome.json",
-      "title": "Ancient Rome",
-      "description": "Explore rich history of the one of the greatest Europe's nations",
-      "thumbnail": "https://images.unsplash.com/photo-1552832230-c0197dd311b5?q=80&w=400&auto=format&fit=crop"
+      "id": "barcelona-01",
+      "filename": "tour.json",
+      "title": "Unlimited Barcelona",
+      "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
+      "thumbnail": "/_work/f00.jpg"
     }
   ]
 }

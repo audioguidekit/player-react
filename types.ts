@@ -5,6 +5,7 @@ export interface Stop {
   isCompleted: boolean;
   isPlaying?: boolean;
   image: string;
+  audioFile?: string;
 }
 
 export interface TourData {

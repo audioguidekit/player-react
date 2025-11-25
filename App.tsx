@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AnimatePresence, useMotionValue } from 'framer-motion';
 import { SheetType, Language } from './types';
@@ -11,6 +11,9 @@ import { MainSheet } from './components/MainSheet';
 import { StartCard } from './components/StartCard';
 import { MiniPlayer } from './components/MiniPlayer';
 import { useTourData, useLanguages } from './hooks/useDataLoader';
+import { DEFAULT_TOUR_ID } from './src/config/tours';
+import { useAudioPlayer } from './hooks/useAudioPlayer';
+import { useProgressTracking } from './hooks/useProgressTracking';
 
 const App: React.FC = () => {
   // Get route params
@@ -18,8 +21,11 @@ const App: React.FC = () => {
   const navigate = useNavigate();
 
   // Load data dynamically
-  const { data: tour, loading: tourLoading, error: tourError } = useTourData(tourId || 'rome-01');
+  const { data: tour, loading: tourLoading, error: tourError } = useTourData(tourId || DEFAULT_TOUR_ID);
   const { data: languages, loading: languagesLoading, error: languagesError } = useLanguages();
+
+  // Progress tracking
+  const progressTracking = useProgressTracking(tourId || DEFAULT_TOUR_ID);
 
   // Navigation & State
   const [showStopDetail, setShowStopDetail] = useState(false);
@@ -38,8 +44,7 @@ const App: React.FC = () => {
   // Sync URL params with state
   useEffect(() => {
     if (stopId) {
-      // URL has a stopId - show stop detail and set as current
-      setCurrentStopId(stopId);
+      // URL has a stopId - show stop detail (but don't change audio)
       setShowStopDetail(true);
       setHasStarted(true);
       setIsSheetExpanded(true);
@@ -47,7 +52,7 @@ const App: React.FC = () => {
       // URL changed to remove stopId - close stop detail
       setShowStopDetail(false);
     }
-  }, [stopId]);
+  }, [stopId, showStopDetail]);
 
   // Main Sheet State (Collapsed vs Expanded)
   const [isSheetExpanded, setIsSheetExpanded] = useState(false);
@@ -91,23 +96,54 @@ const App: React.FC = () => {
   };
 
   const handleStopClick = (clickedStopId: string) => {
-    setCurrentStopId(clickedStopId);
-    setIsPlaying(true);
-    // Navigate to stop detail URL
+    // Only navigate - don't change audio
     navigate(`/tour/${tourId}/stop/${clickedStopId}`);
   };
 
   const handleStopPlayPause = (stopId: string) => {
     if (currentStopId === stopId) {
+      // Same stop - toggle play/pause
       setIsPlaying(!isPlaying);
     } else {
+      // Different stop - switch to it and start playing
       setCurrentStopId(stopId);
       setIsPlaying(true);
-      // We explicitly do NOT set showStopDetail(true) here
     }
   };
 
-  const handleNextStop = () => {
+  // Auto-advance to next track when audio ends (without navigation)
+  const handleAudioEnded = useCallback(() => {
+    if (!currentStopId || !tour) return;
+    const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
+    if (currentIndex !== -1 && currentIndex < tour.stops.length - 1) {
+      const nextStopId = tour.stops[currentIndex + 1].id;
+      setCurrentStopId(nextStopId);
+      setIsPlaying(true); // Auto-play next track
+      // Don't navigate - keep user where they are
+    }
+  }, [currentStopId, tour]);
+
+  // Navigate to next/prev stop detail (for chevron buttons - no audio change)
+  const handleNextStopDetail = useCallback(() => {
+    if (!stopId || !tour) return;
+    const currentIndex = tour.stops.findIndex(s => s.id === stopId);
+    if (currentIndex !== -1 && currentIndex < tour.stops.length - 1) {
+      const nextStopId = tour.stops[currentIndex + 1].id;
+      navigate(`/tour/${tourId}/stop/${nextStopId}`);
+    }
+  }, [stopId, tour, tourId, navigate]);
+
+  const handlePrevStopDetail = useCallback(() => {
+    if (!stopId || !tour) return;
+    const currentIndex = tour.stops.findIndex(s => s.id === stopId);
+    if (currentIndex > 0) {
+      const prevStopId = tour.stops[currentIndex - 1].id;
+      navigate(`/tour/${tourId}/stop/${prevStopId}`);
+    }
+  }, [stopId, tour, tourId, navigate]);
+
+  // Control audio playback (for audio player controls)
+  const handleNextStop = useCallback(() => {
     if (!currentStopId || !tour) return;
     const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
     if (currentIndex !== -1 && currentIndex < tour.stops.length - 1) {
@@ -116,7 +152,7 @@ const App: React.FC = () => {
       setIsPlaying(true); // Auto-play next track
       navigate(`/tour/${tourId}/stop/${nextStopId}`);
     }
-  };
+  }, [currentStopId, tour, tourId, navigate]);
 
   const handlePrevStop = () => {
     if (!currentStopId || !tour) return;
@@ -147,6 +183,28 @@ const App: React.FC = () => {
   };
 
   const closeSheet = () => setActiveSheet('NONE');
+
+  // Handle audio progress - mark stop as completed at 85%
+  const handleAudioProgress = useCallback((currentTime: number, duration: number, percentComplete: number) => {
+    if (!currentStopId) return;
+
+    // Mark as completed when reaching 85%
+    if (percentComplete >= 85 && !progressTracking.isStopCompleted(currentStopId)) {
+      console.log(`Stop ${currentStopId} completed at ${percentComplete}%`);
+      progressTracking.markStopCompleted(currentStopId);
+    }
+
+    // Update position for resume
+    progressTracking.updateStopPosition(currentStopId, currentTime);
+  }, [currentStopId, progressTracking]);
+
+  // Audio Player
+  const audioPlayer = useAudioPlayer({
+    audioUrl: currentStop?.audioFile || null,
+    isPlaying,
+    onEnded: handleAudioEnded,
+    onProgress: handleAudioProgress,
+  });
 
   // Loading state
   if (tourLoading || languagesLoading) {
@@ -227,22 +285,25 @@ const App: React.FC = () => {
                 onStopClick={handleStopClick}
                 onTogglePlay={handlePlayPause}
                 onStopPlayPause={handleStopPlayPause}
-                tourProgress={tourProgress}
+                tourProgress={progressTracking.getTourCompletionPercentage(tour.totalStops)}
+                completedStopsCount={progressTracking.getCompletedStopsCount()}
+                isStopCompleted={progressTracking.isStopCompleted}
               />
             }
           />
 
           {/* Stop Detail - Full Screen Overlay */}
           <AnimatePresence>
-            {showStopDetail && (
+            {showStopDetail && stopId && (
               <StopDetail
                 tour={tour}
-                currentStopId={currentStopId}
-                isPlaying={isPlaying}
-                onPlayPause={handlePlayPause}
+                currentStopId={stopId}
+                isPlaying={isPlaying && currentStopId === stopId}
+                isStopCompleted={progressTracking.isStopCompleted(stopId)}
+                onPlayPause={() => handleStopPlayPause(stopId)}
                 onMinimize={() => navigate(`/tour/${tourId}`)}
-                onNext={handleNextStop}
-                onPrev={handlePrevStop}
+                onNext={handleNextStopDetail}
+                onPrev={handlePrevStopDetail}
               />
             )}
           </AnimatePresence>
@@ -250,14 +311,15 @@ const App: React.FC = () => {
           {/* Global Floating Mini Player */}
           <AnimatePresence>
             {shouldShowMiniPlayer && currentStop && (
-              <MiniPlayer 
+              <MiniPlayer
                 currentStop={currentStop}
                 isPlaying={isPlaying}
                 onTogglePlay={handlePlayPause}
-                onRewind={() => console.log('Rewind')}
-                onForward={() => console.log('Forward')}
+                onRewind={() => audioPlayer.skipBackward(15)}
+                onForward={() => audioPlayer.skipForward(15)}
                 onClick={handleMiniPlayerExpand}
                 onEnd={handleAudioComplete}
+                progress={audioPlayer.progress}
               />
             )}
           </AnimatePresence>

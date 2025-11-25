@@ -11,6 +11,7 @@ interface MiniPlayerProps {
   onRewind: () => void;
   onClick: () => void;
   onEnd?: () => void;
+  progress?: number;
 }
 
 const iconVariants = {
@@ -28,35 +29,32 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   onForward,
   onRewind,
   onClick,
-  onEnd
+  onEnd,
+  progress = 0
 }) => {
-  const [visualProgress, setVisualProgress] = useState(0);
+  // Use real progress from audio player
+  const visualProgress = Math.max(0, Math.min(100, progress || 0));
 
-  // Animated progress loop
+  // Debug logging
   useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isPlaying) {
-      // Fill the circle slower (approx 7.5 seconds) to match requested speed
-      interval = setInterval(() => {
-        setVisualProgress((prev) => {
-          if (prev >= 100) {
-            onEnd?.(); // Notify parent that audio finished
-            return 0;
-          }
-          return prev + 1; 
-        });
-      }, 75); // Increased interval from 50 to 75
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, onEnd]);
+    console.log('MiniPlayer progress:', visualProgress);
+  }, [visualProgress]);
 
   if (!currentStop) return null;
 
   const strokeWidth = 2.5;
-  const size = 46; 
+  const size = 46;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (visualProgress / 100) * circumference;
+
+  // Debug logging for SVG calculations
+  console.log('MiniPlayer render:', {
+    progress: visualProgress,
+    radius,
+    circumference: circumference.toFixed(2),
+    offset: offset.toFixed(2)
+  });
 
   return (
     <motion.div
@@ -95,24 +93,24 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
              {/* Progress Ring */}
              <svg className="absolute inset-0 rotate-[-90deg] pointer-events-none" width={size} height={size}>
                <circle
-                 stroke="#e5e7eb" // gray-200
+                 stroke="#d1d5db" // gray-300 - more visible background
                  strokeWidth={strokeWidth}
                  fill="transparent"
                  r={radius}
                  cx={size / 2}
                  cy={size / 2}
                />
-               <motion.circle
-                 stroke="#3b82f6" // blue-500
+               <circle
+                 stroke="#000000" // black for better contrast
                  strokeWidth={strokeWidth}
                  fill="transparent"
                  r={radius}
                  cx={size / 2}
                  cy={size / 2}
                  strokeDasharray={circumference}
-                 animate={{ strokeDashoffset: offset }}
-                 transition={{ duration: 0.1, ease: "linear" }}
+                 strokeDashoffset={offset}
                  strokeLinecap="round"
+                 style={{ transition: 'stroke-dashoffset 0.1s linear' }}
                />
              </svg>
 

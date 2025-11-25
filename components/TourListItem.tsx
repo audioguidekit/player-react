@@ -9,6 +9,7 @@ interface TourListItemProps {
   isLast: boolean;
   isActive: boolean;
   isPlaying: boolean;
+  isCompleted: boolean;
   onClick: () => void;
   onPlayPause: () => void;
 }
@@ -26,6 +27,7 @@ export const TourListItem: React.FC<TourListItemProps> = ({
   index,
   isActive,
   isPlaying,
+  isCompleted,
   onClick,
   onPlayPause
 }) => {
@@ -36,52 +38,57 @@ export const TourListItem: React.FC<TourListItemProps> = ({
         className="group relative rounded-2xl bg-white shadow-[0_2px_15px_rgba(0,0,0,0.05)] border border-gray-100 cursor-pointer transition-transform hover:scale-[1.01] active:scale-[0.99]"
       >
         {/* Top Section - Image Placeholder */}
-        <div className="h-40 w-full bg-gray-200 rounded-t-2xl relative">
+        <div className="h-40 w-full bg-gray-200 rounded-t-2xl relative overflow-hidden">
+           <img
+             src={stop.image}
+             alt={stop.title}
+             className="w-full h-full object-cover"
+           />
            {/* Top Right Status Circle */}
            <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
-             {stop.isCompleted && <Check size={14} className="text-black" strokeWidth={3} />}
+             {isCompleted && <Check size={14} className="text-black" strokeWidth={3} />}
            </div>
-
-           {/* Play Button - Floating in between sections */}
-           <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onPlayPause();
-              }}
-              className={`absolute -bottom-6 right-6 w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden
-              ${isActive && isPlaying 
-                ? 'bg-black text-white' 
-                : 'bg-white text-black border border-gray-100 hover:bg-gray-50'}`}
-            >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {isActive && isPlaying ? (
-                  <motion.div
-                    key="pause"
-                    variants={iconVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={iconTransition}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <Pause size={20} fill="currentColor" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="play"
-                    variants={iconVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={iconTransition}
-                    className="absolute inset-0 flex items-center justify-center pl-1"
-                  >
-                    <Play size={20} fill="currentColor" className="" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </button>
         </div>
+
+        {/* Play Button - Floating in between sections */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onPlayPause();
+          }}
+          className={`absolute top-[136px] right-6 w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden
+          ${isActive && isPlaying
+            ? 'bg-black text-white'
+            : 'bg-white text-black border border-gray-100 hover:bg-gray-50'}`}
+        >
+          <AnimatePresence mode="popLayout" initial={false}>
+            {isActive && isPlaying ? (
+              <motion.div
+                key="pause"
+                variants={iconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={iconTransition}
+                className="absolute inset-0 flex items-center justify-center"
+              >
+                <Pause size={20} fill="currentColor" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="play"
+                variants={iconVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={iconTransition}
+                className="absolute inset-0 flex items-center justify-center pl-1"
+              >
+                <Play size={20} fill="currentColor" className="" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </button>
 
         {/* Bottom Section - Info */}
         <div className="p-5 pt-7">

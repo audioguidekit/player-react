@@ -51,7 +51,7 @@ export async function loadTourManifest(): Promise<TourManifest> {
 
 /**
  * Loads a specific tour by its filename
- * @param filename - Tour JSON filename (e.g., 'ancient-rome.json')
+ * @param filename - Tour JSON filename (e.g., 'tour.json')
  * @returns Promise resolving to tour data
  */
 export async function loadTour(filename: string): Promise<TourData> {

@@ -1,0 +1,90 @@
+{
+  "id": "barcelona-01",
+  "title": "Unlimited Barcelona",
+  "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
+  "totalDuration": "85 mins",
+  "totalStops": 10,
+  "image": "/_work/intro.mp4",
+  "stops": [
+    {
+      "id": "1",
+      "title": "Welcome and Instructions",
+      "duration": "5 min audio",
+      "isCompleted": false,
+      "image": "/_work/f03g.jpg",
+      "audioFile": "/_work/1. WELCOME AND INSTRUCTIONS - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "2",
+      "title": "The Urquinaona Tower",
+      "duration": "6 min audio",
+      "isCompleted": false,
+      "image": "/_work/f04g.jpg",
+      "audioFile": "/_work/2. THE URQUINAONA TOWER - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "3",
+      "title": "A City with a Thousand-Year History",
+      "duration": "8 min audio",
+      "isCompleted": false,
+      "image": "/_work/f05g.jpg",
+      "audioFile": "/_work/3. A CITY WITH A THOUSAND-YEAR HISTORY - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "4",
+      "title": "Ciutat Vella",
+      "duration": "9 min audio",
+      "isCompleted": false,
+      "image": "/_work/f06g.jpg",
+      "audioFile": "/_work/4. \"CIUTAT VELLA\" - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "5",
+      "title": "Plaza Urquinaona",
+      "duration": "7 min audio",
+      "isCompleted": false,
+      "image": "/_work/f07g.jpg",
+      "audioFile": "/_work/5. JUST HERE – PLAZA URQUINAONA - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "6",
+      "title": "Industrialisation",
+      "duration": "10 min audio",
+      "isCompleted": false,
+      "image": "/_work/f08g.jpg",
+      "audioFile": "/_work/6. INDUSTRIALISATION - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "7",
+      "title": "Expo 1888 and the 1992 Olympic Games",
+      "duration": "12 min audio",
+      "isCompleted": false,
+      "image": "/_work/f10g.jpg",
+      "audioFile": "/_work/7. EXPO 1888 AND THE 1992 OLYMPIC GAMES - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "8",
+      "title": "The Sagrada Família and Gaudí",
+      "duration": "11 min audio",
+      "isCompleted": false,
+      "image": "/_work/plano.png",
+      "audioFile": "/_work/8. THE SAGRADA FAMÍLIA AND THE OMNIPRESENCE OF GAUDÍ - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "9",
+      "title": "Eixample",
+      "duration": "9 min audio",
+      "isCompleted": false,
+      "image": "/_work/f03g.jpg",
+      "audioFile": "/_work/9. EIXAMPLE - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "10",
+      "title": "Roof Terraces, Tibidabo and Goodbye",
+      "duration": "8 min audio",
+      "isCompleted": false,
+      "image": "/_work/f04g.jpg",
+      "audioFile": "/_work/10. ROOF TERRACES, TIBIDABO AND GOODBYE - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    }
+  ]
+}

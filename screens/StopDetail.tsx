@@ -1,8 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { motion, useDragControls } from 'framer-motion';
-import { 
-  ChevronLeft, 
-  ChevronRight
+import { motion, useDragControls, AnimatePresence } from 'framer-motion';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
+  Check
 } from 'lucide-react';
 import { TourData } from '../types';
 
@@ -10,6 +13,7 @@ interface StopDetailProps {
   tour: TourData;
   currentStopId: string | null;
   isPlaying: boolean;
+  isStopCompleted: boolean;
   onPlayPause: () => void;
   onMinimize: () => void;
   onNext: () => void;
@@ -20,6 +24,7 @@ export const StopDetail: React.FC<StopDetailProps> = ({
   tour,
   currentStopId,
   isPlaying,
+  isStopCompleted,
   onPlayPause,
   onMinimize,
   onNext,
@@ -42,6 +47,14 @@ export const StopDetail: React.FC<StopDetailProps> = ({
 
   // Mock long description text
   const longDescription = "The Colosseum, also known as the Flavian Amphitheatre, is an oval amphitheatre in the centre of the city of Rome, Italy. Built of travertine limestone, tuff, and brick-faced concrete, it was the largest amphitheatre ever built at the time and held 50,000 to 80,000 spectators. It is situated just east of the Roman Forum. Construction began under the emperor Vespasian in AD 72 and was completed in AD 80 under his successor and heir, Titus. Further modifications were made during the reign of Domitian. These three emperors are known as the Flavian dynasty, and the amphitheatre was named in Latin for its association with their family name (Flavius).";
+
+  const iconVariants = {
+    initial: { scale: 0.5, opacity: 0, filter: 'blur(2px)' },
+    animate: { scale: 1, opacity: 1, filter: 'blur(0px)' },
+    exit: { scale: 0.5, opacity: 0, filter: 'blur(2px)' }
+  };
+
+  const iconTransition = { duration: 0.25, ease: 'easeOut' } as const;
 
   return (
     <div className="absolute inset-0 z-50 flex flex-col isolate pointer-events-auto">
@@ -111,12 +124,57 @@ export const StopDetail: React.FC<StopDetailProps> = ({
            
            {/* Top Image Part */}
            <div className="relative h-[45vh] w-full bg-gray-900 shrink-0 rounded-b-[2.5rem] overflow-hidden">
-             <img 
-               src={currentStop?.image || tour.image} 
-               alt="Active Stop" 
+             <img
+               src={currentStop?.image || tour.image}
+               alt="Active Stop"
                className="w-full h-full object-cover"
              />
              <div className="absolute inset-0 bg-black/10" />
+
+             {/* Top Right Status Circle */}
+             <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center shadow-sm">
+               {isStopCompleted && <Check size={14} className="text-black" strokeWidth={3} />}
+             </div>
+
+             {/* Play/Pause Button - Floating */}
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 onPlayPause();
+               }}
+               className={`absolute bottom-6 right-6 w-16 h-16 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden
+               ${isPlaying
+                 ? 'bg-black text-white'
+                 : 'bg-white text-black border border-gray-100 hover:bg-gray-50'}`}
+             >
+               <AnimatePresence mode="popLayout" initial={false}>
+                 {isPlaying ? (
+                   <motion.div
+                     key="pause"
+                     variants={iconVariants}
+                     initial="initial"
+                     animate="animate"
+                     exit="exit"
+                     transition={iconTransition}
+                     className="absolute inset-0 flex items-center justify-center"
+                   >
+                     <Pause size={24} fill="currentColor" />
+                   </motion.div>
+                 ) : (
+                   <motion.div
+                     key="play"
+                     variants={iconVariants}
+                     initial="initial"
+                     animate="animate"
+                     exit="exit"
+                     transition={iconTransition}
+                     className="absolute inset-0 flex items-center justify-center pl-1"
+                   >
+                     <Play size={24} fill="currentColor" />
+                   </motion.div>
+                 )}
+               </AnimatePresence>
+             </button>
            </div>
 
            {/* Content Part */}

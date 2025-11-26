@@ -199,9 +199,9 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
           {/* Skip Back Button */}
           <button
             onClick={(e) => { e.stopPropagation(); onRewind(); }}
-            className="w-12 h-12 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-500 transition-colors shadow-md"
+            className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
           >
-            <BackwardIcon size={24} />
+            <BackwardIcon size={32} className="ml-1 mb-0.5" />
           </button>
 
           {/* Main Play/Pause Button with Progress Ring */}
@@ -267,9 +267,9 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
           {/* Skip Forward Button */}
           <button
             onClick={(e) => { e.stopPropagation(); onForward(); }}
-            className="w-12 h-12 rounded-full bg-gray-600 text-white flex items-center justify-center hover:bg-gray-500 transition-colors shadow-md"
+            className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
           >
-            <ForwardIcon size={24} />
+            <ForwardIcon size={32} className="mr-1 mb-0.5" />
           </button>
         </div>
 

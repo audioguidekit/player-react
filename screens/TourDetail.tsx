@@ -3,6 +3,7 @@ import { motion, useSpring, useTransform, animate } from 'framer-motion';
 import { TourData } from '../types';
 import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
 import { TourHeader } from '../components/TourHeader';
+import { TourHeaderAlt } from '../components/TourHeaderAlt';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
 
 interface TourDetailProps {
@@ -106,7 +107,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   return (
     <div className="flex flex-col h-full relative w-full bg-white" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
 
-      <TourHeader
+      <TourHeaderAlt
         onBack={onBack}
         progressWidth={width}
         consumedMinutes={consumedMinutes}

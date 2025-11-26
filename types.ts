@@ -88,6 +88,7 @@ export interface TourData {
   totalStops: number;
   stops: Stop[];
   image: string;
+  offlineAvailable?: boolean;
 }
 
 export type ScreenName = 'START' | 'DETAIL' | 'ACTIVE_PLAYER';

@@ -70,7 +70,7 @@ export const AudioStopCardCompact: React.FC<AudioStopCardCompactProps> = ({
           {/* Title */}
           <h3
             className="text-lg font-medium text-gray-900 leading-tight flex-1"
-            style={{ fontFamily: 'Inter' }}
+            style={{ fontFamily: 'Roboto Condensed, sans-serif' }}
           >
             {item.title}
           </h3>

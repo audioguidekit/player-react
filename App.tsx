@@ -230,9 +230,9 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans">
+    <div className="md:min-h-screen bg-white md:bg-zinc-800 flex md:items-center md:justify-center p-0 md:p-8 font-sans" style={{ height: '100dvh' }}>
       {/* Mobile Frame Container */}
-      <div className="w-full max-w-[400px] h-[100dvh] md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex flex-col">
+      <div className="w-full max-w-[400px] md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex flex-col" style={{ height: '100%' }}>
         
         {/* Main Content Area */}
         <div className="flex-1 relative overflow-hidden bg-black">

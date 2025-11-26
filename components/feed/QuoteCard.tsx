@@ -8,6 +8,11 @@ interface QuoteCardProps {
 export const QuoteCard: React.FC<QuoteCardProps> = ({ item }) => {
   return (
     <div className="bg-gray-50 rounded-2xl p-8 mb-4 border border-gray-200">
+      {/* Avatar placeholder - centered at top */}
+      <div className="flex justify-center mb-6">
+        <div className="w-16 h-16 rounded-full bg-gray-200 border-2 border-gray-300" />
+      </div>
+
       {/* Quote mark */}
       <div className="text-6xl text-gray-300 leading-none mb-4 font-serif">"</div>
 

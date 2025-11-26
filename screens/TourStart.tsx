@@ -94,7 +94,7 @@ export const TourStart: React.FC<TourStartProps> = ({
         />
 
         {/* Top Buttons */}
-        <div className="absolute top-12 left-6 right-6 flex justify-between z-10">
+        <div className="absolute left-6 right-6 flex justify-between z-10" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
           <button 
             onClick={onOpenRating}
             className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"

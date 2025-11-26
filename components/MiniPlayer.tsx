@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Play, Pause } from 'lucide-react';
 import { motion, AnimatePresence, useMotionValue, useAnimationControls } from 'framer-motion';
-import { Stop } from '../types';
+import { AudioStop } from '../types';
 import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
 
 interface MiniPlayerProps {
-  currentStop: Stop | undefined;
+  currentStop: AudioStop | undefined;
   isPlaying: boolean;
   onTogglePlay: () => void;
   onForward: () => void;

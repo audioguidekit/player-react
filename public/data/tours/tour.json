@@ -8,6 +8,7 @@
   "stops": [
     {
       "id": "1",
+      "type": "audio",
       "title": "Welcome and Instructions",
       "duration": "5 mins",
       "isCompleted": false,
@@ -16,6 +17,7 @@
     },
     {
       "id": "2",
+      "type": "audio",
       "title": "The Urquinaona Tower",
       "duration": "6 mins",
       "isCompleted": false,
@@ -24,6 +26,7 @@
     },
     {
       "id": "3",
+      "type": "audio",
       "title": "A City with a Thousand-Year History",
       "duration": "8 mins",
       "isCompleted": false,
@@ -32,6 +35,7 @@
     },
     {
       "id": "4",
+      "type": "audio",
       "title": "Ciutat Vella",
       "duration": "9 mins",
       "isCompleted": false,
@@ -40,6 +44,7 @@
     },
     {
       "id": "5",
+      "type": "audio",
       "title": "Plaza Urquinaona",
       "duration": "7 mins",
       "isCompleted": false,
@@ -48,6 +53,7 @@
     },
     {
       "id": "6",
+      "type": "audio",
       "title": "Industrialisation",
       "duration": "10 mins",
       "isCompleted": false,
@@ -56,6 +62,7 @@
     },
     {
       "id": "7",
+      "type": "audio",
       "title": "Expo 1888 and the 1992 Olympic Games",
       "duration": "12 mins",
       "isCompleted": false,
@@ -64,6 +71,7 @@
     },
     {
       "id": "8",
+      "type": "audio",
       "title": "The Sagrada Família and Gaudí",
       "duration": "11 mins",
       "isCompleted": false,
@@ -72,6 +80,7 @@
     },
     {
       "id": "9",
+      "type": "audio",
       "title": "Eixample",
       "duration": "9 mins",
       "isCompleted": false,
@@ -80,11 +89,50 @@
     },
     {
       "id": "10",
+      "type": "audio",
       "title": "Roof Terraces, Tibidabo and Goodbye",
       "duration": "8 mins",
       "isCompleted": false,
       "image": "/_work/10.jpg",
       "audioFile": "/_work/10. ROOF TERRACES, TIBIDABO AND GOODBYE - Unlimited Barcelona - SoundLoadMate.com.mp3"
+    },
+    {
+      "id": "11",
+      "type": "headline",
+      "text": "Explore More"
+    },
+    {
+      "id": "12",
+      "type": "text",
+      "content": "Barcelona is a city that seamlessly blends the old with the new. From the Gothic Quarter's medieval streets to the modernist marvels of Gaudí, every corner tells a story. The Mediterranean climate, vibrant culture, and world-renowned cuisine make it one of Europe's most beloved destinations."
+    },
+    {
+      "id": "13",
+      "type": "image-text",
+      "image": "/_work/01.jpeg",
+      "content": "The Mediterranean coastline of Barcelona offers stunning views and beautiful beaches. Visitors can enjoy the perfect combination of urban culture and seaside relaxation, making it a unique European capital."
+    },
+    {
+      "id": "14",
+      "type": "video",
+      "videoUrl": "/_work/intro.mp4",
+      "caption": "Experience the vibrant streets and architecture of Barcelona in this short video tour."
+    },
+    {
+      "id": "15",
+      "type": "headline",
+      "text": "Interactive Experience"
+    },
+    {
+      "id": "16",
+      "type": "3d-object",
+      "modelUrl": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+      "caption": "Interactive 3D model viewer - drag to rotate, pinch to zoom, and explore from every angle."
+    },
+    {
+      "id": "17",
+      "type": "text",
+      "content": "Did you know? The Sagrada Família has been under construction since 1882 and is expected to be completed in 2026, marking the centenary of Gaudí's death. It will have taken over 140 years to build this architectural wonder."
     }
   ]
 }

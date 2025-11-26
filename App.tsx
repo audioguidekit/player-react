@@ -72,9 +72,12 @@ const App: React.FC = () => {
   // Derived State
   const currentStop = currentStopId && tour ? tour.stops.find(s => s.id === currentStopId) : undefined;
 
+  // Get current audio stop (type-safe)
+  const currentAudioStop = currentStop?.type === 'audio' ? currentStop : undefined;
+
   // Logic to hide mini player on tour start (collapsed sheet) to avoid redundancy with "Resume Tour" button
   // Show only when sheet is expanded (Tour Detail) or when Stop Detail is open.
-  const shouldShowMiniPlayer = !!currentStop && (isSheetExpanded || showStopDetail);
+  const shouldShowMiniPlayer = !!currentAudioStop && (isSheetExpanded || showStopDetail);
 
   // --- Handlers ---
 
@@ -82,10 +85,12 @@ const App: React.FC = () => {
     if (!tour || tour.stops.length === 0) return;
 
     setHasStarted(true);
-    // Start first stop automatically
-    const firstStopId = tour.stops[0].id;
-    setCurrentStopId(firstStopId);
-    setIsPlaying(true);
+    // Start first audio stop automatically
+    const firstAudioStop = tour.stops.find(s => s.type === 'audio');
+    if (firstAudioStop) {
+      setCurrentStopId(firstAudioStop.id);
+      setIsPlaying(true);
+    }
 
     // Expand the sheet to show details
     setIsSheetExpanded(true);
@@ -115,11 +120,14 @@ const App: React.FC = () => {
   const handleAudioEnded = useCallback(() => {
     if (!currentStopId || !tour) return;
     const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
-    if (currentIndex !== -1 && currentIndex < tour.stops.length - 1) {
-      const nextStopId = tour.stops[currentIndex + 1].id;
-      setCurrentStopId(nextStopId);
-      setIsPlaying(true); // Auto-play next track
-      // Don't navigate - keep user where they are
+    if (currentIndex !== -1) {
+      // Find next audio stop
+      const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+      if (nextAudioStop) {
+        setCurrentStopId(nextAudioStop.id);
+        setIsPlaying(true); // Auto-play next track
+        // Don't navigate - keep user where they are
+      }
     }
   }, [currentStopId, tour]);
 
@@ -146,11 +154,14 @@ const App: React.FC = () => {
   const handleNextStop = useCallback(() => {
     if (!currentStopId || !tour) return;
     const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
-    if (currentIndex !== -1 && currentIndex < tour.stops.length - 1) {
-      const nextStopId = tour.stops[currentIndex + 1].id;
-      setCurrentStopId(nextStopId);
-      setIsPlaying(true); // Auto-play next track
-      navigate(`/tour/${tourId}/stop/${nextStopId}`);
+    if (currentIndex !== -1) {
+      // Find next audio stop
+      const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+      if (nextAudioStop) {
+        setCurrentStopId(nextAudioStop.id);
+        setIsPlaying(true); // Auto-play next track
+        navigate(`/tour/${tourId}/stop/${nextAudioStop.id}`);
+      }
     }
   }, [currentStopId, tour, tourId, navigate]);
 
@@ -158,10 +169,13 @@ const App: React.FC = () => {
     if (!currentStopId || !tour) return;
     const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
     if (currentIndex > 0) {
-      const prevStopId = tour.stops[currentIndex - 1].id;
-      setCurrentStopId(prevStopId);
-      setIsPlaying(true);
-      navigate(`/tour/${tourId}/stop/${prevStopId}`);
+      // Find previous audio stop
+      const prevAudioStop = tour.stops.slice(0, currentIndex).reverse().find(s => s.type === 'audio');
+      if (prevAudioStop) {
+        setCurrentStopId(prevAudioStop.id);
+        setIsPlaying(true);
+        navigate(`/tour/${tourId}/stop/${prevAudioStop.id}`);
+      }
     }
   };
 
@@ -203,7 +217,7 @@ const App: React.FC = () => {
 
   // Audio Player
   const audioPlayer = useAudioPlayer({
-    audioUrl: currentStop?.audioFile || null,
+    audioUrl: currentAudioStop?.audioFile || null,
     isPlaying,
     onEnded: handleAudioEnded,
     onProgress: handleAudioProgress,
@@ -327,9 +341,9 @@ const App: React.FC = () => {
 
           {/* Global Floating Mini Player */}
           <AnimatePresence>
-            {shouldShowMiniPlayer && currentStop && (
+            {shouldShowMiniPlayer && currentAudioStop && (
               <MiniPlayer
-                currentStop={currentStop}
+                currentStop={currentAudioStop}
                 isPlaying={isPlaying}
                 onTogglePlay={handlePlayPause}
                 onRewind={() => audioPlayer.skipBackward(15)}

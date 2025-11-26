@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Stop } from '../types';
+import { Stop, AudioStop } from '../types';
 
 interface StopProgress {
   isCompleted: boolean;
@@ -132,8 +132,11 @@ export const useProgressTracking = (tourId: string) => {
     currentStopId: string | null,
     currentStopProgress: number
   ): number => {
-    // Calculate total duration of all stops
-    const totalDurationMinutes = tourStops.reduce((sum, stop) => {
+    // Filter only audio stops (stops with duration)
+    const audioStops = tourStops.filter((stop): stop is AudioStop => stop.type === 'audio');
+
+    // Calculate total duration of all audio stops
+    const totalDurationMinutes = audioStops.reduce((sum, stop) => {
       return sum + parseDurationMinutes(stop.duration);
     }, 0);
 
@@ -141,10 +144,10 @@ export const useProgressTracking = (tourId: string) => {
       return 0; // Safety check
     }
 
-    // Calculate consumed duration including all stops
+    // Calculate consumed duration including all audio stops
     let consumedDurationMinutes = 0;
 
-    tourStops.forEach(stop => {
+    audioStops.forEach(stop => {
       const stopDuration = parseDurationMinutes(stop.duration);
 
       if (progress.stops[stop.id]?.isCompleted) {
@@ -177,15 +180,18 @@ export const useProgressTracking = (tourId: string) => {
     currentStopId: string | null,
     currentStopProgress: number
   ): { consumed: number; total: number } => {
-    // Calculate total duration of all stops
-    const totalMinutes = tourStops.reduce((sum, stop) => {
+    // Filter only audio stops (stops with duration)
+    const audioStops = tourStops.filter((stop): stop is AudioStop => stop.type === 'audio');
+
+    // Calculate total duration of all audio stops
+    const totalMinutes = audioStops.reduce((sum, stop) => {
       return sum + parseDurationMinutes(stop.duration);
     }, 0);
 
-    // Calculate consumed duration including all stops
+    // Calculate consumed duration including all audio stops
     let consumedMinutes = 0;
 
-    tourStops.forEach(stop => {
+    audioStops.forEach(stop => {
       const stopDuration = parseDurationMinutes(stop.duration);
 
       if (progress.stops[stop.id]?.isCompleted) {

@@ -1,5 +1,12 @@
-export interface Stop {
+export type StopType = 'audio' | 'text' | 'image-text' | '3d-object' | 'video' | 'headline';
+
+export interface BaseStop {
   id: string;
+  type: StopType;
+}
+
+export interface AudioStop extends BaseStop {
+  type: 'audio';
   title: string;
   duration: string;
   isCompleted: boolean;
@@ -7,6 +14,47 @@ export interface Stop {
   image: string;
   audioFile?: string;
 }
+
+export interface TextStop extends BaseStop {
+  type: 'text';
+  content: string;
+}
+
+export interface ImageTextStop extends BaseStop {
+  type: 'image-text';
+  image: string;
+  content: string;
+}
+
+export interface ThreeDObjectStop extends BaseStop {
+  type: '3d-object';
+  modelUrl: string;
+  caption?: string;
+}
+
+export interface VideoStop extends BaseStop {
+  type: 'video';
+  videoUrl: string;
+  caption?: string;
+}
+
+export interface HeadlineStop extends BaseStop {
+  type: 'headline';
+  text: string;
+}
+
+export type Stop = AudioStop | TextStop | ImageTextStop | ThreeDObjectStop | VideoStop | HeadlineStop;
+
+// Legacy type aliases for backward compatibility
+export type FeedItemType = StopType;
+export type BaseFeedItem = BaseStop;
+export type AudioFeedItem = AudioStop;
+export type TextFeedItem = TextStop;
+export type ImageTextFeedItem = ImageTextStop;
+export type ThreeDObjectFeedItem = ThreeDObjectStop;
+export type VideoFeedItem = VideoStop;
+export type HeadlineFeedItem = HeadlineStop;
+export type FeedItem = Stop;
 
 export interface TourData {
   id: string;

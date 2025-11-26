@@ -3,6 +3,7 @@ import { Clock3, MapPin } from 'lucide-react';
 import { motion, useSpring, useTransform } from 'framer-motion';
 import { TourData } from '../types';
 import { TourListItem } from '../components/TourListItem';
+import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
 
 interface TourDetailProps {
   tour: TourData;
@@ -46,13 +47,16 @@ export const TourDetail: React.FC<TourDetailProps> = ({
 }) => {
   // Slower spring: reduced stiffness from 75 to 35 to match counter
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
-  
+
   useEffect(() => {
     // Animate to the passed progress value whenever it changes
     progressSpring.set(tourProgress);
   }, [progressSpring, tourProgress]);
 
   const width = useTransform(progressSpring, (value) => `${value}%`);
+
+  // Count only audio stops for progress display
+  const audioStopsCount = tour.stops.filter(stop => stop.type === 'audio').length;
 
   return (
     <div className="flex flex-col h-full relative w-full bg-white">
@@ -88,30 +92,38 @@ export const TourDetail: React.FC<TourDetailProps> = ({
           <div className="flex items-center gap-1.5">
             <MapPin size={16} />
             <span className="text-gray-900">{completedStopsCount}</span>
-            <span>/ {tour.totalStops}</span>
+            <span>/ {audioStopsCount}</span>
           </div>
         </div>
       </div>
 
       {/* Scrollable List */}
-      <div 
+      <div
         className="flex-1 overflow-y-auto overflow-x-hidden p-6 pb-32 no-scrollbar"
         // Stop propagation of drag events on the list to allow scrolling
         onPointerDown={(e) => e.stopPropagation()}
       >
-        {tour.stops.map((stop, index) => (
-          <TourListItem
-            key={stop.id}
-            stop={stop}
-            index={index}
-            isLast={index === tour.stops.length - 1}
-            isActive={stop.id === currentStopId}
-            isPlaying={isPlaying}
-            isCompleted={isStopCompleted(stop.id)}
-            onClick={() => onStopClick(stop.id)}
-            onPlayPause={() => onStopPlayPause(stop.id)}
-          />
-        ))}
+        {tour.stops.map((stop, index) => {
+          // Render audio stops with TourListItem
+          if (stop.type === 'audio') {
+            return (
+              <TourListItem
+                key={stop.id}
+                stop={stop}
+                index={index}
+                isLast={index === tour.stops.length - 1}
+                isActive={stop.id === currentStopId}
+                isPlaying={isPlaying}
+                isCompleted={isStopCompleted(stop.id)}
+                onClick={() => onStopClick(stop.id)}
+                onPlayPause={() => onStopPlayPause(stop.id)}
+              />
+            );
+          }
+
+          // Render other content types with FeedItemRenderer
+          return <FeedItemRenderer key={stop.id} item={stop} />;
+        })}
       </div>
     </div>
   );

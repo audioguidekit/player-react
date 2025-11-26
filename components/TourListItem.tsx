@@ -1,11 +1,11 @@
 import React from 'react';
 import { Play, Pause } from 'lucide-react';
-import { Stop } from '../types';
+import { AudioStop } from '../types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AnimatedCheckmark } from './AnimatedCheckmark';
 
 interface TourListItemProps {
-  stop: Stop;
+  stop: AudioStop;
   index: number;
   isLast: boolean;
   isActive: boolean;

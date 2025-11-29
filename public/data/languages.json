@@ -1,0 +1,17 @@
+[
+  {
+    "code": "cs",
+    "name": "Česky",
+    "flag": "🇨🇿"
+  },
+  {
+    "code": "en",
+    "name": "English",
+    "flag": "🇬🇧"
+  },
+  {
+    "code": "de",
+    "name": "Deutsch",
+    "flag": "🇩🇪"
+  }
+]

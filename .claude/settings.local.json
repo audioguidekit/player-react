@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(npm run dev:*)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cd:*)",
+      "mcp__browser-tools__getConsoleErrors",
+      "mcp__browser-tools__getNetworkErrors"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

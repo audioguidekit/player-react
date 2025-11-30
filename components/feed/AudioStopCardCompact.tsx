@@ -1,6 +1,7 @@
 import React from 'react';
 import { AudioStop } from '../../types';
 import { AnimatedCheckmark } from '../AnimatedCheckmark';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AudioStopCardCompactProps {
   item: AudioStop;
@@ -36,8 +37,21 @@ export const AudioStopCardCompact: React.FC<AudioStopCardCompactProps> = ({
           />
 
           {/* Duration Badge - Top Right */}
-          <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full">
-            <span className="text-white text-sm font-medium">{item.duration}</span>
+          <div className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full flex items-center">
+            <AnimatePresence>
+              {isPlaying && (
+                <motion.div
+                  initial={{ width: 0, opacity: 0, marginRight: 0 }}
+                  animate={{ width: 24, opacity: 1, marginRight: 8 }}
+                  exit={{ width: 0, opacity: 0, marginRight: 0 }}
+                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  className="flex items-center justify-center overflow-hidden"
+                >
+                  <span className="audio-playing-loader" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+            <span className="text-white text-sm font-regular">{item.duration}</span>
           </div>
         </div>
 

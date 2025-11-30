@@ -133,7 +133,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
                 item={stop}
                 index={index}
                 isActive={stop.id === currentStopId}
-                isPlaying={isPlaying}
+                isPlaying={stop.id === currentStopId && isPlaying}
                 isCompleted={isStopCompleted(stop.id)}
                 onClick={() => onStopClick(stop.id)}
               />

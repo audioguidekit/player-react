@@ -23,6 +23,22 @@ export const StartCard: React.FC<StartCardProps> = ({
   onDownload,
   downloadError = null,
 }) => {
+  const [loadingDots, setLoadingDots] = React.useState('');
+
+  React.useEffect(() => {
+    if (isDownloading && downloadProgress === 0) {
+      const interval = setInterval(() => {
+        setLoadingDots(prev => {
+          if (prev === '...') return '';
+          return prev + '.';
+        });
+      }, 500);
+      return () => clearInterval(interval);
+    } else {
+      setLoadingDots('');
+    }
+  }, [isDownloading, downloadProgress]);
+
   return (
     // No fixed height. We let the content define the height, and the parent measures it.
     <div className="px-8 pt-8 flex flex-col items-center text-center w-full" style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))' }}>
@@ -83,7 +99,14 @@ export const StartCard: React.FC<StartCardProps> = ({
           {isDownloading ? (
             <>
               <Sparkles size={20} strokeWidth={2.5} className="animate-pulse" />
-              Preparing tour... {downloadProgress}%
+              {downloadProgress === 0 ? (
+                <span className="relative">
+                  <span className="opacity-0">Preparing...</span>
+                  <span className="absolute left-0 top-0">Preparing{loadingDots}</span>
+                </span>
+              ) : (
+                `Preparing tour... ${downloadProgress}%`
+              )}
             </>
           ) : hasStarted ? (
             <>

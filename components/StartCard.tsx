@@ -105,7 +105,7 @@ export const StartCard: React.FC<StartCardProps> = ({
                   <span className="absolute left-0 top-0">Preparing{loadingDots}</span>
                 </span>
               ) : (
-                `Preparing tour... ${downloadProgress}%`
+                `Loading tour... ${downloadProgress}%`
               )}
             </>
           ) : hasStarted ? (

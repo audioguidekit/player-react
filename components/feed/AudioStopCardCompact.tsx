@@ -62,8 +62,34 @@ export const AudioStopCardCompact: React.FC<AudioStopCardCompactProps> = ({
             className="relative flex items-center justify-center shrink-0"
             style={{ width: 28, height: 28 }} // same as checkmark circle
           >
+            {/* Active Playing Spinner Ring */}
+            {isPlaying && (
+              <motion.svg
+                className="absolute inset-0 z-10"
+                viewBox="0 0 28 28"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}
+                style={{ transformOrigin: "center" }}
+              >
+                <circle
+                  cx="14"
+                  cy="14"
+                  r="12.5"
+                  fill="none"
+                  stroke="#22BD53"
+                  strokeWidth="3"
+                  strokeDasharray="20 58.5"
+                  strokeLinecap="round"
+                  transform="rotate(-90 14 14)"
+                />
+              </motion.svg>
+            )}
+
             {/* Base number circle */}
-            <div className="absolute inset-0 rounded-full bg-white border border-[#CBCBCB] flex items-center justify-center">
+            <div
+              className={`absolute rounded-full bg-white flex items-center justify-center ${isPlaying ? 'inset-[1.5px]' : 'inset-0 border border-[#CBCBCB]'
+                }`}
+            >
               <span
                 className="text-sm font-semibold text-gray-900"
                 style={{ fontFamily: 'Inter' }}

@@ -92,28 +92,44 @@ export const useDownloadManager = (
    */
   const downloadAsset = async (url: string, cache: Cache): Promise<boolean> => {
     try {
+      console.log(`📥 Starting download for: ${url}`);
+
       // Check if already cached
       const cached = await cache.match(url);
       if (cached) {
-        console.log(`Asset already cached: ${url}`);
+        console.log(`✅ Asset already cached: ${url}`);
         return true;
       }
 
       // Fetch and cache the asset
-      const response = await fetch(url);
+      // Use cors mode explicitly to ensure we don't get opaque responses which break RangeRequests
+      const response = await fetch(url, { mode: 'cors' });
+
+      console.log(`🌐 Fetch status for ${url}: ${response.status} ${response.statusText}, type: ${response.type}`);
 
       if (!response.ok) {
-        console.warn(`Failed to fetch asset: ${url} (${response.status})`);
+        console.warn(`❌ Failed to fetch asset: ${url} (${response.status})`);
         return false;
+      }
+
+      if (response.type === 'opaque') {
+        console.warn(`⚠️ Opaque response received for ${url}. Range requests will fail! Check CORS headers.`);
       }
 
       // Clone the response before caching (response can only be read once)
       await cache.put(url, response.clone());
 
-      console.log(`Successfully cached: ${url}`);
-      return true;
+      // Verify it was actually cached
+      const verifyCache = await cache.match(url);
+      if (verifyCache) {
+        console.log(`✅ Successfully cached and verified: ${url}`);
+        return true;
+      } else {
+        console.error(`❌ Cache put appeared to succeed but item not found in cache: ${url}`);
+        return false;
+      }
     } catch (err) {
-      console.error(`Error downloading asset ${url}:`, err);
+      console.error(`❌ Error downloading asset ${url}:`, err);
       return false;
     }
   };

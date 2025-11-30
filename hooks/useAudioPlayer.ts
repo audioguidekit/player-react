@@ -77,10 +77,12 @@ export const useAudioPlayer = ({
     currentAudioUrlRef.current = audioUrl;
 
     // Create new audio element
-    const audio = new Audio(audioUrl);
+    const audio = new Audio();
     audioRef.current = audio;
 
     // Set audio properties
+    audio.crossOrigin = 'anonymous'; // Ensure CORS is used to match cached response
+    audio.src = audioUrl; // Set src AFTER setting crossOrigin
     audio.preload = 'auto';
     audio.volume = 1.0;
     audio.muted = false;

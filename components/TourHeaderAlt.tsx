@@ -50,7 +50,7 @@ export const TourHeaderAlt: React.FC<TourHeaderAltProps> = ({
                     <div className="flex-1 bg-gray-100 h-2.5 rounded-full overflow-hidden">
                         <motion.div
                             style={{ width: progressWidth }}
-                            className="bg-black h-full rounded-full"
+                            className="bg-green-500 h-full rounded-full"
                         />
                     </div>
 

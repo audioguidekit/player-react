@@ -94,13 +94,19 @@ useEffect(() => {
 
 #### Caching Strategies
 
-| Asset Type | Strategy | Cache Name | Duration | Purpose |
-|------------|----------|------------|----------|---------|
-| **App Shell** (HTML, JS, CSS) | CacheFirst | `app-shell` | 30 days | Instant offline load |
-| **Tour Data** (JSON files) | NetworkFirst | `tour-data` | 7 days | Fresh when online, cached fallback |
-| **Images** (Unsplash CDN) | CacheFirst | `tour-images` | 30 days | Serve from cache, update background |
-| **Google Fonts** (Stylesheets) | CacheFirst | `google-fonts-stylesheets` | 1 year | Permanent font cache |
-| **Google Fonts** (Font Files) | CacheFirst | `google-fonts-webfonts` | 1 year | Permanent font cache |
+| Asset Type | Strategy | Cache Name | Duration | Special Options | Purpose |
+|------------|----------|------------|----------|-----------------|---------|
+| **App Shell** (HTML, JS, CSS) | CacheFirst | `app-shell` | 30 days | - | Instant offline load |
+| **Tour Data** (JSON files) | NetworkFirst | `tour-data` | 7 days | 3s timeout | Fresh when online, cached fallback |
+| **Unsplash Images** | CacheFirst | `tour-images` | 30 days | - | CDN image caching |
+| **Google Fonts** (Stylesheets) | CacheFirst | `google-fonts-stylesheets` | 1 year | - | Permanent font cache |
+| **Google Fonts** (Font Files) | CacheFirst | `google-fonts-webfonts` | 1 year | - | Permanent font cache |
+| **Supabase Audio** (.mp3, .wav, .m4a) | CacheFirst | `tour-assets` | 1 year | `ignoreVary`, `rangeRequests` | Offline audio playback with seeking |
+| **Supabase Images** (.jpg, .jpeg, .png, .webp) | CacheFirst | `tour-assets` | 1 year | `ignoreVary` | Offline image display |
+| **Supabase Videos** (.mp4, .webm) | CacheFirst | `tour-assets` | 1 year | `ignoreVary`, `rangeRequests` | Offline video playback with seeking |
+| **Supabase 3D Models** (.glb, .gltf) | CacheFirst | `tour-assets` | 1 year | `ignoreVary` | Offline 3D model viewing |
+
+**Note**: The `tour-assets` cache is shared between Service Worker runtime caching and the manual download manager for consistency.
 
 #### How Caching Works
 
@@ -125,16 +131,18 @@ User Request → Network Request (3s timeout)
 - **`src/utils/swManager.ts`** - Service worker lifecycle management
 - **`index.tsx`** - Service worker registration
 
-#### How It Works
-
-1. **Build Time**: `vite-plugin-pwa` generates `sw.js` (service worker) and `manifest.webmanifest`
-2. **Runtime**: Service worker intercepts network requests and applies caching strategies
-3. **Updates**: When a new version deploys, service worker prompts user to update
+#### Service Worker Configuration
 
 ```typescript
 // Service Worker Manager (src/utils/swManager.ts)
 export class ServiceWorkerManager {
   async register() {
+    // Skip registration in development mode
+    if (import.meta.env.DEV) {
+      console.log('Service Worker registration skipped in development mode');
+      return;
+    }
+
     this.wb = new Workbox('/sw.js');
 
     // Listen for updates
@@ -146,10 +154,63 @@ export class ServiceWorkerManager {
   }
 }
 
-// Registered in index.tsx (production only)
-if (import.meta.env.PROD) {
-  swManager.register().catch(console.error);
-}
+// Registered in index.tsx
+swManager.register().catch(console.error);
+```
+
+#### Offline Audio/Video Playback
+
+**Critical Configuration** for offline media playback:
+
+1. **Service Worker Options**:
+   ```typescript
+   workbox: {
+     clientsClaim: true,      // Take control of page immediately
+     skipWaiting: true,       // Activate new SW without waiting
+     runtimeCaching: [
+       {
+         urlPattern: ({ url }) => url.origin === 'https://supabase.co' && 
+                                  url.pathname.endsWith('.mp3'),
+         handler: 'CacheFirst',
+         options: {
+           cacheName: 'tour-assets',
+           matchOptions: {
+             ignoreVary: true   // Prevents CORS header mismatch
+           },
+           rangeRequests: true  // Enables seeking in cached audio
+         }
+       }
+     ]
+   }
+   ```
+
+2. **Audio Element Configuration** (`useAudioPlayer.ts`):
+   ```typescript
+   // Create audio element with CORS support
+   const audio = new Audio();
+   audio.crossOrigin = 'anonymous';  // Must be set BEFORE src
+   audio.src = audioUrl;             // Set src AFTER crossOrigin
+   audio.load();
+   ```
+
+3. **Download Manager** (`useDownloadManager.ts`):
+   ```typescript
+   // Download with explicit CORS mode to match audio playback
+   const response = await fetch(url, { mode: 'cors' });
+   const cache = await caches.open('tour-assets');
+   await cache.put(url, response);
+   ```
+
+**Important**: Offline audio/video **only works in production builds** due to Vite HMR interference in dev mode.
+
+**Testing Offline Media**:
+```bash
+# Development - Service Worker is NOT active for media
+npm run dev
+
+# Production testing - Service Worker FULLY active
+npm run build
+npm run preview
 ```
 
 ---
@@ -551,15 +612,29 @@ dist/manifest.webmanifest    1KB  (PWA manifest)
 ### Development Testing
 
 ```bash
-# Service Worker is DISABLED in development
+# Development mode - Service Worker active but with limitations
 npm run dev
+# Note: Offline audio/video won't work due to Vite HMR interference
+# Use for general development with internet connection
 
-# To test PWA features locally:
+# Production preview - Full PWA functionality
 npm run build
 npm run preview
-
+# Note: This is required to test offline audio/video features
 # Visit http://localhost:4173 with Chrome DevTools
 ```
+
+**Dev Mode Limitations**:
+- Service Worker is active but may not intercept all requests
+- Vite's HMR can bypass Service Worker for media files
+- Offline audio/video playback will NOT work
+- This is expected and does not affect production
+
+**Production Testing Required For**:
+- Offline audio/video playback
+- Download manager functionality
+- Full cache matching behavior
+- Range request support
 
 ### Production Testing Checklist
 
@@ -775,21 +850,24 @@ content: [
 
 ## Future Enhancements
 
-### Phase 4: State Persistence (Pending)
-- [ ] Create `usePersistedProgress` hook
-- [ ] Create `usePersistedPreferences` hook
-- [ ] Integrate hooks into `App.tsx`
-- [ ] Auto-save progress every 5 seconds
-- [ ] Restore last viewed stop on app launch
+### Phase 4: State Persistence ✅ COMPLETED
+- [x] Create `usePersistedProgress` hook
+- [x] Create `usePersistedPreferences` hook
+- [x] Integrate hooks into `App.tsx`
+- [x] Auto-save progress periodically
+- [x] Restore last viewed stop on app launch
 
-### Phase 5: Offline Features (Pending)
-- [ ] Download manager hook (`useDownloadManager`)
-- [ ] Download button with progress indicator
-- [ ] Offline indicator banner
-- [ ] Install prompt with engagement triggers
-- [ ] Background sync for progress when online
+### Phase 5: Offline Features ✅ COMPLETED
+- [x] Download manager hook (`useDownloadManager`)
+- [x] Download button with progress indicator
+- [x] Offline audio/video playback
+- [x] CORS configuration for cache matching
+- [x] Range request support for seeking
+- [x] Install prompt with engagement triggers
 
-### Additional Ideas
+**Note**: Offline features work fully in production builds. Dev mode has limitations due to Vite HMR.
+
+### Additional Ideas (Future)
 - Push notifications for tour updates
 - Share API integration (share tours with friends)
 - Background audio playback

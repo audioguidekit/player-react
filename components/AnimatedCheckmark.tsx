@@ -21,7 +21,7 @@ export const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
     <div
       className={`
         rounded-full flex items-center justify-center
-        ${isVisible ? 'bg-[#86efac] border-0' : 'bg-transparent border border-neutral-200'}
+        ${isVisible ? 'bg-[#22BD53] border-0' : 'bg-transparent border border-neutral-200'}
         ${className}
       `}
       style={{ width: circleSize, height: circleSize }}

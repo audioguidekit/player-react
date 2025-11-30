@@ -219,7 +219,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 cy={32}
               />
               <motion.circle
-                stroke="#2dd482"
+                stroke="#22BD53"
                 strokeWidth={4}
                 fill="transparent"
                 r={29.25}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowUpToLine, Clock3, Headphones, WifiOff } from 'lucide-react';
+import { ArrowUpToLine, Clock3, Headphones, Sparkles } from 'lucide-react';
 import { TourData } from '../types';
 
 interface StartCardProps {
@@ -82,7 +82,7 @@ export const StartCard: React.FC<StartCardProps> = ({
         <span className="relative z-10 flex items-center gap-3">
           {isDownloading ? (
             <>
-              <WifiOff size={20} strokeWidth={2.5} className="animate-pulse" />
+              <Sparkles size={20} strokeWidth={2.5} className="animate-pulse" />
               Preparing tour... {downloadProgress}%
             </>
           ) : hasStarted ? (
@@ -92,8 +92,8 @@ export const StartCard: React.FC<StartCardProps> = ({
             </>
           ) : tour.offlineAvailable && !isDownloaded ? (
             <>
-              <WifiOff size={20} strokeWidth={2.5} />
-              Start tour
+              <Sparkles size={20} strokeWidth={2.5} />
+              Prepare tour
             </>
           ) : (
             <>

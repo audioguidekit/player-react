@@ -56,7 +56,7 @@ export const TourStart: React.FC<TourStartProps> = ({
     [0, collapsedY],
     [8, 0]
   );
-  
+
   const blurFilter = useMotionTemplate`blur(${blurAmount}px)`;
 
   return (
@@ -82,28 +82,28 @@ export const TourStart: React.FC<TourStartProps> = ({
             className="w-full h-full object-cover"
           />
         )}
-        
+
         {/* Existing Gradients for text readability (always present) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
-        
+
         {/* Dynamic Dark Backdrop Overlay - Changes intensity based on drag */}
-        <motion.div 
+        <motion.div
           style={{ opacity: overlayOpacity }}
           className="absolute inset-0 bg-black"
         />
 
         {/* Top Buttons */}
         <div className="absolute left-6 right-6 flex justify-between z-10" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
-          <button 
+          <button
             onClick={onOpenRating}
-            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
+            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
           >
             <MessageCircleMore size={24} />
           </button>
-          <button 
+          <button
             onClick={onOpenLanguage}
-            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
+            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
           >
             <Languages size={24} />
           </button>

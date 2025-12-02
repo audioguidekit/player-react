@@ -134,10 +134,15 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 100, opacity: 0 }}
-        className="absolute bottom-0 left-0 right-0 z-[60]"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        className="fixed bottom-0 left-0 right-0 z-[60]"
       >
-        <div className="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl">
+        <div
+          className="bg-white border-t border-gray-200 px-6 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl"
+          style={{
+            paddingTop: '0.75rem',
+            paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
+          }}
+        >
           {/* Expandable area - title */}
           <div
             onClick={() => setIsExpanded(true)}

@@ -81,6 +81,19 @@
       }
     </style>
   </div>
+  <script>
+    if ('serviceWorker' in navigator && !/localhost/.test(window.location)) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then(registration => {
+            console.log('SW registered: ', registration);
+          })
+          .catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+  </script>
   <script type="module" src="/index.tsx"></script>
 </body>
 

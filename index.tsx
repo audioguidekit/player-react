@@ -5,13 +5,9 @@ import { AppRoutes } from './src/routes';
 import { swManager } from './src/utils/swManager';
 import './src/index.css';
 
-// Register service worker first (production only)
-// This ensures SW is active before fetching external dependencies
-if (import.meta.env.PROD) {
-  swManager.register().catch((error) => {
-    console.error('Service Worker registration failed:', error);
-  });
-}
+// Service worker is now registered in index.html for better reliability
+// swManager is still used for update handling within the app
+
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

@@ -21,6 +21,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       VitePWA({
+        injectRegister: null, // We will register manually in index.html for better control
         registerType: 'autoUpdate',
         includeAssets: ['fonts/*.woff2', 'icons/*.svg', 'icons/*.png'],
         manifest: {
@@ -32,7 +33,7 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           orientation: 'portrait',
           scope: '/',
-          start_url: '/',
+          start_url: '/index.html', // Explicit start_url for iOS reliability
           icons: [
             {
               src: '/icons/icon-72x72.png',

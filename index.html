@@ -58,7 +58,29 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Loading indicator shown while app initializes -->
+    <div
+      style="display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; color: #666;">
+      <div style="text-align: center;">
+        <div
+          style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;">
+        </div>
+        <div>Loading...</div>
+      </div>
+    </div>
+    <style>
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </div>
   <script type="module" src="/index.tsx"></script>
 </body>
 

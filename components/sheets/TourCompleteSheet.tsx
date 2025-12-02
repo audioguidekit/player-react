@@ -20,7 +20,7 @@ export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
                     <CheckCircle2 size={40} className="text-green-600" strokeWidth={2.5} />
                 </div>
 
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Tour Completed!</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Tour completed!</h2>
                 <p className="text-gray-600 mb-8 max-w-xs">
                     You've listened to all the audio stops. We hope you enjoyed the tour.
                 </p>
@@ -40,7 +40,7 @@ export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
                     onClick={onClose}
                     className="w-full bg-gray-100 text-gray-900 font-bold py-4 px-6 rounded-2xl active:scale-[0.98] transition-transform"
                 >
-                    Close
+                    Skip rating
                 </button>
             </div>
         </BottomSheet>

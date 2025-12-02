@@ -81,8 +81,26 @@ export default defineConfig(({ mode }) => {
         workbox: {
           clientsClaim: true,
           skipWaiting: true,
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+          globPatterns: [
+            '**/*.{js,css,html,ico,png,svg,woff2}',
+            'data/tours/**/*.json' // Precache tour data for offline access
+          ],
           runtimeCaching: [
+            {
+              // External CDN Dependencies (React, Framer Motion, Lucide) - Cache First
+              urlPattern: /^https:\/\/aistudiocdn\.com\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'external-dependencies',
+                expiration: {
+                  maxEntries: 50,
+                  maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year (versioned URLs)
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
             {
               // App Shell - Cache First
               urlPattern: ({ url }) => url.origin === self.location.origin,

@@ -8,8 +8,9 @@ import { clientsClaim } from 'workbox-core';
 
 declare const self: ServiceWorkerGlobalScope;
 
-const SW_VERSION = '1.0.2';
+const SW_VERSION = '1.0.3-NAVIGATION-FIX';
 console.log(`[SW ${SW_VERSION}] Service Worker initializing...`);
+console.log(`[SW ${SW_VERSION}] ⚡ This is the NEW service worker with navigation handler and CDN warmup!`);
 
 // Critical CDN dependencies that MUST be cached for offline use
 const CRITICAL_CDN_URLS = [

@@ -84,6 +84,7 @@
     // Register service worker immediately for better offline support on iOS
     console.log('[APP] Starting SW registration...');
     console.log('[APP] Online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
+    console.log('[APP] Expected SW version: 1.0.3-NAVIGATION-FIX');
 
     if ('serviceWorker' in navigator && !/localhost/.test(window.location)) {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -99,7 +100,15 @@
 
           if (registration.active) {
             console.log('[APP] Active SW state:', registration.active.state);
+            console.log('[APP] Active SW URL:', registration.active.scriptURL);
           }
+
+          // Force update check
+          registration.update().then(() => {
+            console.log('[APP] ✅ SW update check completed');
+          }).catch(err => {
+            console.log('[APP] SW update check failed:', err);
+          });
 
           // Listen for SW state changes
           registration.addEventListener('updatefound', () => {

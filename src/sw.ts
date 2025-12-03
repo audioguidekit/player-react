@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
+import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
@@ -68,6 +68,15 @@ console.log(`[SW ${SW_VERSION}] Calling precacheAndRoute...`);
 const manifest = self.__WB_MANIFEST;
 console.log(`[SW ${SW_VERSION}] Precache manifest has ${manifest.length} entries`);
 precacheAndRoute(manifest);
+
+// CRITICAL: Register navigation route to serve index.html for all navigation requests
+// This is what makes the app work when launched from home screen offline
+const navigationHandler = createHandlerBoundToURL('/index.html');
+const navigationRoute = new NavigationRoute(navigationHandler, {
+  denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/], // Exclude special paths and file requests
+});
+registerRoute(navigationRoute);
+console.log(`[SW ${SW_VERSION}] ✅ Registered navigation route handler`);
 
 // App Shell - Cache First
 registerRoute(

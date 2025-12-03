@@ -40,6 +40,27 @@ const App: React.FC = () => {
   const [activeSheet, setActiveSheet] = useState<SheetType>('NONE');
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
 
+  // Offline Ready Indicator Logic
+  const [showOfflineReady, setShowOfflineReady] = useState(false);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      // Check if already controlled
+      if (navigator.serviceWorker.controller) {
+        setShowOfflineReady(true);
+        const timer = setTimeout(() => setShowOfflineReady(false), 3000);
+        return () => clearTimeout(timer);
+      }
+
+      // Wait for ready
+      navigator.serviceWorker.ready.then(() => {
+        setShowOfflineReady(true);
+        const timer = setTimeout(() => setShowOfflineReady(false), 3000);
+        return () => clearTimeout(timer);
+      });
+    }
+  }, []);
+
   // Set default language when languages are loaded
   useEffect(() => {
     if (languages && languages.length > 0 && !selectedLanguage) {
@@ -431,24 +452,11 @@ const App: React.FC = () => {
         />
 
         {/* Debug: Offline Ready Indicator */}
-        <div id="offline-ready-indicator" className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-[100] opacity-0 transition-opacity duration-300 pointer-events-none">
+        <div
+          className={`fixed bottom-4 left-1/2 -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg z-[100] transition-opacity duration-300 pointer-events-none ${showOfflineReady ? 'opacity-100' : 'opacity-0'}`}
+        >
           Ready for Offline ✈️
         </div>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.ready.then(() => {
-                const indicator = document.getElementById('offline-ready-indicator');
-                if (indicator) {
-                  indicator.style.opacity = '1';
-                  setTimeout(() => {
-                    indicator.style.opacity = '0';
-                  }, 3000);
-                }
-              });
-            }
-          `
-        }} />
       </div>
     </div>
   );

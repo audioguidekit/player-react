@@ -82,8 +82,15 @@
     </style>
   </div>
   <script>
+    // Development mode detection (hostname-based for inline scripts)
+    const DEV_MODE = window.location.hostname === 'localhost' ||
+                     window.location.hostname.includes('192.168') ||
+                     window.location.hostname.includes('127.0.0.1') ||
+                     window.location.search.includes('debug=true');
+
     // Visual debug helper
     function updateDebugInfo(message) {
+      if (!DEV_MODE) return;
       const debugDiv = document.getElementById('debug-info');
       if (debugDiv) {
         debugDiv.innerHTML += message + '<br>';
@@ -91,6 +98,7 @@
     }
 
     function updateLoadingStatus(message) {
+      if (!DEV_MODE) return;
       const statusDiv = document.getElementById('loading-status');
       if (statusDiv) {
         statusDiv.textContent = message;
@@ -98,145 +106,174 @@
     }
 
     // Register service worker immediately for better offline support on iOS
-    console.log('[APP] Starting SW registration...');
-    updateDebugInfo('Starting...');
-    updateDebugInfo('Online: ' + (navigator.onLine ? 'YES' : 'NO'));
-    console.log('[APP] Online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
-    console.log('[APP] Expected SW version: 1.0.3-NAVIGATION-FIX');
+    if (DEV_MODE) {
+      console.log('[APP] Starting SW registration...');
+      updateDebugInfo('Starting...');
+      updateDebugInfo('Online: ' + (navigator.onLine ? 'YES' : 'NO'));
+      console.log('[APP] Online status:', navigator.onLine ? 'ONLINE' : 'OFFLINE');
+      console.log('[APP] Expected SW version: 1.0.3-NAVIGATION-FIX');
+    }
 
     if ('serviceWorker' in navigator && !/localhost/.test(window.location)) {
       navigator.serviceWorker.register('/sw.js', { scope: '/' })
         .then(registration => {
-          console.log('[APP] ✅ SW registered successfully');
-          console.log('[APP] SW state:', {
-            installing: registration.installing ? 'yes' : 'no',
-            waiting: registration.waiting ? 'yes' : 'no',
-            active: registration.active ? 'yes' : 'no',
-            scope: registration.scope,
-            updateViaCache: registration.updateViaCache
-          });
+          if (DEV_MODE) {
+            console.log('[APP] ✅ SW registered successfully');
+            console.log('[APP] SW state:', {
+              installing: registration.installing ? 'yes' : 'no',
+              waiting: registration.waiting ? 'yes' : 'no',
+              active: registration.active ? 'yes' : 'no',
+              scope: registration.scope,
+              updateViaCache: registration.updateViaCache
+            });
 
-          if (registration.active) {
-            console.log('[APP] Active SW state:', registration.active.state);
-            console.log('[APP] Active SW URL:', registration.active.scriptURL);
+            if (registration.active) {
+              console.log('[APP] Active SW state:', registration.active.state);
+              console.log('[APP] Active SW URL:', registration.active.scriptURL);
+            }
+          } else {
+            // Minimal production logging
+            console.log('[APP] Service worker registered');
           }
 
           // Force update check
           registration.update().then(() => {
-            console.log('[APP] ✅ SW update check completed');
+            if (DEV_MODE) {
+              console.log('[APP] ✅ SW update check completed');
+            }
           }).catch(err => {
-            console.log('[APP] SW update check failed:', err);
-          });
-
-          // Listen for SW state changes
-          registration.addEventListener('updatefound', () => {
-            console.log('[APP] SW update found!');
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                console.log('[APP] SW state changed to:', newWorker.state);
-              });
+            if (DEV_MODE) {
+              console.log('[APP] SW update check failed:', err);
             }
           });
+
+          // Listen for SW state changes (dev only)
+          if (DEV_MODE) {
+            registration.addEventListener('updatefound', () => {
+              console.log('[APP] SW update found!');
+              const newWorker = registration.installing;
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  console.log('[APP] SW state changed to:', newWorker.state);
+                });
+              }
+            });
+          }
         })
         .catch(err => {
+          // Always log errors
           console.error('[APP] ❌ SW registration failed:', err);
         });
 
-      // Log when SW controller changes
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('[APP] SW controller changed - new SW is now active');
-      });
+      // Log when SW controller changes (dev only)
+      if (DEV_MODE) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          console.log('[APP] SW controller changed - new SW is now active');
+        });
+      }
 
-      // Check current controller
-      if (navigator.serviceWorker.controller) {
-        console.log('[APP] Page is currently controlled by SW:', navigator.serviceWorker.controller.scriptURL);
-        updateDebugInfo('✅ SW Active');
-      } else {
-        console.log('[APP] ⚠️ Page is NOT controlled by any SW yet');
-        updateDebugInfo('⚠️ No SW');
+      // Check current controller (dev only)
+      if (DEV_MODE) {
+        if (navigator.serviceWorker.controller) {
+          console.log('[APP] Page is currently controlled by SW:', navigator.serviceWorker.controller.scriptURL);
+          updateDebugInfo('✅ SW Active');
+        } else {
+          console.log('[APP] ⚠️ Page is NOT controlled by any SW yet');
+          updateDebugInfo('⚠️ No SW');
+        }
       }
     } else {
-      console.log('[APP] SW not supported or running on localhost');
-      updateDebugInfo('❌ SW not supported');
+      if (DEV_MODE) {
+        console.log('[APP] SW not supported or running on localhost');
+        updateDebugInfo('❌ SW not supported');
+      }
     }
 
-    // Monitor online/offline status
-    window.addEventListener('online', () => {
-      console.log('[APP] Network: ONLINE');
-      updateDebugInfo('Network: ONLINE');
-    });
-    window.addEventListener('offline', () => {
-      console.log('[APP] Network: OFFLINE');
-      updateDebugInfo('Network: OFFLINE');
-    });
+    // Monitor online/offline status (dev only)
+    if (DEV_MODE) {
+      window.addEventListener('online', () => {
+        console.log('[APP] Network: ONLINE');
+        updateDebugInfo('Network: ONLINE');
+      });
+      window.addEventListener('offline', () => {
+        console.log('[APP] Network: OFFLINE');
+        updateDebugInfo('Network: OFFLINE');
+      });
+    }
 
     // Catch any errors during load
     window.addEventListener('error', (event) => {
+      // Always log errors
       console.error('[APP] Error:', event.error);
-      updateLoadingStatus('Error loading!');
-      updateDebugInfo('❌ ' + (event.error?.message || event.message || 'Unknown error'));
-    });
-
-    // Update loading status
-    setTimeout(() => {
-      updateLoadingStatus('Loading React...');
-    }, 1000);
-
-    // Inspect cache contents after page loads
-    window.addEventListener('load', async () => {
-      console.log('[APP] 🔍 Inspecting cache contents...');
-
-      try {
-        const cacheNames = await caches.keys();
-        console.log('[APP] Found caches:', cacheNames);
-
-        for (const cacheName of cacheNames) {
-          const cache = await caches.open(cacheName);
-          const requests = await cache.keys();
-          console.log(`[APP] Cache "${cacheName}" contains ${requests.length} entries:`);
-
-          // Log first 10 URLs from each cache
-          requests.slice(0, 10).forEach(req => {
-            console.log(`  - ${req.url}`);
-          });
-
-          if (requests.length > 10) {
-            console.log(`  ... and ${requests.length - 10} more`);
-          }
-
-          // Check specifically for CDN resources
-          const cdnResources = requests.filter(req =>
-            req.url.includes('aistudiocdn.com')
-          );
-          if (cdnResources.length > 0) {
-            console.log(`[APP] ✅ Found ${cdnResources.length} CDN resources in this cache`);
-          }
-        }
-
-        // Check for critical CDN resources
-        const criticalUrls = [
-          'https://aistudiocdn.com/react@^19.2.0',
-          'https://aistudiocdn.com/react-dom@^19.2.0',
-          'https://aistudiocdn.com/framer-motion@^12.23.24',
-          'https://aistudiocdn.com/lucide-react@^0.554.0'
-        ];
-
-        console.log('[APP] Checking for critical CDN resources...');
-        for (const url of criticalUrls) {
-          const response = await caches.match(url);
-          if (response) {
-            console.log(`[APP] ✅ CACHED: ${url}`);
-          } else {
-            console.log(`[APP] ❌ NOT CACHED: ${url}`);
-          }
-        }
-
-        console.log('[APP] 🔍 Cache inspection complete!');
-      } catch (err) {
-        console.error('[APP] Error inspecting caches:', err);
+      if (DEV_MODE) {
+        updateLoadingStatus('Error loading!');
+        updateDebugInfo('❌ ' + (event.error?.message || event.message || 'Unknown error'));
       }
     });
+
+    // Update loading status (dev only)
+    if (DEV_MODE) {
+      setTimeout(() => {
+        updateLoadingStatus('Loading React...');
+      }, 1000);
+    }
+
+    // Inspect cache contents after page loads (dev only)
+    if (DEV_MODE) {
+      window.addEventListener('load', async () => {
+        console.log('[APP] 🔍 Inspecting cache contents...');
+
+        try {
+          const cacheNames = await caches.keys();
+          console.log('[APP] Found caches:', cacheNames);
+
+          for (const cacheName of cacheNames) {
+            const cache = await caches.open(cacheName);
+            const requests = await cache.keys();
+            console.log(`[APP] Cache "${cacheName}" contains ${requests.length} entries:`);
+
+            // Log first 10 URLs from each cache
+            requests.slice(0, 10).forEach(req => {
+              console.log(`  - ${req.url}`);
+            });
+
+            if (requests.length > 10) {
+              console.log(`  ... and ${requests.length - 10} more`);
+            }
+
+            // Check specifically for CDN resources
+            const cdnResources = requests.filter(req =>
+              req.url.includes('aistudiocdn.com')
+            );
+            if (cdnResources.length > 0) {
+              console.log(`[APP] ✅ Found ${cdnResources.length} CDN resources in this cache`);
+            }
+          }
+
+          // Check for critical CDN resources
+          const criticalUrls = [
+            'https://aistudiocdn.com/react@^19.2.0',
+            'https://aistudiocdn.com/react-dom@^19.2.0',
+            'https://aistudiocdn.com/framer-motion@^12.23.24',
+            'https://aistudiocdn.com/lucide-react@^0.554.0'
+          ];
+
+          console.log('[APP] Checking for critical CDN resources...');
+          for (const url of criticalUrls) {
+            const response = await caches.match(url);
+            if (response) {
+              console.log(`[APP] ✅ CACHED: ${url}`);
+            } else {
+              console.log(`[APP] ❌ NOT CACHED: ${url}`);
+            }
+          }
+
+          console.log('[APP] 🔍 Cache inspection complete!');
+        } catch (err) {
+          console.error('[APP] Error inspecting caches:', err);
+        }
+      });
+    }
   </script>
   <script type="module" src="/index.tsx"></script>
 </body>

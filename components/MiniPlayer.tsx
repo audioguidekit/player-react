@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Play, Pause, Check } from 'lucide-react';
-import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
+import { Play, Pause, Check, SkipBack, SkipForward } from 'lucide-react';
+import { motion, AnimatePresence, useAnimationControls, useMotionValue, useTransform, PanInfo } from 'framer-motion';
 import { AudioStop } from '../types';
 import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
@@ -19,6 +19,11 @@ interface MiniPlayerProps {
   onToggleExpanded?: (expanded: boolean) => void;
   isCompleting?: boolean;
   isTransitioning?: boolean;
+  // Track navigation (for swipe)
+  onNextTrack?: () => void;
+  onPrevTrack?: () => void;
+  canGoNext?: boolean;
+  canGoPrev?: boolean;
 }
 
 const iconVariants = {
@@ -41,7 +46,11 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   isExpanded: externalIsExpanded,
   onToggleExpanded,
   isCompleting = false,
-  isTransitioning = false
+  isTransitioning = false,
+  onNextTrack,
+  onPrevTrack,
+  canGoNext = true,
+  canGoPrev = true
 }) => {
   // Use external state if provided, otherwise fall back to local state
   const [localIsExpanded, setLocalIsExpanded] = useState(true);
@@ -129,6 +138,36 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   const circumference = radius * 2 * Math.PI;
   const offset = circumference - (visualProgress / 100) * circumference;
 
+  // Swipe logic for collapsed player
+  const x = useMotionValue(0);
+  const opacityNext = useTransform(x, [-75, -25], [1, 0]); // Drag left -> Show Next (Right side)
+  const scaleNext = useTransform(x, [-75, -25], [1.2, 0.8]);
+  const opacityPrev = useTransform(x, [25, 75], [0, 1]); // Drag right -> Show Prev (Left side)
+  const scalePrev = useTransform(x, [25, 75], [0.8, 1.2]);
+
+  // Swipe logic for expanded player (must be before early return to follow hooks rules)
+  const xExpanded = useMotionValue(0);
+  const opacityNextExpanded = useTransform(xExpanded, [-75, -25], [1, 0]);
+  const scaleNextExpanded = useTransform(xExpanded, [-75, -25], [1.2, 0.8]);
+  const opacityPrevExpanded = useTransform(xExpanded, [25, 75], [0, 1]);
+  const scalePrevExpanded = useTransform(xExpanded, [25, 75], [0.8, 1.2]);
+
+  const handleDragEnd = (_: any, info: PanInfo) => {
+    if (info.offset.x < -75 && canGoNext && onNextTrack) {
+      onNextTrack();
+    } else if (info.offset.x > 75 && canGoPrev && onPrevTrack) {
+      onPrevTrack();
+    }
+  };
+
+  const handleDragEndExpanded = (_: any, info: PanInfo) => {
+    if (info.offset.x < -75 && canGoNext && onNextTrack) {
+      onNextTrack();
+    } else if (info.offset.x > 75 && canGoPrev && onPrevTrack) {
+      onPrevTrack();
+    }
+  };
+
   // Minimized bar when collapsed
   if (!isExpanded) {
     return (
@@ -138,57 +177,85 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         exit={{ y: 100, opacity: 0 }}
         className="absolute bottom-0 left-0 right-0 z-[60]"
       >
-        <div
-          className="bg-white border-t border-gray-200 px-6 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl"
-          style={{
-            paddingTop: '0.75rem',
-            paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
-          }}
-        >
-          {/* Expandable area - title */}
+        <div className="relative">
+          {/* Background Swipe Actions Layer */}
           <div
-            onClick={() => setIsExpanded(true)}
-            className="flex items-center flex-1 min-w-0 cursor-pointer"
+            className="absolute inset-0 bg-black rounded-t-2xl flex items-center justify-between px-8"
+            style={{
+              paddingTop: '0.75rem',
+              paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
+            }}
           >
-            <span className="font-medium text-md text-gray-800 truncate">{currentStop.title}</span>
+            {/* Left Icon (Previous) - Visible when dragging Right */}
+            <motion.div style={{ opacity: opacityPrev, scale: scalePrev }} className="flex items-center text-white">
+              <SkipBack size={24} fill="currentColor" className="opacity-90" />
+            </motion.div>
+
+            {/* Right Icon (Next) - Visible when dragging Left */}
+            <motion.div style={{ opacity: opacityNext, scale: scaleNext }} className="flex items-center text-white">
+              <SkipForward size={24} fill="currentColor" className="opacity-90" />
+            </motion.div>
           </div>
 
-          {/* Play/Pause button - functional */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onTogglePlay();
+          {/* Draggable Foreground Card */}
+          <motion.div
+            style={{
+              x,
+              paddingTop: '0.75rem',
+              paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))'
             }}
-            className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shrink-0 hover:bg-gray-800 active:scale-95 transition-all relative overflow-hidden"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.15}
+            onDragEnd={handleDragEnd}
+            className="bg-white border-t border-gray-200 px-6 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] rounded-t-2xl relative"
           >
-            <AnimatePresence mode="popLayout" initial={false}>
-              {isPlaying ? (
-                <motion.div
-                  key="pause-mini"
-                  variants={iconVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={iconTransition}
-                  className="absolute inset-0 flex items-center justify-center"
-                >
-                  <Pause size={16} fill="currentColor" />
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="play-mini"
-                  variants={iconVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={iconTransition}
-                  className="absolute inset-0 flex items-center justify-center pl-0.5"
-                >
-                  <Play size={16} fill="currentColor" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </button>
+            {/* Expandable area - title */}
+            <div
+              onClick={() => setIsExpanded(true)}
+              className="flex items-center flex-1 min-w-0 cursor-pointer"
+            >
+              <span className="font-medium text-md text-gray-800 truncate">{currentStop.title}</span>
+            </div>
+
+            {/* Play/Pause button - functional */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onTogglePlay();
+              }}
+              className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center shrink-0 hover:bg-gray-800 active:scale-95 transition-all relative overflow-hidden"
+              onPointerDownCapture={(e) => e.stopPropagation()} // Prevent drag from starting on button
+            >
+              <AnimatePresence mode="popLayout" initial={false}>
+                {isPlaying ? (
+                  <motion.div
+                    key="pause-mini"
+                    variants={iconVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={iconTransition}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <Pause size={16} fill="currentColor" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="play-mini"
+                    variants={iconVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={iconTransition}
+                    className="absolute inset-0 flex items-center justify-center pl-0.5"
+                  >
+                    <Play size={16} fill="currentColor" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </button>
+          </motion.div>
         </div>
       </motion.div>
     );
@@ -200,14 +267,26 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
       isOpen={!!currentStop}
       onClose={() => setIsExpanded(false)}
       showBackdrop={false}
-      allowDragClose={false}
+      allowDragClose={true}
     >
-      <div className="px-6 pb-6 pt-2" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+      {/* Draggable Content for Swipe (no background indicator in expanded state to avoid blank page issue) */}
+      <motion.div
+        style={{
+          x: xExpanded,
+          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))'
+        }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.15}
+        onDragEnd={handleDragEndExpanded}
+        className="px-6 pb-6 pt-2 bg-white relative"
+      >
         {/* Controls Row */}
         <div className="flex items-center justify-center gap-4 mb-1">
           {/* Skip Back Button */}
           <button
             onClick={(e) => { e.stopPropagation(); onRewind(); }}
+            onPointerDownCapture={(e) => e.stopPropagation()}
             className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
           >
             <BackwardIcon size={32} className="ml-1 mb-0.5" />
@@ -244,6 +323,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
 
             <button
               onClick={(e) => { e.stopPropagation(); onTogglePlay(); }}
+              onPointerDownCapture={(e) => e.stopPropagation()}
               className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden relative ${isCompleting ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
                 }`}
             >
@@ -292,6 +372,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
           {/* Skip Forward Button */}
           <button
             onClick={(e) => { e.stopPropagation(); onForward(); }}
+            onPointerDownCapture={(e) => e.stopPropagation()}
             className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
           >
             <ForwardIcon size={32} className="mr-1 mb-0.5" />
@@ -310,7 +391,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
             </motion.span>
           </div>
         </div>
-      </div>
+      </motion.div>
     </BottomSheet>
   );
 };

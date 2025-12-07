@@ -486,6 +486,20 @@ const App: React.FC = () => {
                 onToggleExpanded={setIsMiniPlayerExpanded}
                 isCompleting={isAudioCompleting}
                 isTransitioning={isTransitioning || isSwitchingTracks}
+                onNextTrack={handleNextStop}
+                onPrevTrack={handlePrevStop}
+                canGoNext={(() => {
+                  if (!currentStopId || !tour) return false;
+                  const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
+                  const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+                  return !!nextAudioStop;
+                })()}
+                canGoPrev={(() => {
+                  if (!currentStopId || !tour) return false;
+                  const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
+                  const prevAudioStop = tour.stops.slice(0, currentIndex).reverse().find(s => s.type === 'audio');
+                  return !!prevAudioStop;
+                })()}
               />
             )}
           </AnimatePresence>

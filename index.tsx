@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRoutes } from './src/routes';
 import { swManager } from './src/utils/swManager';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import './src/index.css';
 
 // Service worker is now registered in index.html for better reliability
@@ -17,8 +18,10 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </ErrorBoundary>
   </React.StrictMode>
 );

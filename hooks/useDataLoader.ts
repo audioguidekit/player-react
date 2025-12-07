@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TourData, Language } from '../types';
-import { dataService } from '../services/dataService';
+import { dataService } from '../src/services/dataService';
 
 /**
  * Generic loading state interface

@@ -89,6 +89,7 @@ export interface TourData {
   stops: Stop[];
   image: string;
   offlineAvailable?: boolean;
+  transitionAudio?: string;
 }
 
 export type ScreenName = 'START' | 'DETAIL' | 'ACTIVE_PLAYER';

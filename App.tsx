@@ -136,6 +136,10 @@ const App: React.FC = () => {
 
     // Reset all progress
     progressTracking.resetProgress();
+    setIsTransitioning(false);
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
     // Reset completion sheet flag
     setHasShownCompletionSheet(false);
 
@@ -150,6 +154,10 @@ const App: React.FC = () => {
 
   const handleStopClick = (clickedStopId: string) => {
     // Start playing the clicked stop
+    setIsTransitioning(false);
+    if (transitionTimeoutRef.current) {
+      clearTimeout(transitionTimeoutRef.current);
+    }
     setCurrentStopId(clickedStopId);
     setIsPlaying(true);
   };
@@ -166,33 +174,70 @@ const App: React.FC = () => {
   };
 
   const [isAudioCompleting, setIsAudioCompleting] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isSwitchingTracks, setIsSwitchingTracks] = useState(false);
+  const transitionTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Auto-advance to next track when audio ends (without navigation)
   const handleAudioEnded = useCallback(async () => {
     if (!currentStopId || !tour) return;
 
+    // IMPORTANT: If we are already in transition mode and audio ended, 
+    // it likely means the transition audio finished BEFORE the timeout.
+    // In this case, we just assume the timeout will pick it up or we let silence play until timeout.
+    // For simplicity, we just do nothing here and let the timeout handle the actual switch.
+    if (isTransitioning) {
+      console.log('Transition audio finished early. Waiting for visual transition timeout.');
+      return;
+    }
+
+    // Phase 1: Track just finished
     // Show completion animation
     setIsAudioCompleting(true);
-
-    // Wait for animation
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    setIsAudioCompleting(false);
 
     const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
     if (currentIndex !== -1) {
       // Find next audio stop
       const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+
       if (nextAudioStop) {
-        setCurrentStopId(nextAudioStop.id);
-        setIsPlaying(true); // Auto-play next track
-        // Don't navigate - keep user where they are
+        // If there is a transition audio, start playing it IMMEDIATELY
+        if (tour.transitionAudio) {
+          console.log('Starting transition audio concurrently with checkmark...');
+          setIsTransitioning(true);
+          // This will trigger the audio player to switch source and play
+        }
+
+        // Start a 1.5s timeout to handle the actual track switch
+        // This coordinates the checkmark animation AND the transition audio limit
+        if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+
+        transitionTimeoutRef.current = setTimeout(() => {
+          console.log('Transition/Animation timeout finished. Moving to next track.');
+          setIsAudioCompleting(false);
+
+          setCurrentStopId(nextAudioStop.id);
+          setIsPlaying(true); // Auto-play next track
+
+          // Switch track state management
+          setIsSwitchingTracks(true);
+          setIsTransitioning(false);
+
+          // Allow time for new track to load and progress to reset to 0
+          setTimeout(() => {
+            setIsSwitchingTracks(false);
+          }, 150);
+        }, 1500);
+
       } else {
-        // No next track - stop playing
+        // No next track - just show animation then stop
+        // Wait for animation
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setIsAudioCompleting(false);
         setIsPlaying(false);
       }
     }
-  }, [currentStopId, tour]);
+  }, [currentStopId, tour, isTransitioning]);
 
   // Control audio playback (for audio player controls)
   const handleNextStop = useCallback(() => {
@@ -202,6 +247,10 @@ const App: React.FC = () => {
       // Find next audio stop
       const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
       if (nextAudioStop) {
+        setIsTransitioning(false);
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
         setCurrentStopId(nextAudioStop.id);
         setIsPlaying(true); // Auto-play next track
       }
@@ -215,6 +264,10 @@ const App: React.FC = () => {
       // Find previous audio stop
       const prevAudioStop = tour.stops.slice(0, currentIndex).reverse().find(s => s.type === 'audio');
       if (prevAudioStop) {
+        setIsTransitioning(false);
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
         setCurrentStopId(prevAudioStop.id);
         setIsPlaying(true);
       }
@@ -236,6 +289,9 @@ const App: React.FC = () => {
 
   // Handle audio progress - mark stop as completed at 100%
   const handleAudioProgress = useCallback((id: string | undefined, currentTime: number, duration: number, percentComplete: number) => {
+    // Ignore progress during transition
+    if (isTransitioning) return;
+
     // Race condition protection: ensure we're processing the current stop
     if (id && id !== currentStopId) {
       console.log(`Ignoring progress for ${id} while current is ${currentStopId}`);
@@ -255,11 +311,13 @@ const App: React.FC = () => {
 
     // Track maximum progress reached (prevents progress bar from decreasing on rewind)
     progressTracking.updateStopMaxProgress(currentStopId, percentComplete);
-  }, [currentStopId, progressTracking]);
+  }, [currentStopId, progressTracking, isTransitioning]);
 
   // Audio Player
   const audioPlayer = useAudioPlayer({
-    audioUrl: currentAudioStop?.audioFile || null,
+    audioUrl: isTransitioning && tour?.transitionAudio
+      ? tour.transitionAudio
+      : (currentAudioStop?.audioFile || null),
     id: currentStopId || undefined,
     isPlaying,
     onEnded: handleAudioEnded,
@@ -427,6 +485,7 @@ const App: React.FC = () => {
                 isExpanded={isMiniPlayerExpanded}
                 onToggleExpanded={setIsMiniPlayerExpanded}
                 isCompleting={isAudioCompleting}
+                isTransitioning={isTransitioning || isSwitchingTracks}
               />
             )}
           </AnimatePresence>

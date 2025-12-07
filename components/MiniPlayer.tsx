@@ -18,6 +18,7 @@ interface MiniPlayerProps {
   isExpanded?: boolean;
   onToggleExpanded?: (expanded: boolean) => void;
   isCompleting?: boolean;
+  isTransitioning?: boolean;
 }
 
 const iconVariants = {
@@ -39,7 +40,8 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   progress = 0,
   isExpanded: externalIsExpanded,
   onToggleExpanded,
-  isCompleting = false
+  isCompleting = false,
+  isTransitioning = false
 }) => {
   // Use external state if provided, otherwise fall back to local state
   const [localIsExpanded, setLocalIsExpanded] = useState(true);
@@ -214,29 +216,31 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
           {/* Main Play/Pause Button with Progress Ring */}
           <div className="relative flex items-center justify-center" style={{ width: 64, height: 64 }}>
             {/* Progress Ring */}
-            <svg className="absolute inset-0 rotate-[-90deg] pointer-events-none" width={64} height={64}>
-              <motion.circle
-                stroke="#dddddd"
-                strokeWidth={3}
-                fill="transparent"
-                r={29.25}
-                cx={32}
-                cy={32}
-              />
-              <motion.circle
-                stroke="#22BD53"
-                strokeWidth={4}
-                fill="transparent"
-                r={29.25}
-                cx={32}
-                cy={32}
-                strokeDasharray={radius * 2 * Math.PI}
-                initial={{ strokeDashoffset: offset }}
-                animate={{ strokeDashoffset: offset }}
-                transition={{ duration: 0.1, ease: "linear" }}
-                strokeLinecap="round"
-              />
-            </svg>
+            {!isTransitioning && (
+              <svg className="absolute inset-0 rotate-[-90deg] pointer-events-none" width={64} height={64}>
+                <motion.circle
+                  stroke="#dddddd"
+                  strokeWidth={3}
+                  fill="transparent"
+                  r={29.25}
+                  cx={32}
+                  cy={32}
+                />
+                <motion.circle
+                  stroke="#22BD53"
+                  strokeWidth={4}
+                  fill="transparent"
+                  r={29.25}
+                  cx={32}
+                  cy={32}
+                  strokeDasharray={radius * 2 * Math.PI}
+                  initial={{ strokeDashoffset: offset }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 0.1, ease: "linear" }}
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
 
             <button
               onClick={(e) => { e.stopPropagation(); onTogglePlay(); }}

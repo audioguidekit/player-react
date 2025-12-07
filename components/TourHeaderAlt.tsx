@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Home } from 'lucide-react';
-import { motion, useSpring, useTransform, MotionValue } from 'framer-motion';
+import { motion, MotionValue } from 'framer-motion';
+import { AnimatedCounter } from './shared/AnimatedCounter';
 
 interface TourHeaderAltProps {
     onBack: () => void;
@@ -9,17 +10,6 @@ interface TourHeaderAltProps {
     totalMinutes: number;
 }
 
-// Helper component for animating numbers smoothly
-const AnimatedCounter = ({ value }: { value: number }) => {
-    const spring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
-    const display = useTransform(spring, (current) => Math.round(current));
-
-    useEffect(() => {
-        spring.set(value);
-    }, [spring, value]);
-
-    return <motion.span>{display}</motion.span>;
-};
 
 export const TourHeaderAlt: React.FC<TourHeaderAltProps> = ({
     onBack,

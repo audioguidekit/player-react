@@ -12,7 +12,6 @@ interface MiniPlayerProps {
   onForward: () => void;
   onRewind: () => void;
   onClick: () => void;
-  onEnd?: () => void;
   progress?: number;
   isExpanded?: boolean;
   onToggleExpanded?: (expanded: boolean) => void;
@@ -40,7 +39,6 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   onForward,
   onRewind,
   onClick,
-  onEnd,
   progress = 0,
   isExpanded: externalIsExpanded,
   onToggleExpanded,

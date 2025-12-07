@@ -1,5 +1,5 @@
 import React from 'react';
-import { ThreeDObjectFeedItem } from '../../types';
+import { ThreeDObjectStop } from '../../types';
 import '@google/model-viewer';
 
 declare global {
@@ -25,7 +25,7 @@ interface ModelViewerJSX {
 }
 
 interface ThreeDObjectCardProps {
-  item: ThreeDObjectFeedItem;
+  item: ThreeDObjectStop;
 }
 
 export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {

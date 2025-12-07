@@ -66,20 +66,6 @@ export interface QuoteStop extends BaseStop {
 
 export type Stop = AudioStop | TextStop | ImageTextStop | ThreeDObjectStop | VideoStop | HeadlineStop | RatingStop | EmailStop | QuoteStop;
 
-// Legacy type aliases for backward compatibility
-export type FeedItemType = StopType;
-export type BaseFeedItem = BaseStop;
-export type AudioFeedItem = AudioStop;
-export type TextFeedItem = TextStop;
-export type ImageTextFeedItem = ImageTextStop;
-export type ThreeDObjectFeedItem = ThreeDObjectStop;
-export type VideoFeedItem = VideoStop;
-export type HeadlineFeedItem = HeadlineStop;
-export type RatingFeedItem = RatingStop;
-export type EmailFeedItem = EmailStop;
-export type QuoteFeedItem = QuoteStop;
-export type FeedItem = Stop;
-
 export interface TourData {
   id: string;
   title: string;
@@ -91,8 +77,6 @@ export interface TourData {
   offlineAvailable?: boolean;
   transitionAudio?: string;
 }
-
-export type ScreenName = 'START' | 'DETAIL' | 'ACTIVE_PLAYER';
 
 export interface Language {
   code: string;

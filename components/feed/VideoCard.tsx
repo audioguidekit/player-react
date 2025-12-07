@@ -1,8 +1,8 @@
 import React from 'react';
-import { VideoFeedItem } from '../../types';
+import { VideoStop } from '../../types';
 
 interface VideoCardProps {
-  item: VideoFeedItem;
+  item: VideoStop;
 }
 
 export const VideoCard: React.FC<VideoCardProps> = ({ item }) => {

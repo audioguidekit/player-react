@@ -1,8 +1,8 @@
 import React from 'react';
-import { HeadlineFeedItem } from '../../types';
+import { HeadlineStop } from '../../types';
 
 interface HeadlineCardProps {
-  item: HeadlineFeedItem;
+  item: HeadlineStop;
 }
 
 export const HeadlineCard: React.FC<HeadlineCardProps> = ({ item }) => {

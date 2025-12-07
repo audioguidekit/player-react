@@ -1,5 +1,5 @@
 import React from 'react';
-import { FeedItem } from '../../types';
+import { Stop } from '../../types';
 import { AudioStopCard } from './AudioStopCard';
 import { TextCard } from './TextCard';
 import { ImageTextCard } from './ImageTextCard';
@@ -11,7 +11,7 @@ import { EmailCard } from './EmailCard';
 import { QuoteCard } from './QuoteCard';
 
 interface FeedItemRendererProps {
-  item: FeedItem;
+  item: Stop;
   index?: number;
   isActive?: boolean;
   isPlaying?: boolean;

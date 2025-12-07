@@ -65,8 +65,6 @@ const App: React.FC = () => {
   const [scrollToStopId, setScrollToStopId] = useState<string | null>(null);
   const [hasShownCompletionSheet, setHasShownCompletionSheet] = useState(false);
 
-  // Tour Progress (Percentage) - Animated in TourDetail
-  const [tourProgress, setTourProgress] = useState(0);
 
   // Mini Player State - persists across navigation
   const [isMiniPlayerExpanded, setIsMiniPlayerExpanded] = useState(true);
@@ -259,12 +257,6 @@ const App: React.FC = () => {
     setIsPlaying(!isPlaying);
   };
 
-  const handleAudioComplete = () => {
-    // When audio completes for the first time, animate the progress bar
-    if (tourProgress === 0) {
-      setTourProgress(55); // Update to mock 55%
-    }
-  };
 
   const closeSheet = () => setActiveSheet('NONE');
 
@@ -461,7 +453,6 @@ const App: React.FC = () => {
                     }
                   }
                 }}
-                onEnd={handleAudioComplete}
                 progress={audioPlayer.progress}
                 isExpanded={isMiniPlayerExpanded}
                 onToggleExpanded={setIsMiniPlayerExpanded}

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RatingFeedItem } from '../../types';
+import { RatingStop } from '../../types';
 
 interface RatingCardProps {
-  item: RatingFeedItem;
+  item: RatingStop;
 }
 
 export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {

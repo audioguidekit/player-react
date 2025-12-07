@@ -128,7 +128,7 @@
     {
       "id": "16",
       "type": "3d-object",
-      "modelUrl": "https://modelviewer.dev/shared-assets/models/Astronaut.glb",
+      "modelUrl": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/sagrada-familia.glb",
       "caption": "Interactive 3D model viewer - drag to rotate, pinch to zoom, and explore from every angle."
     },
     {

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { EmailFeedItem } from '../../types';
+import { EmailStop } from '../../types';
 
 interface EmailCardProps {
-  item: EmailFeedItem;
+  item: EmailStop;
 }
 
 export const EmailCard: React.FC<EmailCardProps> = ({ item }) => {

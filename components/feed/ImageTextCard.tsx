@@ -1,8 +1,8 @@
 import React from 'react';
-import { ImageTextFeedItem } from '../../types';
+import { ImageTextStop } from '../../types';
 
 interface ImageTextCardProps {
-  item: ImageTextFeedItem;
+  item: ImageTextStop;
 }
 
 export const ImageTextCard: React.FC<ImageTextCardProps> = ({ item }) => {

@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { motion, useSpring, useTransform, animate } from 'framer-motion';
 import { TourData } from '../types';
 import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
-import { TourHeader } from '../components/TourHeader';
 import { TourHeaderAlt } from '../components/TourHeaderAlt';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import { TextFeedItem } from '../../types';
+import { TextStop } from '../../types';
 
 interface TextCardProps {
-  item: TextFeedItem;
+  item: TextStop;
 }
 
 export const TextCard: React.FC<TextCardProps> = ({ item }) => {

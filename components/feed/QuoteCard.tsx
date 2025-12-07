@@ -1,8 +1,8 @@
 import React from 'react';
-import { QuoteFeedItem } from '../../types';
+import { QuoteStop } from '../../types';
 
 interface QuoteCardProps {
-  item: QuoteFeedItem;
+  item: QuoteStop;
 }
 
 export const QuoteCard: React.FC<QuoteCardProps> = ({ item }) => {

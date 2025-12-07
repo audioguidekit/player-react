@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Play, Pause, Check, SkipBack, SkipForward } from 'lucide-react';
-import { motion, AnimatePresence, useAnimationControls, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import { Play, Pause, Check, SkipBack, SkipForward, X } from 'lucide-react';
+import { motion, AnimatePresence, useAnimationControls, useMotionValue, useTransform, PanInfo, useMotionTemplate } from 'framer-motion';
 import { AudioStop } from '../types';
 import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
@@ -158,6 +158,45 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   const opacityPrevExpanded = useTransform(xExpanded, [25, 75], [0, 1]);
   const scalePrevExpanded = useTransform(xExpanded, [25, 75], [0.8, 1.2]);
 
+  // Dynamic shadow opacities (only show shadow when dragged horizontally to maintain seamless vertical look)
+  const shadowOpacity = useTransform(x, [-20, 0, 20], [0.1, 0, 0.1]);
+  const boxShadow = useMotionTemplate`0 0 15px rgba(0,0,0,${shadowOpacity})`;
+
+
+
+  const shadowOpacityExpanded = useTransform(xExpanded, [-20, 0, 20], [0.1, 0, 0.1]);
+  const boxShadowExpanded = useMotionTemplate`0 0 15px rgba(0,0,0,${shadowOpacityExpanded})`;
+
+  // Ref to track if we've already vibrated for this drag
+  const hasVibratedRef = useRef(false);
+
+  const handleDragStart = () => {
+    hasVibratedRef.current = false;
+  };
+
+  const handleDrag = (_: any, info: PanInfo, isNextEnabled: boolean, isPrevEnabled: boolean) => {
+    if (hasVibratedRef.current) return;
+
+    // Threshold for haptic trigger
+    const threshold = 50;
+
+    // Check if dragging left (next) when disabled
+    if (info.offset.x < -threshold && !isNextEnabled) {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(20); // Short light tick
+        hasVibratedRef.current = true;
+      }
+    }
+
+    // Check if dragging right (prev) when disabled
+    if (info.offset.x > threshold && !isPrevEnabled) {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(20); // Short light tick
+        hasVibratedRef.current = true;
+      }
+    }
+  };
+
   const handleDragEnd = (_: any, info: PanInfo) => {
     const swipedLeft = info.offset.x < -75;
     const swipedRight = info.offset.x > 75;
@@ -215,6 +254,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         }
       }}
       drag="y"
+      dragDirectionLock
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={0.1}
       onDragEnd={handleVerticalDragEnd}
@@ -245,7 +285,11 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 style={{ opacity: opacityPrevExpanded, scale: scalePrevExpanded }}
                 className={`flex items-center ${canGoPrev ? 'text-gray-800' : 'text-gray-400'}`}
               >
-                <SkipBack size={28} fill="currentColor" className={canGoPrev ? 'opacity-90' : 'opacity-40'} />
+                {canGoPrev ? (
+                  <SkipBack size={28} fill="currentColor" className="opacity-90" />
+                ) : (
+                  <X size={28} className="opacity-40" />
+                )}
               </motion.div>
 
               {/* Right Icon (Next) - Visible when dragging Left */}
@@ -253,18 +297,25 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 style={{ opacity: opacityNextExpanded, scale: scaleNextExpanded }}
                 className={`flex items-center ${canGoNext ? 'text-gray-800' : 'text-gray-400'}`}
               >
-                <SkipForward size={28} fill="currentColor" className={canGoNext ? 'opacity-90' : 'opacity-40'} />
+                {canGoNext ? (
+                  <SkipForward size={28} fill="currentColor" className="opacity-90" />
+                ) : (
+                  <X size={28} className="opacity-40" />
+                )}
               </motion.div>
             </div>
 
             {/* Draggable Foreground Content */}
             <motion.div
-              style={{ x: xExpanded }}
+              style={{ x: xExpanded, boxShadow: boxShadowExpanded }}
               drag="x"
+              dragDirectionLock
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.15}
+              onDragStart={handleDragStart}
+              onDrag={(e, info) => handleDrag(e, info, !!canGoNext, !!canGoPrev)}
               onDragEnd={handleDragEndExpanded}
-              className="bg-white relative shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-t-[2.5rem]"
+              className="bg-white relative rounded-t-[2.5rem]"
             >
               {/* Handle bar inside draggable content - counter-animated */}
               <motion.div
@@ -406,7 +457,11 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 style={{ opacity: opacityPrev, scale: scalePrev }}
                 className={`flex items-center ${canGoPrev ? 'text-gray-800' : 'text-gray-400'}`}
               >
-                <SkipBack size={24} fill="currentColor" className={canGoPrev ? 'opacity-90' : 'opacity-40'} />
+                {canGoPrev ? (
+                  <SkipBack size={24} fill="currentColor" className="opacity-90" />
+                ) : (
+                  <X size={24} className="opacity-40" />
+                )}
               </motion.div>
 
               {/* Right Icon (Next) - Visible when dragging Left */}
@@ -414,18 +469,25 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 style={{ opacity: opacityNext, scale: scaleNext }}
                 className={`flex items-center ${canGoNext ? 'text-gray-800' : 'text-gray-400'}`}
               >
-                <SkipForward size={24} fill="currentColor" className={canGoNext ? 'opacity-90' : 'opacity-40'} />
+                {canGoNext ? (
+                  <SkipForward size={24} fill="currentColor" className="opacity-90" />
+                ) : (
+                  <X size={24} className="opacity-40" />
+                )}
               </motion.div>
             </div>
 
             {/* Draggable Foreground Card */}
             <motion.div
-              style={{ x }}
+              style={{ x, boxShadow }}
               drag="x"
+              dragDirectionLock
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.15}
+              onDragStart={handleDragStart}
+              onDrag={(e, info) => handleDrag(e, info, !!canGoNext, !!canGoPrev)}
               onDragEnd={handleDragEnd}
-              className="bg-white flex items-center justify-between gap-3 relative shadow-[0_0_15px_rgba(0,0,0,0.1)] rounded-t-[2.5rem]"
+              className="bg-white flex items-center justify-between gap-3 relative rounded-t-[2.5rem]"
             >
               {/* Handle bar absolute at top - counter-animated */}
               <motion.div

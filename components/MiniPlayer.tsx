@@ -153,19 +153,29 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   const scalePrevExpanded = useTransform(xExpanded, [25, 75], [0.8, 1.2]);
 
   const handleDragEnd = (_: any, info: PanInfo) => {
-    if (info.offset.x < -75 && canGoNext && onNextTrack) {
+    const swipedLeft = info.offset.x < -75;
+    const swipedRight = info.offset.x > 75;
+
+    if (swipedLeft && canGoNext && onNextTrack) {
       onNextTrack();
-    } else if (info.offset.x > 75 && canGoPrev && onPrevTrack) {
+    } else if (swipedRight && canGoPrev && onPrevTrack) {
       onPrevTrack();
     }
+    // For disabled states, the dragConstraints will naturally spring back to 0
+    // The grayed-out icons provide visual feedback that the action is not available
   };
 
   const handleDragEndExpanded = (_: any, info: PanInfo) => {
-    if (info.offset.x < -75 && canGoNext && onNextTrack) {
+    const swipedLeft = info.offset.x < -75;
+    const swipedRight = info.offset.x > 75;
+
+    if (swipedLeft && canGoNext && onNextTrack) {
       onNextTrack();
-    } else if (info.offset.x > 75 && canGoPrev && onPrevTrack) {
+    } else if (swipedRight && canGoPrev && onPrevTrack) {
       onPrevTrack();
     }
+    // For disabled states, the dragConstraints will naturally spring back to 0
+    // The grayed-out icons provide visual feedback that the action is not available
   };
 
   // Minimized bar when collapsed
@@ -187,13 +197,19 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
             }}
           >
             {/* Left Icon (Previous) - Visible when dragging Right */}
-            <motion.div style={{ opacity: opacityPrev, scale: scalePrev }} className="flex items-center text-white">
-              <SkipBack size={24} fill="currentColor" className="opacity-90" />
+            <motion.div
+              style={{ opacity: opacityPrev, scale: scalePrev }}
+              className={`flex items-center ${canGoPrev ? 'text-white' : 'text-gray-500'}`}
+            >
+              <SkipBack size={24} fill="currentColor" className={canGoPrev ? 'opacity-90' : 'opacity-40'} />
             </motion.div>
 
             {/* Right Icon (Next) - Visible when dragging Left */}
-            <motion.div style={{ opacity: opacityNext, scale: scaleNext }} className="flex items-center text-white">
-              <SkipForward size={24} fill="currentColor" className="opacity-90" />
+            <motion.div
+              style={{ opacity: opacityNext, scale: scaleNext }}
+              className={`flex items-center ${canGoNext ? 'text-white' : 'text-gray-500'}`}
+            >
+              <SkipForward size={24} fill="currentColor" className={canGoNext ? 'opacity-90' : 'opacity-40'} />
             </motion.div>
           </div>
 
@@ -269,129 +285,155 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
       showBackdrop={false}
       allowDragClose={true}
     >
-      {/* Draggable Content for Swipe (no background indicator in expanded state to avoid blank page issue) */}
-      <motion.div
-        style={{
-          x: xExpanded,
-          paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))'
-        }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.15}
-        onDragEnd={handleDragEndExpanded}
-        className="px-6 pb-6 pt-2 bg-white relative"
-      >
-        {/* Controls Row */}
-        <div className="flex items-center justify-center gap-4 mb-1">
-          {/* Skip Back Button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); onRewind(); }}
-            onPointerDownCapture={(e) => e.stopPropagation()}
-            className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
+      <div className="relative overflow-hidden">
+        {/* Background Swipe Actions Layer for Expanded State */}
+        <div
+          className="absolute inset-0 bg-black flex items-center justify-between px-8"
+          style={{
+            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))'
+          }}
+        >
+          {/* Left Icon (Previous) - Visible when dragging Right */}
+          <motion.div
+            style={{ opacity: opacityPrevExpanded, scale: scalePrevExpanded }}
+            className={`flex items-center ${canGoPrev ? 'text-white' : 'text-gray-500'}`}
           >
-            <BackwardIcon size={32} className="ml-1 mb-0.5" />
-          </button>
+            <SkipBack size={28} fill="currentColor" className={canGoPrev ? 'opacity-90' : 'opacity-40'} />
+          </motion.div>
 
-          {/* Main Play/Pause Button with Progress Ring */}
-          <div className="relative flex items-center justify-center" style={{ width: 64, height: 64 }}>
-            {/* Progress Ring */}
-            {!isTransitioning && (
-              <svg className="absolute inset-0 rotate-[-90deg] pointer-events-none" width={64} height={64}>
-                <motion.circle
-                  stroke="#dddddd"
-                  strokeWidth={3}
-                  fill="transparent"
-                  r={29.25}
-                  cx={32}
-                  cy={32}
-                />
-                <motion.circle
-                  stroke="#22BD53"
-                  strokeWidth={4}
-                  fill="transparent"
-                  r={29.25}
-                  cx={32}
-                  cy={32}
-                  strokeDasharray={radius * 2 * Math.PI}
-                  initial={{ strokeDashoffset: offset }}
-                  animate={{ strokeDashoffset: offset }}
-                  transition={{ duration: 0.1, ease: "linear" }}
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
+          {/* Right Icon (Next) - Visible when dragging Left */}
+          <motion.div
+            style={{ opacity: opacityNextExpanded, scale: scaleNextExpanded }}
+            className={`flex items-center ${canGoNext ? 'text-white' : 'text-gray-500'}`}
+          >
+            <SkipForward size={28} fill="currentColor" className={canGoNext ? 'opacity-90' : 'opacity-40'} />
+          </motion.div>
+        </div>
 
+        {/* Draggable Foreground Content */}
+        <motion.div
+          style={{
+            x: xExpanded,
+            paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))'
+          }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.15}
+          onDragEnd={handleDragEndExpanded}
+          className="px-6 pb-6 pt-2 bg-white relative"
+        >
+          {/* Controls Row */}
+          <div className="flex items-center justify-center gap-4 mb-1">
+            {/* Skip Back Button */}
             <button
-              onClick={(e) => { e.stopPropagation(); onTogglePlay(); }}
+              onClick={(e) => { e.stopPropagation(); onRewind(); }}
               onPointerDownCapture={(e) => e.stopPropagation()}
-              className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden relative ${isCompleting ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
-                }`}
+              className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
             >
-              <AnimatePresence mode="popLayout" initial={false}>
-                {isCompleting ? (
-                  <motion.div
-                    key="check"
-                    variants={iconVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={iconTransition}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <Check size={28} strokeWidth={5} />
-                  </motion.div>
-                ) : isPlaying ? (
-                  <motion.div
-                    key="pause"
-                    variants={iconVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={iconTransition}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <Pause size={24} fill="currentColor" />
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="play"
-                    variants={iconVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={iconTransition}
-                    className="absolute inset-0 flex items-center justify-center pl-0.5"
-                  >
-                    <Play size={24} fill="currentColor" className="" />
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              <BackwardIcon size={32} className="ml-1 mb-0.5" />
+            </button>
+
+            {/* Main Play/Pause Button with Progress Ring */}
+            <div className="relative flex items-center justify-center" style={{ width: 64, height: 64 }}>
+              {/* Progress Ring */}
+              {!isTransitioning && (
+                <svg className="absolute inset-0 rotate-[-90deg] pointer-events-none" width={64} height={64}>
+                  <motion.circle
+                    stroke="#dddddd"
+                    strokeWidth={3}
+                    fill="transparent"
+                    r={29.25}
+                    cx={32}
+                    cy={32}
+                  />
+                  <motion.circle
+                    stroke="#22BD53"
+                    strokeWidth={4}
+                    fill="transparent"
+                    r={29.25}
+                    cx={32}
+                    cy={32}
+                    strokeDasharray={radius * 2 * Math.PI}
+                    initial={{ strokeDashoffset: offset }}
+                    animate={{ strokeDashoffset: offset }}
+                    transition={{ duration: 0.1, ease: "linear" }}
+                    strokeLinecap="round"
+                  />
+                </svg>
+              )}
+
+              <button
+                onClick={(e) => { e.stopPropagation(); onTogglePlay(); }}
+                onPointerDownCapture={(e) => e.stopPropagation()}
+                className={`w-14 h-14 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden relative ${isCompleting ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
+                  }`}
+              >
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {isCompleting ? (
+                    <motion.div
+                      key="check"
+                      variants={iconVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={iconTransition}
+                      className="absolute inset-0 flex items-center justify-center"
+                    >
+                      <Check size={28} strokeWidth={5} />
+                    </motion.div>
+                  ) : isPlaying ? (
+                    <motion.div
+                      key="pause"
+                      variants={iconVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={iconTransition}
+                      className="absolute inset-0 flex items-center justify-center"
+                    >
+                      <Pause size={24} fill="currentColor" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="play"
+                      variants={iconVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      transition={iconTransition}
+                      className="absolute inset-0 flex items-center justify-center pl-0.5"
+                    >
+                      <Play size={24} fill="currentColor" className="" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </div>
+
+            {/* Skip Forward Button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); onForward(); }}
+              onPointerDownCapture={(e) => e.stopPropagation()}
+              className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
+            >
+              <ForwardIcon size={32} className="mr-1 mb-0.5" />
             </button>
           </div>
 
-          {/* Skip Forward Button */}
-          <button
-            onClick={(e) => { e.stopPropagation(); onForward(); }}
-            onPointerDownCapture={(e) => e.stopPropagation()}
-            className="w-14 h-14 rounded-full text-gray-500 flex items-center justify-center hover:bg-gray-100 transition-colors active:scale-95 bg-gray-100"
-          >
-            <ForwardIcon size={32} className="mr-1 mb-0.5" />
-          </button>
-        </div>
-
-        {/* Object Name Label */}
-        <div className="text-center cursor-pointer" onClick={onClick}>
-          <div ref={containerRef} className="overflow-hidden leading-tight">
-            <motion.span
-              ref={titleRef}
-              animate={controls}
-              className="font text-lg text-gray-600 whitespace-nowrap inline-block border-b border-dashed border-gray-300 leading-none pb-0.5"
-            >
-              {currentStop.title}
-            </motion.span>
+          {/* Object Name Label */}
+          <div className="text-center cursor-pointer" onClick={onClick}>
+            <div ref={containerRef} className="overflow-hidden leading-tight">
+              <motion.span
+                ref={titleRef}
+                animate={controls}
+                className="font text-lg text-gray-600 whitespace-nowrap inline-block border-b border-dashed border-gray-300 leading-none pb-0.5"
+              >
+                {currentStop.title}
+              </motion.span>
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      </div>
     </BottomSheet>
   );
 };

@@ -10,6 +10,7 @@ interface BottomSheetProps {
   className?: string;
   showBackdrop?: boolean;
   allowDragClose?: boolean; // Allow closing via drag gesture
+  hideHandle?: boolean; // Hide the built-in handle when content provides its own
 }
 
 export const BottomSheet: React.FC<BottomSheetProps> = ({
@@ -19,7 +20,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   title,
   className = "",
   showBackdrop = true,
-  allowDragClose = true
+  allowDragClose = true,
+  hideHandle = false
 }) => {
   useEffect(() => {
     // Body scroll lock logic could go here
@@ -67,16 +69,18 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             style={{ willChange: 'transform' }}
           >
             {/* Handle Area */}
-            <div className="w-full flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing touch-none shrink-0" onClick={onClose}>
-              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-            </div>
+            {!hideHandle && (
+              <div className="w-full flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing touch-none shrink-0" onClick={onClose}>
+                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+              </div>
+            )}
 
             {/* Header (Optional) */}
             {title && (
               <div className="px-6 pb-2 pt-1 flex justify-between items-center shrink-0">
                 <h3 className="text-lg font-bold text-gray-900">{title}</h3>
-                <button 
-                  onClick={onClose} 
+                <button
+                  onClick={onClose}
                   className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <X size={20} />
@@ -85,7 +89,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             )}
 
             {/* Content */}
-            <div className="flex-1 overflow-auto rounded-t-[2.5rem] relative">
+            <div className="flex-1 overflow-auto relative">
               {children}
             </div>
           </motion.div>

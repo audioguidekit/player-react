@@ -315,15 +315,15 @@ export const useAudioPlayer = ({
           });
         } else {
           debugLog('⏳ Waiting for audio to be ready...');
+          audio.load(); // Explicitly trigger load
           // Audio not ready yet, wait for canplay event
           const handleCanPlay = () => {
-            debugLog('✅ Audio ready, playing');
+            debugLog('✅ Audio ready, playing after canplay');
             audio.play().catch((error) => {
-              console.error('❌ Play failed:', error);
+              console.error('❌ Play failed after canplay:', error);
               logAudioState('play failed after canplay');
               onPlayBlocked?.(error);
             });
-            audio.removeEventListener('canplay', handleCanPlay);
           };
           audio.addEventListener('canplay', handleCanPlay, { once: true });
         }

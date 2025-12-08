@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst, StaleWhileRevalidate, NetworkOnly } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { clientsClaim } from 'workbox-core';
@@ -176,7 +176,7 @@ registerRoute(
   })
 );
 
-// Supabase Audio Files - Cache First
+// Supabase Audio Files - Network Only (Safari Range Request Fix)
 registerRoute(
   ({ url }) => {
     return (
@@ -187,17 +187,8 @@ registerRoute(
         url.pathname.endsWith('.m4a'))
     );
   },
-  new CacheFirst({
-    cacheName: 'tour-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 100,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
+  new NetworkOnly({
+    cacheName: 'audio-assets-bypass',
   })
 );
 

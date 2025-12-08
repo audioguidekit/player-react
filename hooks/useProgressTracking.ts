@@ -14,12 +14,25 @@ interface TourProgress {
 const STORAGE_KEY_PREFIX = 'tour_progress_';
 
 /**
- * Parse duration string from tour data
- * Examples: "5 min audio" → 5, "12 min audio" → 12
+ * Parse duration string from tour data.
+ * Handles new format "M:SS" (e.g., "1:30 mins" -> 1.5) and old format "M mins" (e.g., "2 mins" -> 2).
  */
 const parseDurationMinutes = (durationString: string): number => {
-  const match = durationString.match(/(\d+)\s*min/i);
-  return match ? parseInt(match[1], 10) : 0;
+  // New format: "1:30 mins"
+  const newFormatMatch = durationString.match(/(\d+):(\d+)/);
+  if (newFormatMatch) {
+    const minutes = parseInt(newFormatMatch[1], 10);
+    const seconds = parseInt(newFormatMatch[2], 10);
+    return minutes + seconds / 60;
+  }
+
+  // Fallback for old format: "5 min"
+  const oldFormatMatch = durationString.match(/(\d+)\s*min/i);
+  if (oldFormatMatch) {
+    return parseInt(oldFormatMatch[1], 10);
+  }
+
+  return 0;
 };
 
 /**

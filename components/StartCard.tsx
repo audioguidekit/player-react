@@ -48,7 +48,7 @@ export const StartCard: React.FC<StartCardProps> = ({
 
   return (
     // No fixed height. We let the content define the height, and the parent measures it.
-    <div className="px-8 pt-8 flex flex-col items-center text-center w-full" style={{ paddingBottom: 'calc(2.5rem + env(safe-area-inset-bottom, 0px))' }}>
+    <div className="px-8 pt-8 flex flex-col items-center text-center w-full" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
       {/* Icon Container */}
       <div className="w-20 h-20 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center justify-center mb-6 border border-gray-50">
         <Headphones size={32} className="text-black" strokeWidth={1.5} />

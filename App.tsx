@@ -282,7 +282,7 @@ const App: React.FC = () => {
   return (
     <MobileFrame>
       <RatingProvider>
-        <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base">
+        <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
           {/* Main Content Area */}
           <div className={`flex-1 relative overflow-hidden ${hasStarted ? 'bg-white' : 'bg-black'}`}>
             <TourStart

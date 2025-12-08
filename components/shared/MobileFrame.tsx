@@ -16,8 +16,8 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({
     className = ''
 }) => {
     return (
-        <div className={`min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans ${className}`}>
-            <div className="w-full max-w-[400px] h-[100dvh] md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl">
+        <div className={`h-full min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans ${className}`} style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+            <div className="w-full max-w-[400px] h-full md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl safe-area-insets flex flex-col" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
                 {children}
             </div>
         </div>

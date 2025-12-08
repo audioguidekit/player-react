@@ -28,34 +28,56 @@ export const MainSheet: React.FC<MainSheetProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   
   // State to track the measured height of the StartCard content
-  const [startContentHeight, setStartContentHeight] = useState(380); // Default fallback
-  const [containerHeight, setContainerHeight] = useState(800);
+  const [startContentHeight, setStartContentHeight] = useState(420); // Increased default from 380
+  const [containerHeight, setContainerHeight] = useState(0);
 
   // Constants
   const EXPANDED_Y = 0; // Fully expanded (top of viewport)
 
   // Calculate Collapsed Position
   // Sheet should show only the start content height from the bottom
-  const COLLAPSED_Y = containerHeight - startContentHeight;
+  // Add a small buffer to ensure content is not cut off at the bottom
+  // Use window.innerHeight as fallback if containerHeight is not measured yet
+  const effectiveContainerHeight = containerHeight > 0 ? containerHeight : (typeof window !== 'undefined' ? window.innerHeight : 800);
+  const calculatedCollapsedY = effectiveContainerHeight - startContentHeight - 30; // Added a 30px buffer
+  // Ensure COLLAPSED_Y is always reasonable (not negative, not too high)
+  const COLLAPSED_Y = Math.max(100, Math.min(calculatedCollapsedY, effectiveContainerHeight - 100));
 
   // Measure content on mount and resize
   useEffect(() => {
     const measure = () => {
       if (contentRef.current) {
-        setStartContentHeight(contentRef.current.offsetHeight);
+        const height = contentRef.current.offsetHeight;
+        if (height > 0) {
+          setStartContentHeight(height);
+        }
       }
       if (containerRef.current) {
-        setContainerHeight(containerRef.current.offsetHeight);
+        const height = containerRef.current.offsetHeight;
+        if (height > 0) {
+          setContainerHeight(height);
+        } else {
+          // Fallback to window height if container height is 0
+          const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+          setContainerHeight(windowHeight);
+        }
       }
     };
 
+    // Measure immediately
     measure();
+    
+    // Also measure after a short delay to ensure DOM is ready
+    const timeoutId = setTimeout(measure, 100);
     
     const resizeObserver = new ResizeObserver(measure);
     if (contentRef.current) resizeObserver.observe(contentRef.current);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
 
-    return () => resizeObserver.disconnect();
+    return () => {
+      clearTimeout(timeoutId);
+      resizeObserver.disconnect();
+    };
   }, []);
 
   // Report the calculated collapsed Y to parent (for TourStart animations)
@@ -67,13 +89,16 @@ export const MainSheet: React.FC<MainSheetProps> = ({
 
   // Animate when state changes or dimensions change
   useEffect(() => {
-    // Faster spring: Increased stiffness from 120 to 280 for snappier expansion
-    if (isExpanded) {
-      controls.start({ y: EXPANDED_Y, transition: { type: 'spring', damping: 32, stiffness: 280 } });
-    } else {
-      controls.start({ y: COLLAPSED_Y, transition: { type: 'spring', damping: 32, stiffness: 280 } });
+    // Ensure we have valid dimensions before animating
+    if (containerHeight > 0 && startContentHeight > 0) {
+      // Faster spring: Increased stiffness from 120 to 280 for snappier expansion
+      if (isExpanded) {
+        controls.start({ y: EXPANDED_Y, transition: { type: 'spring', damping: 32, stiffness: 280 } });
+      } else {
+        controls.start({ y: COLLAPSED_Y, transition: { type: 'spring', damping: 32, stiffness: 280 } });
+      }
     }
-  }, [isExpanded, controls, COLLAPSED_Y, EXPANDED_Y]);
+  }, [isExpanded, controls, COLLAPSED_Y, EXPANDED_Y, containerHeight, startContentHeight]);
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const threshold = 100;
@@ -123,12 +148,13 @@ export const MainSheet: React.FC<MainSheetProps> = ({
         dragElastic={0.1}
         onDragEnd={handleDragEnd}
         animate={controls}
-        initial={{ y: containerHeight }} // Start off-screen at bottom
+        initial={{ y: COLLAPSED_Y > 0 ? COLLAPSED_Y : 400 }}
         style={{
           y,
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
           top: isExpanded ? 'calc(-1 * env(safe-area-inset-top, 0px))' : '0',
+          paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
         }}
         className="absolute inset-x-0 bottom-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.1)] overflow-hidden z-20 flex flex-col pointer-events-auto"
       >

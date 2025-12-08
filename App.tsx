@@ -71,6 +71,7 @@ const App: React.FC = () => {
     handleNextStop,
     handlePrevStop,
     handleTrackTransition,
+    handleAdvanceToNextTrack,
     startCompletionAnimation,
     endCompletionAnimation
   } = useTourNavigation({
@@ -133,9 +134,14 @@ const App: React.FC = () => {
   }, [currentStopId, progressTracking, isTransitioning, startCompletionAnimation]);
 
   const handleAudioEnded = useCallback(async () => {
-    if (isTransitioning) return;
-    handleTrackTransition();
-  }, [handleTrackTransition, isTransitioning]);
+    if (isTransitioning) {
+      // Transition audio just ended, play the next real track
+      handleAdvanceToNextTrack();
+    } else {
+      // A normal track ended, start the transition
+      handleTrackTransition();
+    }
+  }, [isTransitioning, handleTrackTransition, handleAdvanceToNextTrack]);
 
   // Audio Player
   const audioPlayer = useAudioPlayer({

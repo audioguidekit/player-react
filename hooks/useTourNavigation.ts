@@ -22,6 +22,7 @@ interface UseTourNavigationReturn {
     handleStopPlayPause: (stopId: string) => void;
     handleNextStop: () => void;
     handlePrevStop: () => void;
+    handleAdvanceToNextTrack: () => void;
 
     // Transition handling
     handleTrackTransition: () => void;
@@ -109,6 +110,30 @@ export const useTourNavigation = ({
         }
     }, [currentStopId, tour, onTrackChange]);
 
+    const handleAdvanceToNextTrack = useCallback(() => {
+        if (!currentStopId || !tour) return;
+
+        const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
+        const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+
+        setIsAudioCompleting(false);
+        setIsTransitioning(false);
+
+        if (nextAudioStop) {
+            setCurrentStopId(nextAudioStop.id);
+            setIsPlaying(allowAutoPlayRef.current);
+            
+            // Trigger track switch visual effect
+            setIsSwitchingTracks(true);
+            setTimeout(() => setIsSwitchingTracks(false), 150);
+
+            onTrackChange?.(nextAudioStop.id);
+        } else {
+            // End of tour
+            setIsPlaying(false);
+        }
+    }, [currentStopId, tour, onTrackChange]);
+
     const handleTrackTransition = useCallback(() => {
         if (!currentStopId || !tour) return;
 
@@ -118,43 +143,16 @@ export const useTourNavigation = ({
         // Start completion animation (Checkmark)
         setIsAudioCompleting(true);
 
-        const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
-        const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
-
-        if (nextAudioStop) {
-            // If we have transition audio, enable transition state
-            // This allows App.tsx to switch the audio source
-            if (tour.transitionAudio) {
-                console.log('Starting transition audio...');
-                setIsTransitioning(true);
-            }
-
-            // Set timeout for the visual checkmark animation AND transition audio
-            if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
-
-            transitionTimeoutRef.current = setTimeout(() => {
-                console.log('Transition timeout finished. Moving to next track.');
-                setIsAudioCompleting(false);
-                setIsTransitioning(false);
-
-                // Switch to next track
-                setCurrentStopId(nextAudioStop.id);
-                setIsPlaying(allowAutoPlayRef.current ? true : false);
-
-                // Trigger track switch visual effect
-                setIsSwitchingTracks(true);
-                setTimeout(() => setIsSwitchingTracks(false), 150);
-
-                onTrackChange?.(nextAudioStop.id);
-            }, 1500); // 1.5s duration for checkmark
+        // If we have transition audio, just set the state.
+        // App.tsx's onEnded handler will call handleAdvanceToNextTrack.
+        if (tour.transitionAudio) {
+            setIsTransitioning(true);
         } else {
-            // End of tour
-            setTimeout(() => {
-                setIsAudioCompleting(false);
-                setIsPlaying(false);
-            }, 1500);
+            // No transition audio, just use a timeout for the checkmark animation
+            if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+            transitionTimeoutRef.current = setTimeout(handleAdvanceToNextTrack, 1500); // 1.5s duration for checkmark
         }
-    }, [currentStopId, tour, isTransitioning, onTrackChange]);
+    }, [currentStopId, tour, isTransitioning, handleAdvanceToNextTrack]);
 
     const startCompletionAnimation = useCallback(() => {
         setIsAudioCompleting(true);
@@ -178,6 +176,7 @@ export const useTourNavigation = ({
         handleNextStop,
         handlePrevStop,
         handleTrackTransition,
+        handleAdvanceToNextTrack,
         startCompletionAnimation,
         endCompletionAnimation,
         transitionTimeoutRef

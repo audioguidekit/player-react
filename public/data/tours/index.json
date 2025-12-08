@@ -1,11 +1,11 @@
 {
   "tours": [
     {
-      "id": "barcelona-01",
+      "id": "barcelona",
       "filename": "tour.json",
       "title": "Unlimited Barcelona",
       "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
-      "thumbnail": "/_work/f00.jpg"
+      "thumbnail": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/f10g.jpg"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "id": "barcelona-01",
+  "id": "barcelona",
   "title": "Unlimited Barcelona",
   "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
   "totalDuration": "85 minutes",
@@ -97,65 +97,6 @@
       "isCompleted": false,
       "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/10.jpg",
       "audioFile": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/10.mp3"
-    },
-    {
-      "id": "11",
-      "type": "headline",
-      "text": "Explore More"
-    },
-    {
-      "id": "12",
-      "type": "text",
-      "content": "Barcelona is a city that seamlessly blends the old with the new. From the Gothic Quarter's medieval streets to the modernist marvels of Gaudí, every corner tells a story. The Mediterranean climate, vibrant culture, and world-renowned cuisine make it one of Europe's most beloved destinations."
-    },
-    {
-      "id": "13",
-      "type": "image-text",
-      "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/f10g.jpg",
-      "content": "The Mediterranean coastline of Barcelona offers stunning views and beautiful beaches. Visitors can enjoy the perfect combination of urban culture and seaside relaxation, making it a unique European capital."
-    },
-    {
-      "id": "14",
-      "type": "video",
-      "videoUrl": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/intro.webm",
-      "caption": "Experience the vibrant streets and architecture of Barcelona in this short video tour."
-    },
-    {
-      "id": "15",
-      "type": "headline",
-      "text": "Interactive Experience"
-    },
-    {
-      "id": "16",
-      "type": "3d-object",
-      "modelUrl": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/sagrada-familia.glb",
-      "caption": "Interactive 3D model viewer - drag to rotate, pinch to zoom, and explore from every angle."
-    },
-    {
-      "id": "17",
-      "type": "text",
-      "content": "Did you know? The Sagrada Família has been under construction since 1882 and is expected to be completed in 2026, marking the centenary of Gaudí's death. It will have taken over 140 years to build this architectural wonder."
-    },
-    {
-      "id": "quote-1",
-      "type": "quote",
-      "quote": "Allow me to state here how much I love Barcelona, an admirable city, a city full of life, intense, a port open to the past and future",
-      "author": "Le Corbusier",
-      "year": "1924"
-    },
-    {
-      "id": "18",
-      "type": "rating",
-      "question": "How was your Barcelona experience?",
-      "description": "We'd love to hear your thoughts about this tour!"
-    },
-    {
-      "id": "19",
-      "type": "email",
-      "title": "Stay in touch with us",
-      "description": "Subscribe to receive exclusive tips, hidden gems, and updates about Barcelona tours.",
-      "placeholder": "your@email.com",
-      "buttonText": "Subscribe"
     }
   ]
 }

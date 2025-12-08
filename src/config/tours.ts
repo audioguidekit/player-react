@@ -7,4 +7,4 @@
  * Default tour ID to load when no specific tour is requested
  * This should match an ID in the tour manifest (public/data/tours/index.json)
  */
-export const DEFAULT_TOUR_ID = 'barcelona-01';
+export const DEFAULT_TOUR_ID = 'barcelona';

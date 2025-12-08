@@ -104,7 +104,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   const width = useTransform(progressSpring, (value) => `${value}%`);
 
   return (
-    <div className="flex flex-col h-full relative w-full bg-white" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <div className="flex flex-col h-full relative w-full bg-white pb-12" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
 
       <TourHeaderAlt
         onBack={onBack}

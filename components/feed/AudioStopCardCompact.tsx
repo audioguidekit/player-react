@@ -64,11 +64,9 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
           >
             {/* Active Playing Spinner Ring */}
             {isPlaying && (
-              <motion.svg
-                className="absolute inset-0 z-10"
+              <svg
+                className="absolute inset-0 z-10 audio-spinner-ring"
                 viewBox="0 0 28 28"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1.5, ease: "linear", repeat: Infinity }}
                 style={{ transformOrigin: "center" }}
               >
                 <circle
@@ -82,7 +80,7 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
                   strokeLinecap="round"
                   transform="rotate(-90 14 14)"
                 />
-              </motion.svg>
+              </svg>
             )}
 
             {/* Base number circle */}

@@ -14,9 +14,9 @@ interface PlayPauseButtonProps {
 }
 
 const iconVariants = {
-    initial: { scale: 0.5, opacity: 0, filter: 'blur(2px)' },
-    animate: { scale: 1, opacity: 1, filter: 'blur(0px)' },
-    exit: { scale: 0.5, opacity: 0, filter: 'blur(2px)' }
+    initial: { scale: 0.5, opacity: 0 },
+    animate: { scale: 1, opacity: 1 },
+    exit: { scale: 0.5, opacity: 0 }
 };
 
 const iconTransition = { duration: 0.25, ease: 'easeOut' } as const;

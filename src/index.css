@@ -118,3 +118,18 @@ body {
     height: 8px;
   }
 }
+
+/* Smooth spin animation for audio spinner - Safari optimized */
+@keyframes spin-smooth {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.audio-spinner-ring {
+  animation: spin-smooth 1.5s linear infinite;
+  transform-origin: center;
+}

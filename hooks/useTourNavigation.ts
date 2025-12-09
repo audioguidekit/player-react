@@ -46,6 +46,9 @@ export const useTourNavigation = ({
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [isSwitchingTracks, setIsSwitchingTracks] = useState(false);
     const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const nextStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const prevStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const trackSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const allowAutoPlayRef = useRef<boolean>(allowAutoPlay);
 
     useEffect(() => {
@@ -84,11 +87,18 @@ export const useTourNavigation = ({
 
         if (nextAudioStop) {
             setIsSwitchingTracks(true);
-            setTimeout(() => {
+
+            // Clear any existing timeout
+            if (nextStopTimeoutRef.current) {
+                clearTimeout(nextStopTimeoutRef.current);
+            }
+
+            nextStopTimeoutRef.current = setTimeout(() => {
                 setCurrentStopId(nextAudioStop.id);
                 setIsPlaying(allowAutoPlayRef.current ? true : false);
                 setIsSwitchingTracks(false);
                 onTrackChange?.(nextAudioStop.id);
+                nextStopTimeoutRef.current = null;
             }, 300);
         }
     }, [currentStopId, tour, onTrackChange]);
@@ -101,11 +111,18 @@ export const useTourNavigation = ({
 
         if (prevAudioStop) {
             setIsSwitchingTracks(true);
-            setTimeout(() => {
+
+            // Clear any existing timeout
+            if (prevStopTimeoutRef.current) {
+                clearTimeout(prevStopTimeoutRef.current);
+            }
+
+            prevStopTimeoutRef.current = setTimeout(() => {
                 setCurrentStopId(prevAudioStop.id);
                 setIsPlaying(allowAutoPlayRef.current ? true : false);
                 setIsSwitchingTracks(false);
                 onTrackChange?.(prevAudioStop.id);
+                prevStopTimeoutRef.current = null;
             }, 300);
         }
     }, [currentStopId, tour, onTrackChange]);
@@ -122,10 +139,19 @@ export const useTourNavigation = ({
         if (nextAudioStop) {
             setCurrentStopId(nextAudioStop.id);
             setIsPlaying(allowAutoPlayRef.current);
-            
+
             // Trigger track switch visual effect
             setIsSwitchingTracks(true);
-            setTimeout(() => setIsSwitchingTracks(false), 150);
+
+            // Clear any existing timeout
+            if (trackSwitchTimeoutRef.current) {
+                clearTimeout(trackSwitchTimeoutRef.current);
+            }
+
+            trackSwitchTimeoutRef.current = setTimeout(() => {
+                setIsSwitchingTracks(false);
+                trackSwitchTimeoutRef.current = null;
+            }, 150);
 
             onTrackChange?.(nextAudioStop.id);
         } else {
@@ -160,6 +186,28 @@ export const useTourNavigation = ({
 
     const endCompletionAnimation = useCallback(() => {
         setIsAudioCompleting(false);
+    }, []);
+
+    // Cleanup all timeouts on unmount
+    useEffect(() => {
+        return () => {
+            if (transitionTimeoutRef.current) {
+                clearTimeout(transitionTimeoutRef.current);
+                transitionTimeoutRef.current = null;
+            }
+            if (nextStopTimeoutRef.current) {
+                clearTimeout(nextStopTimeoutRef.current);
+                nextStopTimeoutRef.current = null;
+            }
+            if (prevStopTimeoutRef.current) {
+                clearTimeout(prevStopTimeoutRef.current);
+                prevStopTimeoutRef.current = null;
+            }
+            if (trackSwitchTimeoutRef.current) {
+                clearTimeout(trackSwitchTimeoutRef.current);
+                trackSwitchTimeoutRef.current = null;
+            }
+        };
     }, []);
 
     return {

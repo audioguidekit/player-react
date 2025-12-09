@@ -42,6 +42,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
   const containerRef = React.useRef<HTMLDivElement>(null);
   const lastScrolledIdRef = React.useRef<string | null>(null);
+  const rafIdRef = React.useRef<number | null>(null);
 
   useEffect(() => {
     // Animate to the passed progress value whenever it changes
@@ -50,6 +51,12 @@ export const TourDetail: React.FC<TourDetailProps> = ({
 
   // Handle scrolling to specific stop
   useEffect(() => {
+    // Cancel any existing animation
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+
     if (scrollToStopId && containerRef.current && scrollToStopId !== lastScrolledIdRef.current) {
       lastScrolledIdRef.current = scrollToStopId;
       const element = document.getElementById(`stop-${scrollToStopId}`);
@@ -88,17 +95,26 @@ export const TourDetail: React.FC<TourDetailProps> = ({
             const t = elapsed / duration;
             const easedT = easeInOutCubic(t);
             container.scrollTop = startScrollTop + (distance * easedT);
-            requestAnimationFrame(animateScroll);
+            rafIdRef.current = requestAnimationFrame(animateScroll);
           } else {
             container.scrollTop = targetScrollTop;
+            rafIdRef.current = null;
             onScrollComplete?.();
             lastScrolledIdRef.current = null;
           }
         };
 
-        requestAnimationFrame(animateScroll);
+        rafIdRef.current = requestAnimationFrame(animateScroll);
       }
     }
+
+    // Cleanup function
+    return () => {
+      if (rafIdRef.current !== null) {
+        cancelAnimationFrame(rafIdRef.current);
+        rafIdRef.current = null;
+      }
+    };
   }, [scrollToStopId, onScrollComplete]);
 
   const width = useTransform(progressSpring, (value) => `${value}%`);

@@ -60,16 +60,16 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
 
   // Advanced content transition variants (Blur + Scale + Fade)
   const contentVariants = {
-    initial: { opacity: 0, scale: 0.9, filter: "blur(10px)" },
-    animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, scale: 0.9, filter: "blur(10px)" }
+    initial: { opacity: 0, scale: 0.9 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.9 }
   };
 
   // Button variants without scale (so whileTap can control scale)
   const buttonVariants = {
-    initial: { opacity: 0, filter: "blur(10px)" },
-    animate: { opacity: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, filter: "blur(10px)" }
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
   };
 
   const controls = useAnimationControls();
@@ -128,15 +128,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   // Vertical Drag Logic
   const yDrag = useMotionValue(0);
   // Expanded: Drag Down -> Hint Minimize
-  const expandedDragBlur = useTransform(yDrag, [-50, 0, 200], ["5px", "0px", "10px"]);
-  const expandedDragOpacity = useTransform(yDrag, [0, 150], [1, 0.5]);
-  const expandedDragScale = useTransform(yDrag, [0, 200], [1, 0.95]);
 
-  // Minimized: Drag Up -> Hint Expand
-  // Just a slight scale up to hint it's interactive
-  const minimizedDragScale = useTransform(yDrag, [-100, 0], [1.02, 1]);
-
-  const expandedDragBlurFilter = useMotionTemplate`blur(${expandedDragBlur})`;
 
   const handleVerticalDragEnd = (_: any, info: PanInfo) => {
     if (isExpanded) {
@@ -236,12 +228,11 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 key="expanded-content"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                exit={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+                exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
                 className="w-full h-full px-0 origin-center"
               >
                 <motion.div
-                  style={{ filter: expandedDragBlurFilter, opacity: expandedDragOpacity, scale: expandedDragScale }}
                   className="pt-10 pb-6"
                 >
                   {/* Controls Row */}
@@ -302,7 +293,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 className="flex items-center flex-1 min-w-0 px-8 py-2 pt-4 gap-3 w-full"
                 style={{ height: '80px' }}
               >
-                <motion.div className="flex items-center flex-1 min-w-0 gap-3" style={{ scale: minimizedDragScale }}>
+                <motion.div className="flex items-center flex-1 min-w-0 gap-3">
                   <div
                     onClick={() => setIsExpanded(true)}
                     className="flex items-center flex-1 min-w-0 cursor-pointer"

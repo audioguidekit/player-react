@@ -30,17 +30,25 @@ export const StartCard: React.FC<StartCardProps> = ({
   const [loadingDots, setLoadingDots] = React.useState('');
 
   React.useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+
     if (isDownloading && downloadProgress === 0) {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         setLoadingDots(prev => {
           if (prev === '...') return '';
           return prev + '.';
         });
       }, 500);
-      return () => clearInterval(interval);
     } else {
       setLoadingDots('');
     }
+
+    // Always return cleanup function
+    return () => {
+      if (interval !== null) {
+        clearInterval(interval);
+      }
+    };
   }, [isDownloading, downloadProgress]);
 
   // Check if tour is completed

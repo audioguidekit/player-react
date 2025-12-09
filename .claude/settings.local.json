@@ -14,7 +14,8 @@
       "Bash(cd:*)",
       "mcp__browser-tools__getConsoleErrors",
       "mcp__browser-tools__getNetworkErrors",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "WebFetch(domain:stackoverflow.com)"
     ],
     "deny": [],
     "ask": []

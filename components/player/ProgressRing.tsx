@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 
 interface ProgressRingProps {
     progress: number;
@@ -10,6 +12,10 @@ interface ProgressRingProps {
     className?: string;
     animated?: boolean;
 }
+
+const StyledProgressSvg = styled(motion.svg)`
+  ${tw`absolute inset-0 pointer-events-none`}
+`;
 
 /**
  * SVG circular progress ring component.
@@ -30,13 +36,13 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
     const strokeDashoffset = circumference * (1 - visualProgress / 100);
 
     return (
-        <motion.svg
+        <StyledProgressSvg
             initial={animated ? { opacity: 0 } : false}
             animate={animated ? { opacity: 1 } : false}
             exit={animated ? { opacity: 0 } : false}
             transition={{ duration: 0.3 }}
             style={{ rotate: -90 }}
-            className={`absolute inset-0 pointer-events-none ${className}`}
+            className={className}
             width={size}
             height={size}
         >
@@ -63,6 +69,6 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
                 transition={{ duration: 0.1, ease: 'linear' }}
                 strokeLinecap="round"
             />
-        </motion.svg>
+        </StyledProgressSvg>
     );
 };

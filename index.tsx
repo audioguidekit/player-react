@@ -5,6 +5,8 @@ import { AppRoutes } from './src/routes';
 import { swManager } from './src/utils/swManager';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ViewportManager } from './components/ViewportManager';
+import { ThemeProvider } from './src/theme/ThemeProvider';
+import { GlobalStyles } from './src/theme/GlobalStyles';
 import './src/index.css';
 
 // Service worker is now registered in index.html for better reliability
@@ -39,11 +41,16 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <ViewportManager />
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-    </ErrorBoundary>
+    <ThemeProvider>
+      <>
+        <GlobalStyles />
+        <ErrorBoundary>
+          <ViewportManager />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ErrorBoundary>
+      </>
+    </ThemeProvider>
   </React.StrictMode>
 );

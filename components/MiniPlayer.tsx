@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SkipBack, SkipForward, X } from 'lucide-react';
 import { motion, AnimatePresence, useAnimationControls, useMotionValue, useTransform, PanInfo, useMotionTemplate } from 'framer-motion';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 import { AudioStop } from '../types';
 import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
@@ -27,6 +29,85 @@ interface MiniPlayerProps {
   canGoNext?: boolean;
   canGoPrev?: boolean;
 }
+
+const Container = styled(motion.div)`
+  ${tw`absolute bottom-0 left-0 right-0 z-[70] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-t-[2.5rem] overflow-hidden`}
+  padding-bottom: calc(200px + ${({ theme }) => theme.platform.safeArea.bottom});
+  margin-bottom: -200px;
+`;
+
+const InnerContainer = styled.div`
+  ${tw`relative w-full h-full`}
+`;
+
+const BackgroundLayer = styled.div`
+  ${tw`absolute inset-0 bg-gray-100 rounded-t-[2.5rem] flex items-center justify-between px-4 h-full`}
+`;
+
+const SwipeIcon = styled(motion.div)<{ $canNavigate: boolean }>(({ $canNavigate }) => [
+  tw`flex items-center`,
+  $canNavigate ? tw`text-gray-800` : tw`text-gray-400`,
+]);
+
+const ForegroundCard = styled(motion.div)<{ $isExpanded: boolean }>(({ $isExpanded }) => [
+  tw`bg-white relative rounded-t-[2.5rem] overflow-hidden`,
+  $isExpanded ? tw`w-full h-full` : tw`flex items-center justify-between gap-3`,
+]);
+
+const HandleContainer = styled(motion.div)<{ $isExpanded: boolean }>`
+  ${tw`absolute top-0 left-0 right-0 flex justify-center pt-3 cursor-grab active:cursor-grabbing touch-none z-30`}
+`;
+
+const Handle = styled.div`
+  ${tw`w-10 h-1 bg-gray-300 rounded-full`}
+`;
+
+const ExpandedContent = styled(motion.div)`
+  ${tw`w-full h-full px-0 origin-center`}
+`;
+
+const ExpandedInner = styled(motion.div)`
+  ${tw`pt-10 pb-6`}
+`;
+
+const ControlsRow = styled.div`
+  ${tw`flex items-center justify-center gap-4 mb-1`}
+`;
+
+const ProgressContainer = styled.div`
+  ${tw`relative flex items-center justify-center`}
+  width: 64px;
+  height: 64px;
+`;
+
+const TitleSection = styled(motion.div)`
+  ${tw`text-center cursor-pointer mt-1`}
+`;
+
+const TitleContainer = styled.div`
+  ${tw`overflow-hidden leading-tight px-8`}
+`;
+
+const TitleText = styled(motion.span)`
+  ${tw`text-base text-gray-800 whitespace-nowrap inline-block leading-none pb-0.5`}
+`;
+
+const MinimizedContent = styled(motion.div)`
+  ${tw`flex items-center flex-1 min-w-0 px-8 py-2 pt-4 gap-3 w-full`}
+  height: 80px;
+`;
+
+const MinimizedInner = styled(motion.div)`
+  ${tw`flex items-center flex-1 min-w-0 gap-3`}
+`;
+
+const MinimizedTitleSection = styled(motion.div)`
+  ${tw`flex items-center flex-1 min-w-0 cursor-pointer`}
+`;
+
+const MinimizedTitle = styled.span`
+  ${tw`text-base text-gray-800 truncate`}
+`;
 
 
 export const MiniPlayer: React.FC<MiniPlayerProps> = ({
@@ -143,7 +224,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
   };
 
   return (
-    <motion.div
+    <Container
       layout
       transition={{
         layout: { type: 'spring', damping: 30, stiffness: 400, mass: 0.5 }
@@ -153,14 +234,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
       dragConstraints={{ top: 0, bottom: 0 }}
       dragElastic={0.1}
       onDragEnd={handleVerticalDragEnd}
-      className="absolute bottom-0 left-0 right-0 z-[70] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-t-[2.5rem] overflow-hidden"
-      style={{
-        y: yDrag,
-        // The container needs to hold space for the minimized player at least
-        paddingBottom: 'calc(200px + env(safe-area-inset-bottom, 0px))',
-        marginBottom: '-200px',
-        // Pointer events through to children
-      }}
+      style={{ y: yDrag }}
     >
       {/* 
         PERSISTENT STRUCTURE:
@@ -168,36 +242,36 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
         2. Foreground Card (Content) - Always rendered, layout morphs
       */}
 
-      <div className="relative w-full h-full">
+      <InnerContainer>
         {/* Persistent Background Swipe Actions */}
-        <div className="absolute inset-0 bg-gray-100 rounded-t-[2.5rem] flex items-center justify-between px-4 h-full">
+        <BackgroundLayer>
           {/* Left Icon (Previous) */}
-          <motion.div
+          <SwipeIcon
             style={{ opacity: opacityPrev, scale: scalePrev }}
-            className={`flex items-center ${canGoPrev ? 'text-gray-800' : 'text-gray-400'}`}
+            $canNavigate={canGoPrev}
           >
             {canGoPrev ? (
               <SkipBack size={28} fill="currentColor" className="opacity-90" />
             ) : (
               <X size={28} className="opacity-40" />
             )}
-          </motion.div>
+          </SwipeIcon>
 
           {/* Right Icon (Next) */}
-          <motion.div
+          <SwipeIcon
             style={{ opacity: opacityNext, scale: scaleNext }}
-            className={`flex items-center ${canGoNext ? 'text-gray-800' : 'text-gray-400'}`}
+            $canNavigate={canGoNext}
           >
             {canGoNext ? (
               <SkipForward size={28} fill="currentColor" className="opacity-90" />
             ) : (
               <X size={28} className="opacity-40" />
             )}
-          </motion.div>
-        </div>
+          </SwipeIcon>
+        </BackgroundLayer>
 
         {/* Persistent Foreground Card */}
-        <motion.div
+        <ForegroundCard
           layout
           style={{ x: dragX, boxShadow }}
           drag="x"
@@ -207,41 +281,37 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
           onDragStart={handleDragStart}
           onDrag={(e, info) => handleHorizontalDrag(e, info)}
           onDragEnd={handleHorizontalDragEnd}
-          className={`bg-white relative rounded-t-[2.5rem] overflow-hidden ${isExpanded ? 'w-full h-full' : 'flex items-center justify-between gap-3'
-            }`}
+          $isExpanded={isExpanded}
         >
           {/* Handle (Visual only, always at top) */}
-          <motion.div
+          <HandleContainer
             layout="position"
             style={{ x: dragXHandle }}
-            className={`absolute top-0 left-0 right-0 flex justify-center pt-3 cursor-grab active:cursor-grabbing touch-none z-30 ${isExpanded ? '' : ''}`}
+            $isExpanded={isExpanded}
             onClick={() => setIsExpanded(!isExpanded)}
           >
-            <div className="w-10 h-1 bg-gray-300 rounded-full" />
-          </motion.div>
+            <Handle />
+          </HandleContainer>
 
           {/* Content Switcher */}
           <AnimatePresence mode="popLayout" initial={false}>
             {isExpanded ? (
-              <motion.div
+              <ExpandedContent
                 layout
                 key="expanded-content"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
-                className="w-full h-full px-0 origin-center"
               >
-                <motion.div
-                  className="pt-10 pb-6"
-                >
+                <ExpandedInner>
                   {/* Controls Row */}
-                  <div className="flex items-center justify-center gap-4 mb-1">
+                  <ControlsRow>
                     <SkipButton direction="backward" onClick={onRewind} seconds={15} className="w-14 h-14">
                       <BackwardIcon size={32} className="ml-1 mb-0.5 text-gray-600" />
                     </SkipButton>
 
-                    <div className="relative flex items-center justify-center" style={{ width: 64, height: 64 }}>
+                    <ProgressContainer>
                       {!isTransitioning && (
                         <ProgressRing
                           progress={visualProgress}
@@ -258,48 +328,53 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                         size="expanded"
                         buttonVariants={buttonVariants}
                       />
-                    </div>
+                    </ProgressContainer>
 
                     <SkipButton direction="forward" onClick={onForward} seconds={15} className="w-14 h-14">
                       <ForwardIcon size={32} className="mr-1 mb-0.5 text-gray-600" />
                     </SkipButton>
-                  </div>
+                  </ControlsRow>
 
                   {/* Title */}
-                  <div
-                    className="text-center cursor-pointer mt-1"
-                    onClick={onClick}
+                  <TitleSection
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClick();
+                    }}
+                    dragListener={false}
+                    onPointerDown={(e) => e.stopPropagation()}
                   >
-                    <div ref={containerRef} className="overflow-hidden leading-tight px-8">
-                      <motion.span
+                    <TitleContainer ref={containerRef}>
+                      <TitleText
                         ref={titleRef}
                         animate={controls}
-                        className="font text-md text-gray-800 whitespace-nowrap inline-block leading-none pb-0.5"
                       >
                         {currentStop.title}
-                      </motion.span>
-                    </div>
-                  </div>
-                </motion.div>
-              </motion.div>
+                      </TitleText>
+                    </TitleContainer>
+                  </TitleSection>
+                </ExpandedInner>
+              </ExpandedContent>
             ) : (
-              <motion.div
+              <MinimizedContent
                 layout
                 key="minimized-content"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
-                className="flex items-center flex-1 min-w-0 px-8 py-2 pt-4 gap-3 w-full"
-                style={{ height: '80px' }}
               >
-                <motion.div className="flex items-center flex-1 min-w-0 gap-3">
-                  <div
-                    onClick={() => setIsExpanded(true)}
-                    className="flex items-center flex-1 min-w-0 cursor-pointer"
+                <MinimizedInner>
+                  <MinimizedTitleSection
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsExpanded(true);
+                    }}
+                    dragListener={false}
+                    onPointerDown={(e) => e.stopPropagation()}
                   >
-                    <span className="font text-md text-gray-800 truncate">{currentStop.title}</span>
-                  </div>
+                    <MinimizedTitle>{currentStop.title}</MinimizedTitle>
+                  </MinimizedTitleSection>
 
                   <PlayPauseButton
                     isPlaying={isPlaying}
@@ -308,12 +383,12 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                     variant="mini"
                     buttonVariants={buttonVariants}
                   />
-                </motion.div>
-              </motion.div>
+                </MinimizedInner>
+              </MinimizedContent>
             )}
           </AnimatePresence>
-        </motion.div>
-      </div>
-    </motion.div>
+        </ForegroundCard>
+      </InnerContainer>
+    </Container>
   );
 };

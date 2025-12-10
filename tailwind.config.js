@@ -1,3 +1,5 @@
+import { colors, spacing, borderRadius, shadows, typography } from './src/theme/tokens.ts';
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -13,9 +15,11 @@ export default {
   ],
   theme: {
     extend: {
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-      },
+      colors,
+      spacing,
+      borderRadius,
+      boxShadow: shadows,
+      fontFamily: typography.fontFamily,
     },
   },
   plugins: [],

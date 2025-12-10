@@ -1,9 +1,21 @@
 import React from 'react';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 
 interface MobileFrameProps {
     children: React.ReactNode;
     className?: string;
 }
+
+const OuterContainer = styled.div`
+  ${tw`h-full min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans`}
+  min-height: ${({ theme }) => theme.platform.viewport.height};
+`;
+
+const InnerFrame = styled.div`
+  ${tw`w-full max-w-[400px] h-full md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex flex-col`}
+  padding-bottom: ${({ theme }) => theme.platform.safeArea.bottom};
+`;
 
 /**
  * Container that provides mobile device frame styling.
@@ -16,10 +28,10 @@ export const MobileFrame: React.FC<MobileFrameProps> = ({
     className = ''
 }) => {
     return (
-        <div className={`h-full min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans ${className}`} style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
-            <div className="w-full max-w-[400px] h-full md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl safe-area-insets flex flex-col" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
+        <OuterContainer className={className}>
+            <InnerFrame>
                 {children}
-            </div>
-        </div>
+            </InnerFrame>
+        </OuterContainer>
     );
 };

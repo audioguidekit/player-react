@@ -1,5 +1,7 @@
 import React from 'react';
 import { ArrowUpToLine, Clock3, Headphones, Sparkles, RotateCw } from 'lucide-react';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 import { TourData } from '../types';
 
 interface StartCardProps {
@@ -14,6 +16,73 @@ interface StartCardProps {
   tourProgress?: number;
   onResetProgress?: () => void;
 }
+
+const Container = styled.div`
+  ${tw`px-8 pt-8 flex flex-col items-center text-center w-full`}
+  padding-bottom: calc(1rem + ${({ theme }) => theme.platform.safeArea.bottom});
+`;
+
+const IconContainer = styled.div`
+  ${tw`w-20 h-20 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center justify-center mb-6 border border-gray-50`}
+`;
+
+const TitleSection = styled.div`
+  ${tw`mb-0`}
+`;
+
+const Title = styled.h1`
+  ${tw`text-3xl font-bold text-gray-900 mb-2 tracking-tight`}
+`;
+
+const MetaContainer = styled.div`
+  ${tw`flex items-center gap-6 mb-4 text-gray-500 text-sm font-semibold uppercase tracking-wider`}
+`;
+
+const MetaItem = styled.div`
+  ${tw`flex items-center gap-2`}
+`;
+
+const Description = styled.p`
+  ${tw`text-gray-500 text-base mb-6 leading-relaxed px-2`}
+`;
+
+const ErrorBox = styled.div`
+  ${tw`w-full bg-red-50 border border-red-200 rounded-2xl p-4 mb-4`}
+`;
+
+const ErrorTitle = styled.p`
+  ${tw`text-red-700 text-sm font-medium mb-1`}
+`;
+
+const ErrorMessage = styled.p`
+  ${tw`text-red-600 text-xs leading-relaxed`}
+`;
+
+const ErrorTip = styled.p`
+  ${tw`text-red-500 text-xs mt-2 italic`}
+`;
+
+const ActionButton = styled.button<{ $disabled: boolean }>(({ $disabled }) => [
+  tw`w-full bg-black text-white py-4 rounded-3xl font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-xl relative overflow-hidden`,
+  $disabled && tw`opacity-50 cursor-not-allowed active:scale-100`,
+]);
+
+const ProgressBar = styled.div<{ $progress: number }>`
+  ${tw`absolute inset-0 bg-gray-700 transition-all duration-300`}
+  width: ${({ $progress }) => $progress}%;
+`;
+
+const ButtonContent = styled.span`
+  ${tw`relative z-10 flex items-center gap-3`}
+`;
+
+const OfflineBox = styled.div`
+  ${tw`w-full bg-amber-50 border border-amber-200 rounded-2xl mt-4 p-4`}
+`;
+
+const OfflineMessage = styled.p`
+  ${tw`text-amber-900 text-sm leading-relaxed`}
+`;
 
 export const StartCard: React.FC<StartCardProps> = ({
   tour,
@@ -56,37 +125,37 @@ export const StartCard: React.FC<StartCardProps> = ({
 
   return (
     // No fixed height. We let the content define the height, and the parent measures it.
-    <div className="px-8 pt-8 flex flex-col items-center text-center w-full" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+    <Container>
       {/* Icon Container */}
-      <div className="w-20 h-20 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center justify-center mb-6 border border-gray-50">
+      <IconContainer>
         <Headphones size={32} className="text-black" strokeWidth={1.5} />
-      </div>
+      </IconContainer>
 
-      <div className="mb-0">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">{tour.title}</h1>
-      </div>
-      <div className="flex items-center gap-6 mb-4 text-gray-500 text-sm font-semibold uppercase tracking-wider">
-        <div className="flex items-center gap-2">
+      <TitleSection>
+        <Title>{tour.title}</Title>
+      </TitleSection>
+      <MetaContainer>
+        <MetaItem>
           <Clock3 size={18} className="text-gray-400" />
           <span>{tour.totalDuration}</span>
-        </div>
-      </div>
-      <p className="text-gray-500 text-base mb-6 leading-relaxed px-2">
+        </MetaItem>
+      </MetaContainer>
+      <Description>
         {tour.description}
-      </p>
+      </Description>
 
       {/* Download Error Message */}
       {downloadError && (
-        <div className="w-full bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
-          <p className="text-red-700 text-sm font-medium mb-1">Download Failed</p>
-          <p className="text-red-600 text-xs leading-relaxed">{downloadError}</p>
-          <p className="text-red-500 text-xs mt-2 italic">
+        <ErrorBox>
+          <ErrorTitle>Download Failed</ErrorTitle>
+          <ErrorMessage>{downloadError}</ErrorMessage>
+          <ErrorTip>
             💡 Tip: Use HTTPS or access via localhost for offline downloads
-          </p>
-        </div>
+          </ErrorTip>
+        </ErrorBox>
       )}
 
-      <button
+      <ActionButton
         onClick={(e) => {
           e.stopPropagation();
 
@@ -105,18 +174,15 @@ export const StartCard: React.FC<StartCardProps> = ({
           }
         }}
         disabled={isDownloading}
-        className="w-full bg-black text-white py-4 rounded-3xl font-bold text-lg flex items-center justify-center gap-3 hover:bg-gray-900 active:scale-[0.98] transition-all shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 relative overflow-hidden"
+        $disabled={isDownloading}
       >
         {/* Progress bar background */}
         {isDownloading && (
-          <div
-            className="absolute inset-0 bg-gray-700 transition-all duration-300"
-            style={{ width: `${downloadProgress}%` }}
-          />
+          <ProgressBar $progress={downloadProgress} />
         )}
 
         {/* Button content */}
-        <span className="relative z-10 flex items-center gap-3">
+        <ButtonContent>
           {isDownloading ? (
             <>
               <Sparkles size={20} strokeWidth={2.5} className="animate-pulse" />
@@ -150,16 +216,16 @@ export const StartCard: React.FC<StartCardProps> = ({
               Start tour
             </>
           )}
-        </span>
-      </button>
+        </ButtonContent>
+      </ActionButton>
       {/* Offline Download Message - Only shown when offlineAvailable=true and not downloaded */}
       {tour.offlineAvailable === true && !isDownloaded && !isDownloading && (
-        <div className="w-full bg-amber-50 border border-amber-200 rounded-2xl mt-4 p-4">
-          <p className="text-amber-900 text-sm leading-relaxed">
+        <OfflineBox>
+          <OfflineMessage>
             Download this tour now to enjoy it offline in areas with limited connectivity.
-          </p>
-        </div>
+          </OfflineMessage>
+        </OfflineBox>
       )}
-    </div>
+    </Container>
   );
 };

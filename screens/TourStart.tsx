@@ -1,7 +1,46 @@
 import React from 'react';
 import { motion, useTransform, MotionValue, useMotionTemplate } from 'framer-motion';
 import { MessageCircleMore, Languages } from 'lucide-react';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 import { TourData } from '../types';
+
+const Container = styled.div`
+  ${tw`absolute inset-0 w-full h-full bg-black z-0 overflow-hidden`}
+`;
+
+const MediaContainer = styled(motion.div)`
+  ${tw`relative w-full h-full origin-center`}
+`;
+
+const Video = styled.video`
+  ${tw`w-full h-full object-cover`}
+`;
+
+const Image = styled.img`
+  ${tw`w-full h-full object-cover`}
+`;
+
+const TopGradient = styled.div`
+  ${tw`absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10`}
+`;
+
+const BottomGradient = styled.div`
+  ${tw`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80`}
+`;
+
+const DarkOverlay = styled(motion.div)`
+  ${tw`absolute inset-0 bg-black`}
+`;
+
+const TopButtonsContainer = styled.div`
+  ${tw`absolute left-6 right-6 flex justify-between z-10`}
+  top: calc(env(safe-area-inset-top, 0px) + 1rem);
+`;
+
+const ActionButton = styled.button`
+  ${tw`w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors`}
+`;
 
 interface TourStartProps {
   tour: TourData;
@@ -60,55 +99,41 @@ export const TourStart: React.FC<TourStartProps> = ({
   const blurFilter = useMotionTemplate`blur(${blurAmount}px)`;
 
   return (
-    <div className="absolute inset-0 w-full h-full bg-black z-0 overflow-hidden">
+    <Container>
       {/* Background Image Area */}
-      <motion.div
-        style={{ scale, y, filter: blurFilter }}
-        className="relative w-full h-full origin-center"
-      >
+      <MediaContainer style={{ scale, y, filter: blurFilter }}>
         {isVideo ? (
-          <video
+          <Video
             src={tour.image}
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
           />
         ) : (
-          <img
+          <Image
             src={tour.image}
             alt={tour.title}
-            className="w-full h-full object-cover"
           />
         )}
 
         {/* Existing Gradients for text readability (always present) */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/10" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-80" />
+        <TopGradient />
+        <BottomGradient />
 
         {/* Dynamic Dark Backdrop Overlay - Changes intensity based on drag */}
-        <motion.div
-          style={{ opacity: overlayOpacity }}
-          className="absolute inset-0 bg-black"
-        />
+        <DarkOverlay style={{ opacity: overlayOpacity }} />
 
         {/* Top Buttons */}
-        <div className="absolute left-6 right-6 flex justify-between z-10" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 1rem)' }}>
-          <button
-            onClick={onOpenRating}
-            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-          >
+        <TopButtonsContainer>
+          <ActionButton onClick={onOpenRating}>
             <MessageCircleMore size={24} />
-          </button>
-          <button
-            onClick={onOpenLanguage}
-            className="w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
-          >
+          </ActionButton>
+          <ActionButton onClick={onOpenLanguage}>
             <Languages size={24} />
-          </button>
-        </div>
-      </motion.div>
-    </div>
+          </ActionButton>
+        </TopButtonsContainer>
+      </MediaContainer>
+    </Container>
   );
 };

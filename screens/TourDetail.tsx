@@ -1,9 +1,20 @@
 import React, { useEffect } from 'react';
 import { motion, useSpring, useTransform, animate } from 'framer-motion';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 import { TourData } from '../types';
 import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
 import { TourHeaderAlt } from '../components/TourHeaderAlt';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
+
+const Container = styled.div`
+  ${tw`flex flex-col h-full relative w-full bg-white pb-12`}
+  padding-top: env(safe-area-inset-top, 0px);
+`;
+
+const ScrollableList = styled(motion.div)`
+  ${tw`flex-1 overflow-y-auto overflow-x-hidden p-6 pb-32`}
+`;
 
 interface TourDetailProps {
   tour: TourData;
@@ -19,6 +30,7 @@ interface TourDetailProps {
   completedStopsCount: number;
   isStopCompleted: (stopId: string) => boolean;
   scrollToStopId?: string | null;
+  scrollTrigger?: number | null;
   onScrollComplete?: () => void;
 }
 
@@ -36,12 +48,12 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   completedStopsCount,
   isStopCompleted,
   scrollToStopId,
+  scrollTrigger,
   onScrollComplete
 }) => {
   // Slower spring: reduced stiffness from 75 to 35 to match counter
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const lastScrolledIdRef = React.useRef<string | null>(null);
   const rafIdRef = React.useRef<number | null>(null);
 
   useEffect(() => {
@@ -51,76 +63,84 @@ export const TourDetail: React.FC<TourDetailProps> = ({
 
   // Handle scrolling to specific stop
   useEffect(() => {
-    // Cancel any existing animation
     if (rafIdRef.current !== null) {
       cancelAnimationFrame(rafIdRef.current);
       rafIdRef.current = null;
     }
 
-    if (scrollToStopId && containerRef.current && scrollToStopId !== lastScrolledIdRef.current) {
-      lastScrolledIdRef.current = scrollToStopId;
-      const element = document.getElementById(`stop-${scrollToStopId}`);
-      if (element) {
-        // Calculate scroll position to center the element in the VISIBLE area
-        // The container has pb-32 (128px) padding at the bottom which we should exclude from "center"
-        const container = containerRef.current;
-        const containerHeight = container.clientHeight;
-        const paddingBottom = 128; // pb-32
-        const visibleHeight = containerHeight - paddingBottom;
-
-        // Get element position relative to container
-        const elementRect = element.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
-        const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
-
-        // Calculate target scroll top
-        // We want the element center to be at the visible area center
-        const targetScrollTop = Math.max(0, relativeTop - (visibleHeight / 2) + (elementRect.height / 2));
-
-        // Custom smooth scroll implementation using requestAnimationFrame
-        const startScrollTop = container.scrollTop;
-        const distance = targetScrollTop - startScrollTop;
-        const duration = 800; // 800ms
-        const startTime = performance.now();
-
-        // Ease In Out Cubic function - slower at the ends
-        const easeInOutCubic = (t: number) => {
-          return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        };
-
-        const animateScroll = (currentTime: number) => {
-          const elapsed = currentTime - startTime;
-
-          if (elapsed < duration) {
-            const t = elapsed / duration;
-            const easedT = easeInOutCubic(t);
-            container.scrollTop = startScrollTop + (distance * easedT);
-            rafIdRef.current = requestAnimationFrame(animateScroll);
-          } else {
-            container.scrollTop = targetScrollTop;
-            rafIdRef.current = null;
-            onScrollComplete?.();
-            lastScrolledIdRef.current = null;
-          }
-        };
-
-        rafIdRef.current = requestAnimationFrame(animateScroll);
-      }
+    if (!scrollToStopId || !containerRef.current) {
+      return;
     }
 
-    // Cleanup function
+    const elementId = `stop-${scrollToStopId}`;
+    const element = document.getElementById(elementId);
+    
+    if (!element) {
+      onScrollComplete?.();
+      return;
+    }
+
+    const container = containerRef.current;
+    const stopIndex = tour.stops.findIndex(s => s.id === scrollToStopId);
+    const isFirstStop = stopIndex === 0;
+    
+    let targetScrollTop: number;
+    
+    if (isFirstStop) {
+      targetScrollTop = 0;
+    } else {
+      const containerHeight = container.clientHeight;
+      const paddingBottom = 128;
+      const visibleHeight = containerHeight - paddingBottom;
+
+      const elementRect = element.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
+      const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
+
+      targetScrollTop = Math.max(0, relativeTop - (visibleHeight / 2) + (elementRect.height / 2));
+    }
+
+    const startScrollTop = container.scrollTop;
+    const distance = targetScrollTop - startScrollTop;
+    
+    if (Math.abs(distance) < 1) {
+      onScrollComplete?.();
+      return;
+    }
+    
+    const duration = 400;
+    const startTime = performance.now();
+    const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4);
+
+    const animateScroll = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+
+      if (elapsed < duration) {
+        const t = elapsed / duration;
+        const easedT = easeOutQuart(t);
+        container.scrollTop = startScrollTop + (distance * easedT);
+        rafIdRef.current = requestAnimationFrame(animateScroll);
+      } else {
+        container.scrollTop = targetScrollTop;
+        rafIdRef.current = null;
+        onScrollComplete?.();
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(animateScroll);
+
     return () => {
       if (rafIdRef.current !== null) {
         cancelAnimationFrame(rafIdRef.current);
         rafIdRef.current = null;
       }
     };
-  }, [scrollToStopId, onScrollComplete]);
+  }, [scrollTrigger]);
 
   const width = useTransform(progressSpring, (value) => `${value}%`);
 
   return (
-    <div className="flex flex-col h-full relative w-full bg-white pb-12" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+    <Container>
 
       <TourHeaderAlt
         onBack={onBack}
@@ -130,13 +150,13 @@ export const TourDetail: React.FC<TourDetailProps> = ({
       />
 
       {/* Scrollable List */}
-      <motion.div
+      <ScrollableList
         ref={containerRef}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 20 }}
         transition={{ delay: 0.2, duration: 0.25, type: "spring" }}
-        className="flex-1 overflow-y-auto overflow-x-hidden p-6 pb-32 no-scrollbar"
+        className="no-scrollbar"
       >
         {tour.stops.map((stop, index) => {
           // Render audio stops with compact card
@@ -158,7 +178,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
           // Render other content types with FeedItemRenderer
           return <FeedItemRenderer key={stop.id} item={stop} />;
         })}
-      </motion.div>
-    </div>
+      </ScrollableList>
+    </Container>
   );
 };

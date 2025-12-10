@@ -1,5 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 
 interface SkipButtonProps {
     direction: 'forward' | 'backward';
@@ -10,6 +12,16 @@ interface SkipButtonProps {
     children: React.ReactNode;
 }
 
+const Container = styled(motion.div)`
+  ${tw`relative z-10 flex items-center justify-center`}
+`;
+
+const Button = styled.button<{ $disabled: boolean }>(({ $disabled }) => [
+  tw`w-12 h-12 rounded-full text-gray-950 flex items-center justify-center`,
+  tw`active:scale-90 transition-transform duration-100 ease-in-out`,
+  $disabled && tw`opacity-40`,
+]);
+
 export const SkipButton: React.FC<SkipButtonProps> = ({
     direction,
     seconds = 15,
@@ -19,18 +31,19 @@ export const SkipButton: React.FC<SkipButtonProps> = ({
     children
 }) => {
     return (
-        <motion.div layout className="relative z-10 flex items-center justify-center">
-            <button
+        <Container layout>
+            <Button
                 onClick={(e) => {
                     e.stopPropagation();
                     if (!disabled) onClick();
                 }}
-                className={`w-12 h-12 rounded-full text-gray-950 flex items-center justify-center hover:bg-gray-100 active:scale-90 transition-transform duration-100 ease-in-out ${disabled ? 'opacity-40' : ''} ${className}`}
                 onPointerDownCapture={(e) => e.stopPropagation()}
                 disabled={disabled}
+                $disabled={disabled}
+                className={className}
             >
                 {children}
-            </button>
-        </motion.div>
+            </Button>
+        </Container>
     );
 };

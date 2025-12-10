@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform, useAnimation, PanInfo, MotionValue } from 'framer-motion';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 
 interface MainSheetProps {
   isExpanded: boolean;
@@ -10,6 +12,32 @@ interface MainSheetProps {
   sheetY?: MotionValue<number>;
   onLayoutChange?: (collapsedY: number) => void;
 }
+
+const Container = styled.div`
+  ${tw`absolute inset-0 pointer-events-none z-20 overflow-hidden`}
+`;
+
+const Backdrop = styled.div`
+  ${tw`absolute inset-0 bg-black/20 z-10 pointer-events-auto`}
+`;
+
+const SheetContainer = styled(motion.div)<{ $isExpanded: boolean }>`
+  ${tw`absolute inset-x-0 bottom-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.1)] overflow-hidden z-20 flex flex-col pointer-events-auto`}
+  padding-bottom: max(${({ theme }) => theme.platform.safeArea.bottom}, 0px);
+  top: ${({ $isExpanded, theme }) => $isExpanded ? `calc(-1 * ${theme.platform.safeArea.top})` : '0'};
+`;
+
+const ContentArea = styled.div`
+  ${tw`relative flex-1 w-full`}
+`;
+
+const StartContentLayer = styled(motion.div)`
+  ${tw`absolute inset-x-0 top-0 z-10`}
+`;
+
+const DetailContentLayer = styled(motion.div)`
+  ${tw`absolute inset-0 z-20 h-full flex flex-col`}
+`;
 
 export const MainSheet: React.FC<MainSheetProps> = ({
   isExpanded,
@@ -132,17 +160,14 @@ export const MainSheet: React.FC<MainSheetProps> = ({
   const detailPointerEvents = useTransform(y, (latest) => latest < (COLLAPSED_Y / 2) ? 'auto' : 'none');
 
   return (
-    <div ref={containerRef} className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-      
+    <Container ref={containerRef}>
+
       {/* Backdrop for Expanded State */}
       {isExpanded && (
-        <div 
-          className="absolute inset-0 bg-black/20 z-10 pointer-events-auto"
-          onClick={onCollapse}
-        />
+        <Backdrop onClick={onCollapse} />
       )}
 
-      <motion.div
+      <SheetContainer
         drag={isExpanded ? false : "y"}
         dragConstraints={{ top: EXPANDED_Y, bottom: COLLAPSED_Y }}
         dragElastic={0.1}
@@ -153,33 +178,29 @@ export const MainSheet: React.FC<MainSheetProps> = ({
           y,
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
-          top: isExpanded ? 'calc(-1 * env(safe-area-inset-top, 0px))' : '0',
-          paddingBottom: 'max(env(safe-area-inset-bottom), 0px)',
         }}
-        className="absolute inset-x-0 bottom-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.1)] overflow-hidden z-20 flex flex-col pointer-events-auto"
+        $isExpanded={isExpanded}
       >
         {/* Content Area */}
-        <div className="relative flex-1 w-full">
-          
+        <ContentArea>
+
           {/* Start Content Layer - We wrap this in a ref to measure it */}
-          <motion.div 
+          <StartContentLayer
             style={{ opacity: startOpacity, pointerEvents: startPointerEvents }}
-            className="absolute inset-x-0 top-0 z-10"
           >
             <div ref={contentRef}>
               {startContent}
             </div>
-          </motion.div>
+          </StartContentLayer>
 
           {/* Detail Content Layer */}
-          <motion.div 
+          <DetailContentLayer
             style={{ opacity: detailOpacity, pointerEvents: detailPointerEvents }}
-            className="absolute inset-0 z-20 h-full flex flex-col"
           >
             {detailContent}
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
+          </DetailContentLayer>
+        </ContentArea>
+      </SheetContainer>
+    </Container>
   );
 };

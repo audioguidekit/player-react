@@ -2,51 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  width: 100%;
-  height: 100%;
-}
+/*
+  Note: Base HTML/body/#root styles are now handled by GlobalStyles.tsx
+  in src/theme/GlobalStyles.tsx via styled-components.
 
-/* iOS Safari fix */
-@supports (-webkit-touch-callout: none) {
-  html {
-    height: -webkit-fill-available;
-  }
-}
+  Kept here only:
+  - Tailwind directives (required)
+  - Custom utility classes (safe-area-insets, ios-viewport-fix)
+  - Custom animations (audio-playing-loader, audio-spinner-ring)
+*/
 
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  /* Safe area insets will be handled by the main app container */
-  font-family: 'Inter', sans-serif;
-  background-color: #ffffff;
-  overscroll-behavior: none;
-  /* Use JavaScript-calculated viewport height, fallback to 100vh */
-  height: calc(var(--vh, 1vh) * 100);
-}
-
-/* iOS Safari fix */
-@supports (-webkit-touch-callout: none) {
-  body {
-    min-height: -webkit-fill-available;
-  }
-}
-
-#root {
-  width: 100%;
-  /* Use JavaScript-calculated viewport height, fallback to 100vh */
-  height: calc(var(--vh, 1vh) * 100);
-}
-
-/* iOS Safari fix */
-@supports (-webkit-touch-callout: none) {
-  #root {
-    min-height: -webkit-fill-available;
-  }
-}
-
-/* Respect iOS safe areas (notch, home indicator) for the main app shell */
+/* Utility class for iOS safe areas (used in legacy components if any) */
 @supports (padding: max(env(safe-area-inset-top), 0px)) {
   .safe-area-insets {
     padding-top: max(env(safe-area-inset-top), 0px);
@@ -56,21 +22,8 @@ body {
   }
 }
 
-/* iOS Safari viewport height fix */
+/* Utility class for iOS viewport fix (used in legacy components if any) */
 @supports (-webkit-touch-callout: none) {
-  /* iOS Safari specific */
-  html {
-    height: -webkit-fill-available;
-  }
-  
-  body {
-    min-height: -webkit-fill-available;
-  }
-  
-  #root {
-    min-height: -webkit-fill-available;
-  }
-  
   .ios-viewport-fix {
     min-height: -webkit-fill-available;
   }

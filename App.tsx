@@ -78,14 +78,13 @@ const App: React.FC = () => {
     tour,
     allowAutoPlay,
     onTrackChange: (stopId) => {
-      // Auto-scroll to the new track
-      setScrollToStopId(stopId);
+      setScrollToStopId({ id: stopId, timestamp: Date.now() });
     }
   });
 
   // Local state for app flow
   const [hasStarted, setHasStarted] = useState(false);
-  const [scrollToStopId, setScrollToStopId] = useState<string | null>(null);
+  const [scrollToStopId, setScrollToStopId] = useState<{ id: string; timestamp: number } | null>(null);
   const [hasShownCompletionSheet, setHasShownCompletionSheet] = useState(false);
 
   const getArtworkType = (src: string | undefined) => {
@@ -314,13 +313,6 @@ const App: React.FC = () => {
     );
   }, [tour, currentStopId, audioPlayer.progress, progressTracking]);
 
-  // Auto-scroll
-  useEffect(() => {
-    if (currentStopId && hasStarted) {
-      setScrollToStopId(currentStopId);
-    }
-  }, [currentStopId, hasStarted]);
-
   // Tour Completion Check
   useEffect(() => {
     if (!tour || !currentStopId) return;
@@ -362,7 +354,7 @@ const App: React.FC = () => {
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-700"
+              className="px-4 py-2 bg-zinc-900 text-white rounded-lg"
             >
               Retry
             </button>
@@ -427,7 +419,8 @@ const App: React.FC = () => {
                   totalMinutes={totalMinutes}
                   completedStopsCount={progressTracking.getCompletedStopsCount()}
                   isStopCompleted={progressTracking.isStopCompleted}
-                  scrollToStopId={scrollToStopId}
+                  scrollToStopId={scrollToStopId?.id ?? null}
+                  scrollTrigger={scrollToStopId?.timestamp ?? null}
                   onScrollComplete={() => setScrollToStopId(null)}
                 />
               }
@@ -443,7 +436,9 @@ const App: React.FC = () => {
                   onRewind={() => audioPlayer.skipBackward(15)}
                   onForward={() => audioPlayer.skipForward(15)}
                   onClick={() => {
-                    if (currentStopId) setScrollToStopId(currentStopId);
+                    if (currentStopId) {
+                      setScrollToStopId({ id: currentStopId, timestamp: Date.now() });
+                    }
                   }}
                   progress={audioPlayer.progress}
                   isExpanded={isMiniPlayerExpanded}

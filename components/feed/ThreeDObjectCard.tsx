@@ -1,4 +1,6 @@
 import React from 'react';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 import { ThreeDObjectStop } from '../../types';
 import '@google/model-viewer';
 
@@ -28,6 +30,26 @@ interface ThreeDObjectCardProps {
   item: ThreeDObjectStop;
 }
 
+const Container = styled.div`
+  ${tw`bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-100`}
+`;
+
+const ViewerContainer = styled.div`
+  ${tw`w-full h-80 bg-gradient-to-br from-gray-50 to-gray-100 relative`}
+`;
+
+const SafariFallback = styled.div`
+  ${tw`w-full h-full flex items-center justify-center px-6 text-center text-sm text-gray-600`}
+`;
+
+const CaptionContainer = styled.div`
+  ${tw`p-6`}
+`;
+
+const Caption = styled.p`
+  ${tw`text-gray-700 text-sm leading-relaxed`}
+`;
+
 export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {
   // Safari (especially iOS) can lose the WebGL context and crash the page when
   // model-viewer initializes heavy GLB files. Detect Safari and render a safe
@@ -35,12 +57,12 @@ export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {
   const isSafari = typeof navigator !== 'undefined' && /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-100">
-      <div className="w-full h-80 bg-gradient-to-br from-gray-50 to-gray-100 relative">
+    <Container>
+      <ViewerContainer>
         {isSafari ? (
-          <div className="w-full h-full flex items-center justify-center px-6 text-center text-sm text-gray-600">
+          <SafariFallback>
             3D preview is not available on Safari yet. Please open in Chrome or use the offline guide.
-          </div>
+          </SafariFallback>
         ) : (
           <model-viewer
             src={item.modelUrl}
@@ -59,12 +81,12 @@ export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {
             }}
           />
         )}
-      </div>
+      </ViewerContainer>
       {item.caption && (
-        <div className="p-6">
-          <p className="text-gray-700 text-sm leading-relaxed">{item.caption}</p>
-        </div>
+        <CaptionContainer>
+          <Caption>{item.caption}</Caption>
+        </CaptionContainer>
       )}
-    </div>
+    </Container>
   );
 };

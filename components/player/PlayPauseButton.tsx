@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { Play, Pause, Check } from 'lucide-react';
+import tw from 'twin.macro';
+import styled from 'styled-components';
 
 interface PlayPauseButtonProps {
     isPlaying: boolean;
@@ -13,6 +15,38 @@ interface PlayPauseButtonProps {
     buttonVariants?: Variants;
 }
 
+interface StyledButtonProps {
+    $size: 'sm' | 'md' | 'lg' | 'expanded';
+    $variant: 'default' | 'mini';
+    $showCheckmark: boolean;
+}
+
+const StyledButton = styled(motion.button)<StyledButtonProps>(({ $size, $variant, $showCheckmark }) => [
+  tw`rounded-full flex items-center justify-center transition-colors relative overflow-hidden`,
+
+  // Size variants
+  $size === 'sm' && tw`w-10 h-10`,
+  $size === 'md' && tw`w-14 h-14`,
+  $size === 'lg' && tw`w-16 h-16`,
+  $size === 'expanded' && tw`w-14 h-14`,
+
+  // Mini variant styling
+  $variant === 'mini' && tw`text-gray-950 shrink-0`,
+
+  // Default variant styling
+  $variant === 'default' && tw`shadow-lg z-10`,
+  $variant === 'default' && $showCheckmark && tw`bg-green-500 text-white`,
+  $variant === 'default' && !$showCheckmark && tw`bg-black text-white`,
+]);
+
+const IconContainer = styled(motion.div)`
+  ${tw`absolute inset-0 flex items-center justify-center`}
+`;
+
+const PlayIconContainer = styled(motion.div)`
+  ${tw`absolute inset-0 flex items-center justify-center pl-0.5`}
+`;
+
 const iconVariants = {
     initial: { scale: 0.5, opacity: 0 },
     animate: { scale: 1, opacity: 1 },
@@ -22,10 +56,10 @@ const iconVariants = {
 const iconTransition = { duration: 0.25, ease: 'easeOut' } as const;
 
 const sizeConfig = {
-    sm: { button: 'w-10 h-10', icon: 16, checkSize: 16 },
-    md: { button: 'w-14 h-14', icon: 24, checkSize: 28 },
-    lg: { button: 'w-16 h-16', icon: 24, checkSize: 28 },
-    expanded: { button: 'w-14 h-14', icon: 24, checkSize: 28 }
+    sm: { icon: 16, checkSize: 16 },
+    md: { icon: 24, checkSize: 28 },
+    lg: { icon: 24, checkSize: 28 },
+    expanded: { icon: 24, checkSize: 28 }
 };
 
 /**
@@ -42,18 +76,15 @@ export const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
     className = '',
     buttonVariants
 }) => {
-    const { button, icon, checkSize } = sizeConfig[size];
+    const { icon, checkSize } = sizeConfig[size];
     const showCheckmark = isCompleting || isTransitioning;
-
-    // Mini variant (minimized player) has different styling
     const isMini = variant === 'mini';
-    const baseClass = isMini
-        ? `${button} rounded-full text-gray-950 flex items-center justify-center shrink-0 hover:bg-gray-100 transition-colors relative overflow-hidden`
-        : `${button} rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden relative ${showCheckmark ? 'bg-green-500 text-white' : 'bg-black text-white hover:bg-gray-800'
-        }`;
 
     return (
-        <motion.button
+        <StyledButton
+            $size={size}
+            $variant={variant}
+            $showCheckmark={showCheckmark}
             variants={buttonVariants}
             initial={buttonVariants ? 'initial' : undefined}
             animate={buttonVariants ? 'animate' : undefined}
@@ -64,48 +95,45 @@ export const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
                 e.stopPropagation();
                 onClick();
             }}
-            className={`${baseClass} ${className}`}
+            className={className}
             onPointerDownCapture={(e) => e.stopPropagation()}
         >
             <AnimatePresence mode="popLayout" initial={false}>
                 {showCheckmark && !isMini ? (
-                    <motion.div
+                    <IconContainer
                         key="check"
                         variants={iconVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
                         transition={iconTransition}
-                        className="absolute inset-0 flex items-center justify-center"
                     >
                         <Check size={checkSize} strokeWidth={5} />
-                    </motion.div>
+                    </IconContainer>
                 ) : isPlaying ? (
-                    <motion.div
+                    <IconContainer
                         key="pause"
                         variants={iconVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
                         transition={iconTransition}
-                        className="absolute inset-0 flex items-center justify-center"
                     >
                         <Pause size={isMini ? 16 : icon} fill="currentColor" />
-                    </motion.div>
+                    </IconContainer>
                 ) : (
-                    <motion.div
+                    <PlayIconContainer
                         key="play"
                         variants={iconVariants}
                         initial="initial"
                         animate="animate"
                         exit="exit"
                         transition={iconTransition}
-                        className="absolute inset-0 flex items-center justify-center pl-0.5"
                     >
                         <Play size={isMini ? 16 : icon} fill="currentColor" />
-                    </motion.div>
+                    </PlayIconContainer>
                 )}
             </AnimatePresence>
-        </motion.button>
+        </StyledButton>
     );
 };

@@ -175,9 +175,49 @@ export const useAudioPlayer = ({
       console.error('Failed to load:', audioRef.current?.src);
     };
 
-    const handlePlay = () => debugLog('▶️ Audio playing');
+    // Track stall recovery attempts
+    let stallRecoveryAttempts = 0;
+    const MAX_STALL_RECOVERY_ATTEMPTS = 2;
+    let stallRecoveryTimeout: NodeJS.Timeout | null = null;
+
+    const handlePlay = () => {
+      debugLog('▶️ Audio playing');
+      // Reset stall recovery attempts when audio plays successfully
+      stallRecoveryAttempts = 0;
+    };
     const handlePause = () => debugLog('⏸️ Audio paused');
-    const handleStalled = () => debugWarn('⚠️ Audio stalled');
+
+    const handleStalled = () => {
+      debugWarn('⚠️ Audio stalled');
+
+      // Attempt recovery if not too many attempts
+      if (stallRecoveryAttempts < MAX_STALL_RECOVERY_ATTEMPTS) {
+        stallRecoveryAttempts++;
+        debugLog(`🔄 Attempting stall recovery (${stallRecoveryAttempts}/${MAX_STALL_RECOVERY_ATTEMPTS})`);
+
+        // Clear any existing recovery timeout
+        if (stallRecoveryTimeout) {
+          clearTimeout(stallRecoveryTimeout);
+        }
+
+        // Try to recover after a short delay
+        stallRecoveryTimeout = setTimeout(() => {
+          if (audioRef.current && !audioRef.current.paused) {
+            debugLog('🔄 Reloading audio to recover from stall...');
+            const currentTime = audioRef.current.currentTime;
+            audioRef.current.load();
+            audioRef.current.currentTime = currentTime;
+            audioRef.current.play().catch((e) => {
+              debugWarn('Failed to resume after stall recovery:', e);
+              onPlayBlockedRef.current?.(e);
+            });
+          }
+        }, 1000);
+      } else {
+        debugWarn('⛔ Max stall recovery attempts reached, giving up');
+      }
+    };
+
     const handleWaiting = () => debugWarn('⏳ Audio waiting for data');
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);

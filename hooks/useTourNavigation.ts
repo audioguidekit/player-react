@@ -50,10 +50,15 @@ export const useTourNavigation = ({
     const prevStopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const trackSwitchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const allowAutoPlayRef = useRef<boolean>(allowAutoPlay);
+    const isTransitioningRef = useRef<boolean>(isTransitioning);
 
     useEffect(() => {
         allowAutoPlayRef.current = allowAutoPlay;
     }, [allowAutoPlay]);
+
+    useEffect(() => {
+        isTransitioningRef.current = isTransitioning;
+    }, [isTransitioning]);
 
     const handlePlayPause = useCallback(() => {
         setIsPlaying(prev => !prev);
@@ -130,6 +135,12 @@ export const useTourNavigation = ({
     const handleAdvanceToNextTrack = useCallback(() => {
         if (!currentStopId || !tour) return;
 
+        // Clear transition timeout - we're advancing now
+        if (transitionTimeoutRef.current) {
+            clearTimeout(transitionTimeoutRef.current);
+            transitionTimeoutRef.current = null;
+        }
+
         const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
         const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
 
@@ -155,7 +166,9 @@ export const useTourNavigation = ({
 
             onTrackChange?.(nextAudioStop.id);
         } else {
-            // End of tour
+            // End of tour - reset all transition states
+            setIsTransitioning(false);
+            setIsAudioCompleting(false);
             setIsPlaying(false);
         }
     }, [currentStopId, tour, onTrackChange]);
@@ -163,8 +176,8 @@ export const useTourNavigation = ({
     const handleTrackTransition = useCallback(() => {
         if (!currentStopId || !tour) return;
 
-        // If we're already transitioning, ignore
-        if (isTransitioning) return;
+        // If we're already transitioning, ignore - use ref to avoid dependency
+        if (isTransitioningRef.current) return;
 
         // Start completion animation (Checkmark)
         setIsAudioCompleting(true);
@@ -173,12 +186,22 @@ export const useTourNavigation = ({
         // App.tsx's onEnded handler will call handleAdvanceToNextTrack.
         if (tour.transitionAudio) {
             setIsTransitioning(true);
+
+            // Fallback: if transition doesn't complete in 10 seconds, force advance
+            // This prevents stuck transitions if the ended event doesn't fire
+            if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
+            transitionTimeoutRef.current = setTimeout(() => {
+                if (isTransitioningRef.current) {
+                    console.warn('[Transition] Timeout - forcing advance to next track');
+                    handleAdvanceToNextTrack();
+                }
+            }, 10000);
         } else {
             // No transition audio, just use a timeout for the checkmark animation
             if (transitionTimeoutRef.current) clearTimeout(transitionTimeoutRef.current);
             transitionTimeoutRef.current = setTimeout(handleAdvanceToNextTrack, 1500); // 1.5s duration for checkmark
         }
-    }, [currentStopId, tour, isTransitioning, handleAdvanceToNextTrack]);
+    }, [currentStopId, tour, handleAdvanceToNextTrack]);
 
     const startCompletionAnimation = useCallback(() => {
         setIsAudioCompleting(true);

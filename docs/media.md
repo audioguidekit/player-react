@@ -121,3 +121,25 @@ File: `App.tsx` lines 290-355
 - Only standard audio stops show metadata
 
 File: `App.tsx` lines 182-212
+
+## Problem: Track repeats after skip forward + Transition audio loops
+
+**Root Causes**:
+1. Missing state cleanup at end of tour - `isTransitioning` and `isAudioCompleting` not reset
+2. `handleTrackTransition` callback recreated on every `isTransitioning` change
+3. No timeout fallback for stuck transitions
+4. No safety check for missing transition audio
+
+**Solution 11**: Fix transition state management ⭐⭐⭐
+- **Root Cause**: When tour ends, transition states not reset, causing audioURL to get stuck
+- **Solutions**:
+  - Reset all states at end of tour: `setIsTransitioning(false)`, `setIsAudioCompleting(false)`
+  - Use `isTransitioningRef` instead of `isTransitioning` in dependency array
+  - Add 10-second timeout fallback to force advance if transition gets stuck
+  - Check if `tour.transitionAudio` exists before calling `handleTrackTransition`
+  - Clear transition timeout when advancing to next track
+- **Effect**: Transition audio plays once, tracks advance correctly, no more repeats or loops
+
+Files:
+- `hooks/useTourNavigation.ts` lines 135-198 (handleAdvanceToNextTrack, handleTrackTransition)
+- `App.tsx` lines 148-161 (handleAudioEnded)

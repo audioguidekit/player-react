@@ -114,6 +114,7 @@ const App: React.FC = () => {
   useAudioPreloader({
     audioPlaylist,
     currentStopId,
+    isPlaying,
     preloadCount: 1,
   });
 
@@ -150,10 +151,21 @@ const App: React.FC = () => {
       // Transition audio just ended, play the next real track
       handleAdvanceToNextTrack();
     } else {
-      // A normal track ended, start the transition
-      handleTrackTransition();
+      // A normal track ended - start transition if available, otherwise advance directly
+      if (tour?.transitionAudio) {
+        handleTrackTransition();
+      } else {
+        // No transition audio configured, advance directly to next track
+        handleAdvanceToNextTrack();
+      }
     }
-  }, [isTransitioning, handleTrackTransition, handleAdvanceToNextTrack]);
+  }, [isTransitioning, tour, handleTrackTransition, handleAdvanceToNextTrack]);
+
+  // Memoize onPlayBlocked to prevent effect re-runs
+  const handlePlayBlocked = useCallback(() => {
+    console.warn('[Audio] Play was blocked by the browser. Requiring user interaction to resume.');
+    setIsPlaying(false);
+  }, [setIsPlaying]);
 
   // Audio Player
   const audioPlayer = useAudioPlayer({
@@ -164,10 +176,7 @@ const App: React.FC = () => {
     isPlaying,
     onEnded: handleAudioEnded,
     onProgress: handleAudioProgress,
-    onPlayBlocked: () => {
-      console.warn('[Audio] Play was blocked by the browser. Requiring user interaction to resume.');
-      setIsPlaying(false);
-    },
+    onPlayBlocked: handlePlayBlocked,
   });
 
   // Background audio keep-alive for iOS
@@ -301,6 +310,11 @@ const App: React.FC = () => {
 
     // Function to update position state from audio element
     const updatePositionState = () => {
+      // SAFETY: Don't update position state when paused to prevent Safari crashes
+      if (!isPlaying) {
+        return;
+      }
+
       // Read values DIRECTLY from audio element to avoid stale React state
       const duration = audio.duration;
       const currentTime = audio.currentTime;
@@ -344,12 +358,14 @@ const App: React.FC = () => {
       }
     };
 
-    // Update immediately on mount
+    // Only update position when actually playing
+    if (!isPlaying) return;
+
+    // Update immediately
     updatePositionState();
 
-    // Update periodically - slower when paused to keep session alive without excessive updates
-    const updateInterval = isPlaying ? 2000 : 10000; // 2s when playing, 10s when paused
-    const interval = setInterval(updatePositionState, updateInterval);
+    // Update every 2 seconds while playing
+    const interval = setInterval(updatePositionState, 2000);
 
     return () => clearInterval(interval);
   }, [audioPlayer.audioElement, isPlaying, isTransitioning, isSwitchingTracks]);

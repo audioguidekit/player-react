@@ -35,11 +35,28 @@ export interface UseAudioPlayerReturn {
   audioElement: HTMLAudioElement | null;
 }
 
+// Create a singleton audio element to persist across component re-mounts
+// This is CRITICAL for iOS Safari to maintain the audio session
+let globalAudioElement: HTMLAudioElement | null = null;
+let audioSourceId = 0; // Unique ID for each audio source to track ended events
+let listenersAttached = false; // Module-level flag to track if listeners are attached to singleton
+
+const getOrCreateAudioElement = (): HTMLAudioElement => {
+  if (!globalAudioElement) {
+    debugLog('[AUDIO] Creating global audio element');
+    globalAudioElement = new Audio();
+    globalAudioElement.preload = 'metadata';
+    globalAudioElement.volume = 1.0;
+    globalAudioElement.muted = false;
+  }
+  return globalAudioElement;
+};
+
 /**
  * Custom hook for audio playback.
  * 
- * CRITICAL FOR iOS: This hook creates a SINGLE HTMLAudioElement that persists
- * across track changes. Recreating audio elements causes:
+ * CRITICAL FOR iOS: This hook uses a SINGLETON HTMLAudioElement that persists
+ * across component re-renders and re-mounts. Recreating audio elements causes:
  * - Safari "A problem repeatedly occurred" crashes
  * - Control Center time resetting to 0
  * - Audio session being dropped
@@ -54,13 +71,13 @@ export const useAudioPlayer = ({
   onProgress,
   onPlayBlocked,
 }: UseAudioPlayerProps): UseAudioPlayerReturn => {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  // Use singleton audio element - created synchronously, available immediately
+  const audioRef = useRef<HTMLAudioElement>(getOrCreateAudioElement());
   const currentAudioUrlRef = useRef<string | null>(null);
-  const hasEndedForCurrentUrlRef = useRef(false);
+  const currentSourceIdRef = useRef<number>(0); // Track which source ended events belong to
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const isInitializedRef = useRef(false);
 
   const logAudioState = useCallback((label: string) => {
     if (!DEBUG_AUDIO) return;
@@ -99,17 +116,13 @@ export const useAudioPlayer = ({
     onPlayBlockedRef.current = onPlayBlocked;
   }, [onEnded, onProgress, isPlaying, id, onPlayBlocked]);
 
-  // Create audio element ONCE on mount - never recreate
+  // Attach event listeners ONCE (using module-level flag for singleton)
   useEffect(() => {
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
+    if (listenersAttached) return;
+    listenersAttached = true;
 
-    debugLog('[AUDIO] Creating persistent audio element');
-    const audio = new Audio();
-    audio.preload = 'metadata';
-    audio.volume = 1.0;
-    audio.muted = false;
-    audioRef.current = audio;
+    const audio = audioRef.current;
+    debugLog('[AUDIO] Attaching event listeners to audio element');
 
     const handleLoadedMetadata = () => {
       if (audioRef.current) {
@@ -139,15 +152,22 @@ export const useAudioPlayer = ({
     };
 
     const handleEnded = () => {
-      if (hasEndedForCurrentUrlRef.current) {
-        debugLog('🏁 Audio ended - IGNORING (already handled for this URL)');
-        return;
-      }
-      hasEndedForCurrentUrlRef.current = true;
-      debugLog('🏁 Audio ended - firing onEnded callback');
-      setProgress(0);
-      setCurrentTime(0);
-      onEndedRef.current?.();
+      // Capture the source ID at the moment the event fires
+      const eventSourceId = currentSourceIdRef.current;
+      
+      // Use setTimeout to let any pending URL changes process first
+      setTimeout(() => {
+        // Check if the source ID is still the same - if not, this is a stale event
+        if (eventSourceId !== currentSourceIdRef.current) {
+          debugLog('🏁 Audio ended - IGNORING (stale event from previous source)', { eventSourceId, current: currentSourceIdRef.current });
+          return;
+        }
+        
+        debugLog('🏁 Audio ended - firing onEnded callback', { sourceId: eventSourceId, url: currentAudioUrlRef.current });
+        setProgress(0);
+        setCurrentTime(0);
+        onEndedRef.current?.();
+      }, 0);
     };
 
     const handleError = (e: Event) => {
@@ -169,21 +189,8 @@ export const useAudioPlayer = ({
     audio.addEventListener('stalled', handleStalled);
     audio.addEventListener('waiting', handleWaiting);
 
-    return () => {
-      debugLog('[AUDIO] Cleaning up audio element');
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
-      audio.removeEventListener('stalled', handleStalled);
-      audio.removeEventListener('waiting', handleWaiting);
-      audio.pause();
-      audio.src = '';
-      audioRef.current = null;
-      isInitializedRef.current = false;
-    };
+    // No cleanup - we want the singleton to persist
+    // Listeners are only attached once due to listenersAttachedRef
   }, []);
 
   // Handle URL changes - just update src, don't recreate element
@@ -197,7 +204,8 @@ export const useAudioPlayer = ({
         audio.pause();
         audio.src = '';
         currentAudioUrlRef.current = null;
-        hasEndedForCurrentUrlRef.current = false;
+        // Increment source ID to invalidate any pending ended events
+        currentSourceIdRef.current = ++audioSourceId;
         setProgress(0);
         setCurrentTime(0);
         setDuration(0);
@@ -211,7 +219,9 @@ export const useAudioPlayer = ({
 
     debugLog('[AUDIO] Changing source to:', audioUrl);
     currentAudioUrlRef.current = audioUrl;
-    hasEndedForCurrentUrlRef.current = false;
+    // Increment source ID BEFORE loading - this invalidates any pending ended events from previous source
+    currentSourceIdRef.current = ++audioSourceId;
+    debugLog('[AUDIO] New source ID:', currentSourceIdRef.current);
     
     setProgress(0);
     setCurrentTime(0);

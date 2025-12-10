@@ -27,7 +27,31 @@ export const useAudioPreloader = ({
   preloadCount = 1,
 }: UseAudioPreloaderOptions) => {
   const preloadedRef = useRef<Map<string, PreloadedAudio>>(new Map());
+  const preloadedImagesRef = useRef<Set<string>>(new Set());
   const cleanupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const preloadImage = useCallback((url: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (preloadedImagesRef.current.has(url)) {
+        debugLog('✅ Image already preloaded:', url);
+        resolve();
+        return;
+      }
+
+      debugLog('⏳ Preloading image:', url);
+      const img = new Image();
+      img.onload = () => {
+        preloadedImagesRef.current.add(url);
+        debugLog('✅ Image preloaded:', url);
+        resolve();
+      };
+      img.onerror = (e) => {
+        debugLog('❌ Image preload failed:', url, e);
+        reject(e);
+      };
+      img.src = url;
+    });
+  }, []);
 
   const preloadAudio = useCallback((url: string): Promise<HTMLAudioElement> => {
     return new Promise((resolve, reject) => {
@@ -87,6 +111,28 @@ export const useAudioPreloader = ({
     }
   }, []);
 
+  // Preload first item immediately when app loads (before user starts tour)
+  useEffect(() => {
+    if (audioPlaylist.length === 0) return;
+    if (currentStopId !== null) return; // Only preload first item if no track is active yet
+
+    const firstStop = audioPlaylist[0];
+    if (!firstStop) return;
+
+    debugLog('🚀 Initial preload - first track');
+    
+    // Preload first track's audio
+    if (firstStop.audioFile) {
+      preloadAudio(firstStop.audioFile).catch(() => {});
+    }
+    
+    // Preload first track's image
+    if (firstStop.image) {
+      preloadImage(firstStop.image).catch(() => {});
+    }
+  }, [audioPlaylist, currentStopId, preloadAudio, preloadImage]);
+
+  // Preload next tracks when playing
   useEffect(() => {
     if (!currentStopId || audioPlaylist.length === 0) return;
 
@@ -94,7 +140,7 @@ export const useAudioPreloader = ({
     if (currentIndex === -1) return;
 
     const urlsToKeep = new Set<string>();
-    const preloadPromises: Promise<HTMLAudioElement>[] = [];
+    const preloadPromises: Promise<unknown>[] = [];
 
     for (let i = 1; i <= preloadCount; i++) {
       const nextIndex = currentIndex + i;
@@ -103,7 +149,13 @@ export const useAudioPreloader = ({
         if (nextStop.audioFile) {
           urlsToKeep.add(nextStop.audioFile);
           preloadPromises.push(
-            preloadAudio(nextStop.audioFile).catch(() => null as unknown as HTMLAudioElement)
+            preloadAudio(nextStop.audioFile).catch(() => null)
+          );
+        }
+        // Also preload next track's image
+        if (nextStop.image) {
+          preloadPromises.push(
+            preloadImage(nextStop.image).catch(() => null)
           );
         }
       }
@@ -126,7 +178,7 @@ export const useAudioPreloader = ({
         clearTimeout(cleanupTimeoutRef.current);
       }
     };
-  }, [audioPlaylist, currentStopId, preloadCount, preloadAudio, cleanupOldPreloads]);
+  }, [audioPlaylist, currentStopId, preloadCount, preloadAudio, preloadImage, cleanupOldPreloads]);
 
   useEffect(() => {
     return () => {
@@ -140,5 +192,6 @@ export const useAudioPreloader = ({
   return {
     getPreloadedAudio,
     preloadAudio,
+    preloadImage,
   };
 };

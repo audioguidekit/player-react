@@ -13,7 +13,7 @@ const Container = styled.div`
 `;
 
 const ScrollableList = styled(motion.div)`
-  ${tw`flex-1 overflow-y-auto overflow-x-hidden p-6 pb-32`}
+  ${tw`flex-1 overflow-y-auto overflow-x-hidden px-4 pt-6 pb-32`}
 `;
 
 interface TourDetailProps {

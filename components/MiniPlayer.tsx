@@ -302,7 +302,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.3, opacity: { duration: 0.15 } }}
               >
                 <ExpandedInner>
                   {/* Controls Row */}
@@ -362,7 +362,10 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ 
+                  duration: 0.2,
+                  exit: { duration: 0.1, ease: "easeOut" }
+                }}
               >
                 <MinimizedInner>
                   <MinimizedTitleSection

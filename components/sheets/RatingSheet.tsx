@@ -67,7 +67,7 @@ const Input = styled.input`
 `;
 
 const Button = styled.button<{ $disabled?: boolean }>(({ $disabled }) => [
-  tw`w-full py-4 rounded-full font-bold text-base transition-all duration-300`,
+  tw`w-full py-4 rounded-3xl font-bold text-base transition-all duration-300`,
   $disabled && tw`bg-gray-100 text-gray-400 cursor-not-allowed`,
   !$disabled && tw`bg-black text-white shadow-lg active:scale-[0.98]`,
 ]);
@@ -93,7 +93,7 @@ const SuccessDescription = styled.p`
 `;
 
 const ButtonGroup = styled.div`
-  ${tw`flex flex-col gap-3`}
+  ${tw`flex flex-col gap-3 w-full mt-4`}
 `;
 
 export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSubmit }) => {
@@ -176,8 +176,8 @@ export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSub
                   >
                     <Star
                       size={36}
-                      fill={rating >= star ? "black" : "transparent"}
-                      className={rating >= star ? "text-black" : "text-gray-300"}
+                      fill={rating >= star ? "#FFD700" : "transparent"}
+                      className={rating >= star ? "text-[#FFD700]" : "text-gray-300"}
                       strokeWidth={1.5}
                     />
                   </StarButton>

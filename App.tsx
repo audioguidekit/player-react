@@ -20,7 +20,7 @@ import { useProgressTracking } from './hooks/useProgressTracking';
 import { useDownloadManager } from './hooks/useDownloadManager';
 import { useTourNavigation } from './hooks/useTourNavigation';
 import { useAudioPreloader, eagerPreloadImage, eagerPreloadAudio } from './hooks/useAudioPreloader';
-import { useRating } from './context/RatingContext';
+import { RatingProvider, useRating } from './context/RatingContext';
 
 // Module-level flag to track if Media Session handlers are initialized
 // Prevents re-initialization on HMR which can cause iOS issues

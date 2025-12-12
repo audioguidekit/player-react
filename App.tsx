@@ -697,7 +697,7 @@ const App: React.FC = () => {
   if (tourLoading || languagesLoading) {
     return (
       <MobileFrame>
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-full bg-white">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900 mx-auto mb-4"></div>
             <p className="text-zinc-600">Loading tour data...</p>
@@ -735,13 +735,13 @@ const App: React.FC = () => {
   if (!assetsReady) {
     return (
       <MobileFrame>
-        <div className="flex items-center justify-center h-full bg-black">
+        <div className="flex items-center justify-center h-full bg-white">
           <div className="text-center p-8">
             <div className="mb-4">
-              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-zinc-700 border-t-white"></div>
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-zinc-200 border-t-zinc-900"></div>
             </div>
-            <p className="text-white text-lg font-medium">Preparing your tour...</p>
-            <p className="text-zinc-400 text-sm mt-2">Loading audio and images</p>
+            <p className="text-zinc-900 text-lg font-medium">Preparing your tour...</p>
+            <p className="text-zinc-600 text-sm mt-2">Loading audio and images</p>
           </div>
         </div>
       </MobileFrame>
@@ -752,7 +752,7 @@ const App: React.FC = () => {
     <MobileFrame>
       <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
           {/* Main Content Area */}
-          <div className={`flex-1 relative overflow-hidden ${hasStarted ? 'bg-white' : 'bg-black'}`}>
+          <div className="flex-1 relative overflow-hidden bg-white">
             <TourStart
               tour={tour}
               onOpenRating={() => setActiveSheet('RATING')}

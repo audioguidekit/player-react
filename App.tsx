@@ -20,7 +20,7 @@ import { useProgressTracking } from './hooks/useProgressTracking';
 import { useDownloadManager } from './hooks/useDownloadManager';
 import { useTourNavigation } from './hooks/useTourNavigation';
 import { useAudioPreloader, eagerPreloadImage, eagerPreloadAudio } from './hooks/useAudioPreloader';
-import { RatingProvider } from './context/RatingContext';
+import { RatingProvider, useRating } from './context/RatingContext';
 
 // Module-level flag to track if Media Session handlers are initialized
 // Prevents re-initialization on HMR which can cause iOS issues
@@ -42,6 +42,16 @@ const App: React.FC = () => {
   const [activeSheet, setActiveSheet] = useState<SheetType>('NONE');
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [allowAutoPlay, setAllowAutoPlay] = useState(true);
+
+  // Rating Context
+  const { setTourId } = useRating();
+
+  // Set tourId in rating context when tour loads
+  useEffect(() => {
+    if (tour?.id) {
+      setTourId(tour.id);
+    }
+  }, [tour?.id, setTourId]);
 
   // Set default language when languages are loaded
   useEffect(() => {

@@ -109,18 +109,10 @@ export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSub
   // Sync step with submission state
   useEffect(() => {
     if (isOpen) {
-      if (isSubmitted) {
-        setStep('THANKS');
-      } else if (rating > 0 && feedback.length > 0) {
-        // If they already rated and typed feedback (e.g. in the card), 
-        // maybe we should start at EMAIL or keep them at RATING depending on UX.
-        // Let's keep them at RATING so they can review, unless they submitted.
-        setStep('RATING');
-      } else {
-        setStep('RATING');
-      }
+      // Always start at RATING step to allow users to see/edit their previous submission
+      setStep('RATING');
     }
-  }, [isOpen, isSubmitted, rating, feedback.length]);
+  }, [isOpen]);
 
   const handleFeedbackSubmit = () => {
     // Proceed to email step

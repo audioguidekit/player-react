@@ -59,6 +59,15 @@ export async function loadTour(filename: string): Promise<TourData> {
 }
 
 /**
+ * Loads a tour by language code
+ * @param languageCode - Language code (e.g., 'en', 'de', 'cs')
+ * @returns Promise resolving to tour data
+ */
+export async function loadTourByLanguage(languageCode: string): Promise<TourData> {
+  return fetchJSON<TourData>(`${DATA_BASE_PATH}/tours/${languageCode}.json`);
+}
+
+/**
  * Loads a tour by its ID from the manifest
  * @param tourId - Tour ID (e.g., 'rome-01')
  * @returns Promise resolving to tour data
@@ -125,6 +134,20 @@ export class DataService {
     }
 
     return this.getTour(tourEntry.filename);
+  }
+
+  /**
+   * Loads tour by language code with caching
+   */
+  async getTourByLanguage(languageCode: string): Promise<TourData> {
+    const filename = `${languageCode}.json`;
+    if (this.tourCache.has(filename)) {
+      return this.tourCache.get(filename)!;
+    }
+
+    const tour = await loadTourByLanguage(languageCode);
+    this.tourCache.set(filename, tour);
+    return tour;
   }
 
   /**

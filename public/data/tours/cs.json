@@ -1,0 +1,37 @@
+{
+  "id": "barcelona",
+  "language": "cs",
+  "title": "Neomezená Barcelona",
+  "description": "Objevte bohatou historii a kulturu Barcelony od starověku po současnost",
+  "totalDuration": "20 minut",
+  "totalStops": 10,
+  "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.jpeg",
+  "offlineAvailable": false,
+  "transitionAudio": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/end.m4a",
+  "stops": [
+    {
+      "id": "1",
+      "type": "audio",
+      "title": "Vítejte a pokyny",
+      "duration": "1:30 mins",
+      "isCompleted": false,
+      "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.jpeg",
+      "audioFile": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.mp3"
+    },
+    {
+      "id": "2",
+      "type": "audio",
+      "title": "Věž Urquinaona",
+      "duration": "2:03 mins",
+      "isCompleted": false,
+      "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/02.jpeg",
+      "audioFile": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/02.mp3"
+    },
+    {
+      "id": "11",
+      "type": "rating",
+      "question": "Jak se vám tento výlet líbil?",
+      "description": "Rádi bychom slyšeli váš názor na tento výlet!"
+    }
+  ]
+}

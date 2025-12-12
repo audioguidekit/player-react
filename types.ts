@@ -68,6 +68,7 @@ export type Stop = AudioStop | TextStop | ImageTextStop | ThreeDObjectStop | Vid
 
 export interface TourData {
   id: string;
+  language: string;
   title: string;
   description: string;
   totalDuration: string;

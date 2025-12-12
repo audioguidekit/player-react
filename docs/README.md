@@ -32,6 +32,13 @@ This directory contains all project documentation.
   - Asset management
   - Testing new tours
 
+- **[LANGUAGES.md](./LANGUAGES.md)** - Multi-language tour system
+  - Language file structure
+  - Creating translations
+  - Language switching behavior
+  - Progress preservation
+  - Best practices
+
 ### 📖 General Documentation
 - **[DOCS.md](./DOCS.md)** - General project documentation
   - Project overview
@@ -43,6 +50,7 @@ This directory contains all project documentation.
 - **Getting Started**: See root [README.md](../README.md)
 - **PWA Architecture**: [PWA_ARCHITECTURE.md](./PWA_ARCHITECTURE.md)
 - **Adding Content**: [ADDING_TOURS.md](./ADDING_TOURS.md)
+- **Multi-Language Tours**: [LANGUAGES.md](./LANGUAGES.md)
 
 ## Contributing to Documentation
 

@@ -31,16 +31,18 @@ const App: React.FC = () => {
   const { tourId } = useParams<{ tourId: string }>();
   const navigate = useNavigate();
 
-  // Load data dynamically
-  const { data: tour, loading: tourLoading, error: tourError } = useTourData(tourId || DEFAULT_TOUR_ID);
+  // Load languages first
   const { data: languages, loading: languagesLoading, error: languagesError } = useLanguages();
-
-  // Progress tracking
-  const progressTracking = useProgressTracking(tourId || DEFAULT_TOUR_ID);
 
   // Navigation & State
   const [activeSheet, setActiveSheet] = useState<SheetType>('NONE');
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
+
+  // Load tour data based on selected language
+  const { data: tour, loading: tourLoading, error: tourError } = useTourData(selectedLanguage?.code);
+
+  // Progress tracking (using tour ID from loaded tour data)
+  const progressTracking = useProgressTracking(tour?.id || tourId || DEFAULT_TOUR_ID);
   const [allowAutoPlay, setAllowAutoPlay] = useState(true);
 
   // Rating Context
@@ -637,6 +639,20 @@ const App: React.FC = () => {
   const closeSheet = () => setActiveSheet('NONE');
 
   const handleLanguageChange = (language: Language) => {
+    // Stop playback if audio is currently playing
+    if (isPlaying) {
+      setIsPlaying(false);
+    }
+
+    // Preserve current stop and position for resume after language change
+    if (currentStopId && audioPlayer.audioElement) {
+      resumeStopIdRef.current = currentStopId;
+      resumePositionRef.current = audioPlayer.audioElement.currentTime;
+      pendingSeekRef.current = audioPlayer.audioElement.currentTime;
+      console.log(`[LANGUAGE_CHANGE] Saved position: ${currentStopId} at ${resumePositionRef.current}s`);
+    }
+
+    // Change language (this will trigger tour reload via useTourData dependency)
     setSelectedLanguage(language);
     closeSheet();
   };

@@ -335,22 +335,43 @@ Before deploying your tour:
 
 ### Multiple Languages
 
-To support multiple languages, create separate tour files:
+AudioTour Pro has a built-in multi-language system. Tours are automatically loaded based on the user's selected language.
 
+**Quick Overview:**
+- Create one file per language: `en.json`, `cs.json`, `de.json`
+- Add `"language": "en"` field to each tour file
+- Use the same tour `id` across all languages
+- Users can switch languages seamlessly with progress preserved
+
+**Example:**
 ```
 /public/data/tours/
-├── paris-highlights-en.json
-├── paris-highlights-fr.json
-└── paris-highlights-de.json
+├── en.json     # English version
+├── cs.json     # Czech version
+└── de.json     # German version
 ```
 
-Update your code to load based on language:
+Each file should have the same tour `id` but different `language` values:
 
-```typescript
-const languageCode = 'en'; // Get from user selection
-const tourId = `paris-01-${languageCode}`;
-const { data: tour } = useTourData(tourId);
+```json
+// en.json
+{
+  "id": "barcelona",
+  "language": "en",
+  "title": "Unlimited Barcelona",
+  ...
+}
+
+// cs.json
+{
+  "id": "barcelona",
+  "language": "cs",
+  "title": "Neomezená Barcelona",
+  ...
+}
 ```
+
+For complete language system documentation, see **[LANGUAGES.md](./LANGUAGES.md)**.
 
 ### Dynamic Tour Loading
 

@@ -12,11 +12,11 @@ export interface LoadingState<T> {
 }
 
 /**
- * Hook to load tour data by ID
- * @param tourId - Tour ID to load (e.g., 'rome-01')
+ * Hook to load tour data by language code
+ * @param languageCode - Language code to load (e.g., 'en', 'de')
  * @returns Loading state with tour data
  */
-export function useTourData(tourId?: string): LoadingState<TourData> {
+export function useTourData(languageCode?: string): LoadingState<TourData> {
   const [state, setState] = useState<LoadingState<TourData>>({
     data: null,
     loading: true,
@@ -24,7 +24,7 @@ export function useTourData(tourId?: string): LoadingState<TourData> {
   });
 
   useEffect(() => {
-    if (!tourId) {
+    if (!languageCode) {
       setState({ data: null, loading: false, error: null });
       return;
     }
@@ -34,7 +34,7 @@ export function useTourData(tourId?: string): LoadingState<TourData> {
     const loadData = async () => {
       try {
         setState(prev => ({ ...prev, loading: true, error: null }));
-        const tour = await dataService.getTourById(tourId);
+        const tour = await dataService.getTourByLanguage(languageCode);
 
         if (!cancelled) {
           setState({ data: tour, loading: false, error: null });
@@ -55,7 +55,7 @@ export function useTourData(tourId?: string): LoadingState<TourData> {
     return () => {
       cancelled = true;
     };
-  }, [tourId]);
+  }, [languageCode]);
 
   return state;
 }

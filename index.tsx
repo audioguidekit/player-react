@@ -7,6 +7,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { ViewportManager } from './components/ViewportManager';
 import { ThemeProvider } from './src/theme/ThemeProvider';
 import { GlobalStyles } from './src/theme/GlobalStyles';
+import { RatingProvider } from './context/RatingContext';
 import './src/index.css';
 
 // Service worker is now registered in index.html for better reliability
@@ -46,9 +47,11 @@ root.render(
         <GlobalStyles />
         <ErrorBoundary>
           <ViewportManager />
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
+          <RatingProvider>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </RatingProvider>
         </ErrorBoundary>
       </>
     </ThemeProvider>

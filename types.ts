@@ -84,4 +84,12 @@ export interface Language {
   flag: string;
 }
 
+export interface TourRating {
+  tourId: string;
+  rating: number;
+  feedback: string;
+  email: string;
+  submittedAt: string;
+}
+
 export type SheetType = 'NONE' | 'LANGUAGE' | 'RATING' | 'PLAYER_MINIMIZED' | 'TOUR_COMPLETE';

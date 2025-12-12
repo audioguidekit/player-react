@@ -1,5 +1,6 @@
 import { getDB } from './db';
 import type { TourProgress, DownloadedTour, StopProgress } from './db';
+import type { TourRating } from '../../types';
 
 export interface AppPreferences {
   selectedLanguage: string;
@@ -20,6 +21,32 @@ export class StorageService {
     const current = this.getPreferences();
     const updated = { ...current, ...prefs };
     localStorage.setItem('app-preferences', JSON.stringify(updated));
+  }
+
+  // ============================================
+  // Tour Ratings (localStorage)
+  // ============================================
+
+  getTourRating(tourId: string): TourRating | null {
+    const key = `tour_rating_${tourId}`;
+    const stored = localStorage.getItem(key);
+    if (!stored) return null;
+    try {
+      return JSON.parse(stored);
+    } catch (error) {
+      console.error('Failed to parse tour rating:', error);
+      return null;
+    }
+  }
+
+  saveTourRating(tourId: string, rating: TourRating): void {
+    const key = `tour_rating_${tourId}`;
+    localStorage.setItem(key, JSON.stringify(rating));
+  }
+
+  deleteTourRating(tourId: string): void {
+    const key = `tour_rating_${tourId}`;
+    localStorage.removeItem(key);
   }
 
   // ============================================

@@ -20,7 +20,7 @@ import { useProgressTracking } from './hooks/useProgressTracking';
 import { useDownloadManager } from './hooks/useDownloadManager';
 import { useTourNavigation } from './hooks/useTourNavigation';
 import { useAudioPreloader, eagerPreloadImage, eagerPreloadAudio } from './hooks/useAudioPreloader';
-import { RatingProvider } from './context/RatingContext';
+import { useRating } from './context/RatingContext';
 
 // Module-level flag to track if Media Session handlers are initialized
 // Prevents re-initialization on HMR which can cause iOS issues
@@ -42,6 +42,16 @@ const App: React.FC = () => {
   const [activeSheet, setActiveSheet] = useState<SheetType>('NONE');
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
   const [allowAutoPlay, setAllowAutoPlay] = useState(true);
+
+  // Rating Context
+  const { setTourId } = useRating();
+
+  // Set tourId in rating context when tour loads
+  useEffect(() => {
+    if (tour?.id) {
+      setTourId(tour.id);
+    }
+  }, [tour?.id, setTourId]);
 
   // Set default language when languages are loaded
   useEffect(() => {
@@ -683,8 +693,7 @@ const App: React.FC = () => {
 
   return (
     <MobileFrame>
-      <RatingProvider>
-        <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
+      <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
           {/* Main Content Area */}
           <div className={`flex-1 relative overflow-hidden ${hasStarted ? 'bg-white' : 'bg-black'}`}>
             <TourStart
@@ -793,7 +802,6 @@ const App: React.FC = () => {
             onReplay={handleResetTour}
           />
         </div>
-      </RatingProvider>
     </MobileFrame>
   );
 };

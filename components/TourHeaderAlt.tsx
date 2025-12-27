@@ -14,7 +14,9 @@ interface TourHeaderAltProps {
 }
 
 const Container = styled(motion.div)`
-  ${tw`sticky top-0 z-30 px-6 py-2 bg-white/80 backdrop-blur-md border-b border-gray-100`}
+  ${tw`sticky top-0 z-30 px-6 py-2 backdrop-blur-md`}
+  background-color: ${({ theme }) => theme.header.backgroundColor};
+  border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
 `;
 
 const FlexContainer = styled.div`
@@ -22,7 +24,13 @@ const FlexContainer = styled.div`
 `;
 
 const HomeButton = styled.button`
-  ${tw`w-11 h-11 rounded-full flex items-center justify-center text-gray-600 transition-colors active:scale-95 shrink-0`}
+  ${tw`w-11 h-11 rounded-full flex items-center justify-center transition-colors active:scale-95 shrink-0`}
+  color: ${({ theme }) => theme.header.iconColor};
+  background-color: transparent;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
 `;
 
 const ProgressSection = styled.div`
@@ -30,15 +38,18 @@ const ProgressSection = styled.div`
 `;
 
 const ProgressBarContainer = styled.div`
-  ${tw`flex-1 bg-gray-100 h-2.5 rounded-full overflow-hidden`}
+  ${tw`flex-1 h-2.5 rounded-full overflow-hidden`}
+  background-color: ${({ theme }) => theme.header.progressBar.backgroundColor};
 `;
 
 const ProgressBar = styled(motion.div)`
-  ${tw`bg-green-500 h-full rounded-full`}
+  ${tw`h-full rounded-full`}
+  background-color: ${({ theme }) => theme.header.progressBar.highlightColor};
 `;
 
 const TimeText = styled.div`
-  ${tw`text-sm font-normal text-gray-600 whitespace-nowrap tabular-nums`}
+  ${tw`text-sm font-normal whitespace-nowrap tabular-nums`}
+  color: ${({ theme }) => theme.header.textColor};
 `;
 
 

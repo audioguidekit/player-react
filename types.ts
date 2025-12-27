@@ -77,6 +77,7 @@ export interface TourData {
   image: string;
   offlineAvailable?: boolean;
   transitionAudio?: string;
+  themeId?: string; // Optional theme ID for custom branding
 }
 
 export interface Language {

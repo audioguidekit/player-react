@@ -8,7 +8,11 @@ interface VideoCardProps {
 }
 
 const Container = styled.div`
-  ${tw`bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-100`}
+  ${tw`overflow-hidden mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const VideoContainer = styled.div`
@@ -24,7 +28,8 @@ const CaptionContainer = styled.div`
 `;
 
 const Caption = styled.p`
-  ${tw`text-gray-700 text-sm leading-relaxed`}
+  ${tw`text-sm leading-relaxed`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 export const VideoCard = memo<VideoCardProps>(({ item }) => {

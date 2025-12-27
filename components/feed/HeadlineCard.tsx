@@ -12,11 +12,13 @@ const Container = styled.div`
 `;
 
 const Headline = styled.h3`
-  ${tw`text-2xl font-bold text-gray-900 uppercase tracking-wide`}
+  ${tw`text-2xl font-bold uppercase tracking-wide`}
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const Underline = styled.div`
-  ${tw`h-1 w-16 bg-black mt-2 rounded-full`}
+  ${tw`h-1 w-16 mt-2 rounded-full`}
+  background-color: ${({ theme }) => theme.buttons.primary.backgroundColor};
 `;
 
 export const HeadlineCard = memo<HeadlineCardProps>(({ item }) => {

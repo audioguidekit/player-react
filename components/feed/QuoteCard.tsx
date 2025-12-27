@@ -8,7 +8,11 @@ interface QuoteCardProps {
 }
 
 const Container = styled.div`
-  ${tw`bg-white rounded-2xl p-6 mb-4 shadow-sm border border-gray-100`}
+  ${tw`p-6 mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const AvatarContainer = styled.div`
@@ -16,19 +20,24 @@ const AvatarContainer = styled.div`
 `;
 
 const Avatar = styled.div`
-  ${tw`w-16 h-16 rounded-full bg-gray-200 border-2 border-gray-300`}
+  ${tw`w-16 h-16 rounded-full`}
+  background-color: ${({ theme }) => theme.cards.image.placeholderColor};
+  border: 2px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const QuoteMark = styled.div`
-  ${tw`text-6xl text-gray-300 leading-none mb-4 font-serif`}
+  ${tw`text-6xl leading-none mb-4 font-serif`}
+  color: ${({ theme }) => theme.colors.border.dark};
 `;
 
 const QuoteText = styled.p`
-  ${tw`text-gray-900 text-lg leading-relaxed mb-6`}
+  ${tw`text-lg leading-relaxed mb-6`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 const AuthorInfo = styled.div`
-  ${tw`text-gray-600 text-sm font-medium`}
+  ${tw`text-sm font-medium`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 export const QuoteCard = memo<QuoteCardProps>(({ item }) => {

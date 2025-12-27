@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import tw from 'twin.macro';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 interface ProgressRingProps {
     progress: number;
@@ -25,11 +25,14 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
     progress,
     size = 64,
     strokeWidth = 3,
-    color = '#22BD53',
-    backgroundColor = '#dddddd',
+    color,
+    backgroundColor,
     className = '',
     animated = true
 }) => {
+    const theme = useTheme();
+    const progressColor = color || theme.miniPlayer.progressBar.highlightColor;
+    const bgColor = backgroundColor || theme.colors.border.medium;
     const radius = (size - strokeWidth) / 2 - 1; // -1 for padding
     const circumference = 2 * Math.PI * radius;
     const visualProgress = Math.max(0, Math.min(100, progress));
@@ -48,7 +51,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         >
             {/* Background circle */}
             <circle
-                stroke={backgroundColor}
+                stroke={bgColor}
                 strokeWidth={strokeWidth}
                 fill="transparent"
                 r={radius}
@@ -57,7 +60,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
             />
             {/* Progress circle */}
             <motion.circle
-                stroke={color}
+                stroke={progressColor}
                 strokeWidth={strokeWidth}
                 fill="transparent"
                 r={radius}

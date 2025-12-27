@@ -10,11 +10,19 @@ interface EmailCardProps {
 }
 
 const Container = styled.div`
-  ${tw`bg-white rounded-2xl p-6 mb-4 shadow-sm border border-gray-100`}
+  ${tw`p-6 mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const SuccessContainer = styled(motion.div)`
-  ${tw`bg-white rounded-2xl p-6 mb-4 shadow-sm border border-gray-100`}
+  ${tw`p-6 mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const CenterContent = styled.div`
@@ -26,11 +34,15 @@ const FlexContent = styled.div`
 `;
 
 const IconCircle = styled.div`
-  ${tw`w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-900`}
+  ${tw`w-16 h-16 rounded-full flex items-center justify-center mb-4`}
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const SuccessIconCircle = styled.div`
-  ${tw`w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4`}
+  ${tw`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}
+  background-color: ${({ theme }) => `${theme.status.success}20`};
+  color: ${({ theme }) => theme.status.success};
 `;
 
 const TextSection = styled.div`
@@ -38,11 +50,13 @@ const TextSection = styled.div`
 `;
 
 const Title = styled.h3`
-  ${tw`text-xl font-bold text-gray-900 mb-2`}
+  ${tw`text-xl font-bold mb-2`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 const Description = styled.p`
-  ${tw`text-gray-500 text-base`}
+  ${tw`text-base`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const FormContainer = styled.div`
@@ -50,13 +64,34 @@ const FormContainer = styled.div`
 `;
 
 const EmailInput = styled.input`
-  ${tw`w-full border border-gray-200 rounded-2xl p-4 text-base focus:outline-none focus:border-black bg-gray-50 text-gray-800 placeholder:text-gray-400 transition-colors`}
+  ${tw`w-full p-4 text-base focus:outline-none transition-colors`}
+  border: 1px solid ${({ theme }) => theme.inputs.borderColor};
+  border-radius: ${({ theme }) => theme.borderRadius['2xl']};
+  background-color: ${({ theme }) => theme.inputs.backgroundColor};
+  color: ${({ theme }) => theme.inputs.textColor};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.inputs.placeholderColor};
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.inputs.focusBorderColor};
+  }
 `;
 
-const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid }) => [
+const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid, theme }) => [
   tw`w-full py-4 rounded-full font-bold text-base transition-all duration-300`,
-  !$isValid && tw`bg-gray-100 text-gray-400 cursor-not-allowed`,
-  $isValid && tw`bg-black text-white shadow-lg active:scale-[0.98]`,
+  !$isValid && {
+    backgroundColor: theme.colors.background.secondary,
+    color: theme.colors.text.tertiary,
+    cursor: 'not-allowed',
+  },
+  $isValid && {
+    backgroundColor: theme.buttons.primary.backgroundColor,
+    color: theme.buttons.primary.textColor,
+    boxShadow: theme.shadows.lg,
+  },
+  $isValid && tw`active:scale-[0.98]`,
 ]);
 
 export const EmailCard: React.FC<EmailCardProps> = ({ item }) => {
@@ -79,7 +114,7 @@ export const EmailCard: React.FC<EmailCardProps> = ({ item }) => {
       >
         <CenterContent>
           <SuccessIconCircle>
-            <Mail size={32} className="text-green-600" strokeWidth={1.5} />
+            <Mail size={32} strokeWidth={1.5} />
           </SuccessIconCircle>
           <Title>You're subscribed!</Title>
           <Description>Check your inbox for updates.</Description>

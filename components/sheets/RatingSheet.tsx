@@ -32,7 +32,8 @@ const Title = styled.h3`
 `;
 
 const Description = styled.p`
-  ${tw`text-gray-500 text-base max-w-[280px]`}
+  ${tw`text-base max-w-[280px]`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const StarsContainer = styled.div`
@@ -41,6 +42,10 @@ const StarsContainer = styled.div`
 
 const StarButton = styled.button`
   ${tw`transition-transform focus:outline-none active:scale-95`}
+`;
+
+const StyledStar = styled(Star) <{ $isActive: boolean }>`
+  color: ${({ $isActive, theme }) => $isActive ? theme.status.warning : theme.colors.border.dark};
 `;
 
 const ContentContainer = styled.div`
@@ -52,7 +57,8 @@ const HintContainer = styled.div`
 `;
 
 const HintText = styled(motion.span)`
-  ${tw`text-sm text-gray-400 font-medium absolute top-0`}
+  ${tw`text-sm font-normal absolute top-0`}
+  color: ${({ theme }) => theme.colors.text.tertiary};
 `;
 
 const FormArea = styled(motion.div)`
@@ -60,29 +66,67 @@ const FormArea = styled(motion.div)`
 `;
 
 const Textarea = styled.textarea`
-  ${tw`w-full border border-gray-200 rounded-2xl p-4 text-base focus:outline-none focus:border-black resize-none h-28 bg-gray-50 text-gray-800 placeholder:text-gray-400 transition-colors`}
+  ${tw`w-full p-4 text-base focus:outline-none resize-none h-28 transition-colors`}
+  border: 1px solid ${({ theme }) => theme.inputs.borderColor};
+  border-radius: ${({ theme }) => theme.borderRadius['2xl']};
+  background-color: ${({ theme }) => theme.inputs.backgroundColor};
+  color: ${({ theme }) => theme.inputs.textColor};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.inputs.placeholderColor};
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.inputs.focusBorderColor};
+  }
 `;
 
 const Input = styled.input`
-  ${tw`w-full border border-gray-200 rounded-2xl p-4 text-base focus:outline-none focus:border-black bg-gray-50 text-gray-800 placeholder:text-gray-400 transition-colors`}
+  ${tw`w-full p-4 text-base focus:outline-none transition-colors`}
+  border: 1px solid ${({ theme }) => theme.inputs.borderColor};
+  border-radius: ${({ theme }) => theme.borderRadius['2xl']};
+  background-color: ${({ theme }) => theme.inputs.backgroundColor};
+  color: ${({ theme }) => theme.inputs.textColor};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.inputs.placeholderColor};
+  }
+
+  &:focus {
+    border-color: ${({ theme }) => theme.inputs.focusBorderColor};
+  }
 `;
 
-const Button = styled.button<{ $disabled?: boolean }>(({ $disabled }) => [
+const Button = styled.button<{ $disabled?: boolean }>(({ $disabled, theme }) => [
   tw`w-full py-4 rounded-full font-bold text-base transition-all duration-300`,
-  $disabled && tw`bg-gray-100 text-gray-400 cursor-not-allowed`,
-  !$disabled && tw`bg-black text-white shadow-lg active:scale-[0.98]`,
+  $disabled && {
+    backgroundColor: theme.colors.background.secondary,
+    color: theme.colors.text.tertiary,
+    cursor: 'not-allowed',
+  },
+  !$disabled && {
+    backgroundColor: theme.buttons.primary.backgroundColor,
+    color: theme.buttons.primary.textColor,
+    boxShadow: theme.shadows.lg,
+  },
+  !$disabled && tw`active:scale-[0.98]`,
 ]);
 
 const SkipButton = styled.button`
-  ${tw`w-full py-2 text-base font-medium text-gray-400 transition-colors`}
+  ${tw`w-full py-2 text-base font-medium transition-colors`}
+  color: ${({ theme }) => theme.colors.text.tertiary};
 `;
 
 const IconCircle = styled.div`
-  ${tw`w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6 text-gray-900`}
+  ${tw`w-16 h-16 rounded-full flex items-center justify-center mb-6`}
+  background-color: ${({ theme }) => theme.colors.background.secondary};
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const SuccessIconCircle = styled.div`
-  ${tw`w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mb-6 text-green-600`}
+  ${tw`w-20 h-20 rounded-full flex items-center justify-center mb-6`}
+  background-color: ${({ theme }) => `${theme.status.success}20`};
+  color: ${({ theme }) => theme.status.success};
 `;
 
 const SuccessTitle = styled.h3`
@@ -90,7 +134,8 @@ const SuccessTitle = styled.h3`
 `;
 
 const SuccessDescription = styled.p`
-  ${tw`text-gray-500 text-base mb-8`}
+  ${tw`text-base mb-8`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const ButtonGroup = styled.div`
@@ -169,10 +214,10 @@ export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSub
                     key={star}
                     onClick={() => setRating(star)}
                   >
-                    <Star
+                    <StyledStar
                       size={36}
-                      fill={rating >= star ? "#FFD700" : "transparent"}
-                      className={rating >= star ? "text-[#ffdc19]" : "text-gray-300"}
+                      fill={rating >= star ? "currentColor" : "transparent"}
+                      $isActive={rating >= star}
                       strokeWidth={1.5}
                     />
                   </StarButton>

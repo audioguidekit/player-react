@@ -6,7 +6,8 @@ import styled from 'styled-components';
 import { TourData } from '../types';
 
 const Container = styled.div`
-  ${tw`absolute inset-0 w-full h-full bg-black z-0 overflow-hidden`}
+  ${tw`absolute inset-0 w-full h-full z-0 overflow-hidden`}
+  background-color: ${({ theme }) => theme.mainContent.backgroundColor};
 `;
 
 const MediaContainer = styled(motion.div)`
@@ -39,7 +40,9 @@ const TopButtonsContainer = styled.div`
 `;
 
 const ActionButton = styled.button`
-  ${tw`w-14 h-14 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white transition-colors`}
+  ${tw`w-14 h-14 backdrop-blur-md rounded-full flex items-center justify-center transition-colors`}
+  background-color: rgba(0, 0, 0, 0.4);
+  color: ${({ theme }) => theme.colors.text.inverse};
 `;
 
 interface TourStartProps {

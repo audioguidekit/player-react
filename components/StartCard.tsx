@@ -24,7 +24,11 @@ const Container = styled.div`
 `;
 
 const IconContainer = styled.div`
-  ${tw`w-20 h-20 bg-white rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.08)] flex items-center justify-center mb-6 border border-gray-50`}
+  ${tw`w-20 h-20 rounded-2xl flex items-center justify-center mb-6`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  border: 1px solid ${({ theme }) => theme.colors.border.light};
+  color: ${({ theme }) => theme.branding.iconColor};
 `;
 
 const TitleSection = styled.div`
@@ -32,11 +36,15 @@ const TitleSection = styled.div`
 `;
 
 const Title = styled.h1`
-  ${tw`text-3xl font-bold text-gray-900 mb-2 tracking-tight`}
+  ${tw`text-3xl mb-2 tracking-tight`}
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const MetaContainer = styled.div`
-  ${tw`flex items-center gap-6 mb-4 text-gray-500 text-sm font-semibold uppercase tracking-wider`}
+  ${tw`flex items-center gap-6 mb-4 text-sm uppercase tracking-wider`}
+  color: ${({ theme }) => theme.colors.text.secondary};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
 `;
 
 const MetaItem = styled.div`
@@ -44,32 +52,48 @@ const MetaItem = styled.div`
 `;
 
 const Description = styled.p`
-  ${tw`text-gray-500 text-base mb-6 leading-relaxed px-2`}
+  ${tw`text-base mb-6 leading-relaxed px-2`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const ErrorBox = styled.div`
-  ${tw`w-full bg-red-50 border border-red-200 rounded-2xl p-4 mb-4`}
+  ${tw`w-full p-4 mb-4`}
+  background-color: ${({ theme }) => `${theme.status.error}15`};
+  border: 1px solid ${({ theme }) => `${theme.status.error}40`};
+  border-radius: ${({ theme }) => theme.borderRadius['2xl']};
 `;
 
 const ErrorTitle = styled.p`
-  ${tw`text-red-700 text-sm font-medium mb-1`}
+  ${tw`text-sm font-medium mb-1`}
+  color: ${({ theme }) => theme.status.error};
 `;
 
 const ErrorMessage = styled.p`
-  ${tw`text-red-600 text-xs leading-relaxed`}
+  ${tw`text-xs leading-relaxed`}
+  color: ${({ theme }) => theme.status.error};
+  opacity: 0.9;
 `;
 
 const ErrorTip = styled.p`
-  ${tw`text-red-500 text-xs mt-2 italic`}
+  ${tw`text-xs mt-2 italic`}
+  color: ${({ theme }) => theme.status.error};
+  opacity: 0.8;
 `;
 
-const ActionButton = styled.button<{ $disabled: boolean }>(({ $disabled }) => [
-  tw`w-full bg-black text-white py-4 rounded-full font-bold text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-300`,
+const ActionButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }) => [
+  tw`w-full py-4 rounded-full text-lg flex items-center justify-center gap-3 active:scale-[0.98] transition-all duration-300 relative overflow-hidden`,
+  {
+    backgroundColor: theme.buttons.primary.backgroundColor,
+    color: theme.buttons.primary.textColor,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
   $disabled && tw`opacity-50 cursor-not-allowed active:scale-100`,
 ]);
 
 const ProgressBar = styled.div<{ $progress: number }>`
-  ${tw`absolute inset-0 bg-gray-700 transition-all duration-300`}
+  ${tw`absolute inset-0 transition-all duration-300`}
+  background-color: ${({ theme }) => theme.buttons.primary.hoverBackground || theme.buttons.primary.backgroundColor};
+  opacity: 0.8;
   width: ${({ $progress }) => $progress}%;
 `;
 
@@ -78,11 +102,16 @@ const ButtonContent = styled.span`
 `;
 
 const OfflineBox = styled.div`
-  ${tw`w-full bg-amber-50 border border-amber-200 rounded-2xl mt-4 p-4`}
+  ${tw`w-full mt-4 p-4`}
+  background-color: ${({ theme }) => `${theme.status.warning}15`};
+  border: 1px solid ${({ theme }) => `${theme.status.warning}40`};
+  border-radius: ${({ theme }) => theme.borderRadius['2xl']};
 `;
 
 const OfflineMessage = styled.p`
-  ${tw`text-amber-900 text-sm leading-relaxed`}
+  ${tw`text-sm leading-relaxed`}
+  color: ${({ theme }) => theme.status.warning};
+  filter: brightness(0.6);
 `;
 
 export const StartCard: React.FC<StartCardProps> = ({
@@ -130,7 +159,7 @@ export const StartCard: React.FC<StartCardProps> = ({
     <Container>
       {/* Icon Container */}
       <IconContainer>
-        <Headphones size={32} className="text-black" strokeWidth={1.5} />
+        <Headphones size={32} style={{ color: 'currentColor' }} strokeWidth={1.5} />
       </IconContainer>
 
       <TitleSection>
@@ -138,7 +167,7 @@ export const StartCard: React.FC<StartCardProps> = ({
       </TitleSection>
       <MetaContainer>
         <MetaItem>
-          <Clock3 size={18} className="text-gray-400" />
+          <Clock3 size={18} />
           <span>{tour.totalDuration}</span>
         </MetaItem>
       </MetaContainer>

@@ -8,7 +8,11 @@ interface ImageTextCardProps {
 }
 
 const Container = styled.div`
-  ${tw`bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-100`}
+  ${tw`overflow-hidden mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const ImageContainer = styled.div`
@@ -24,7 +28,8 @@ const ContentContainer = styled.div`
 `;
 
 const Text = styled.p`
-  ${tw`text-gray-700 leading-relaxed`}
+  ${tw`leading-relaxed`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 export const ImageTextCard = memo<ImageTextCardProps>(({ item }) => {

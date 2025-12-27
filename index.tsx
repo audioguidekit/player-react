@@ -5,8 +5,6 @@ import { AppRoutes } from './src/routes';
 import { swManager } from './src/utils/swManager';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ViewportManager } from './components/ViewportManager';
-import { ThemeProvider } from './src/theme/ThemeProvider';
-import { GlobalStyles } from './src/theme/GlobalStyles';
 import { RatingProvider } from './context/RatingContext';
 import './src/index.css';
 
@@ -42,18 +40,13 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ThemeProvider>
-      <>
-        <GlobalStyles />
-        <ErrorBoundary>
-          <ViewportManager />
-          <RatingProvider>
-            <BrowserRouter>
-              <AppRoutes />
-            </BrowserRouter>
-          </RatingProvider>
-        </ErrorBoundary>
-      </>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ViewportManager />
+      <RatingProvider>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
+      </RatingProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

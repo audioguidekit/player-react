@@ -21,7 +21,7 @@ interface StyledButtonProps {
     $showCheckmark: boolean;
 }
 
-const StyledButton = styled(motion.button)<StyledButtonProps>(({ $size, $variant, $showCheckmark }) => [
+const StyledButton = styled(motion.button)<StyledButtonProps>(({ $size, $variant, $showCheckmark, theme }) => [
   tw`rounded-full flex items-center justify-center transition-colors relative overflow-hidden`,
 
   // Size variants
@@ -31,12 +31,21 @@ const StyledButton = styled(motion.button)<StyledButtonProps>(({ $size, $variant
   $size === 'expanded' && tw`w-14 h-14`,
 
   // Mini variant styling
-  $variant === 'mini' && tw`text-gray-950 shrink-0`,
+  $variant === 'mini' && {
+    color: theme.miniPlayer.textColor,
+  },
+  $variant === 'mini' && tw`shrink-0`,
 
   // Default variant styling
   $variant === 'default' && tw`shadow-lg z-10`,
-  $variant === 'default' && $showCheckmark && tw`bg-green-500 text-white`,
-  $variant === 'default' && !$showCheckmark && tw`bg-black text-white`,
+  $variant === 'default' && $showCheckmark && {
+    backgroundColor: theme.status.success,
+    color: theme.colors.text.inverse,
+  },
+  $variant === 'default' && !$showCheckmark && {
+    backgroundColor: theme.miniPlayer.controls.playButtonBackground,
+    color: theme.miniPlayer.controls.playButtonIcon,
+  },
 ]);
 
 const IconContainer = styled(motion.div)`

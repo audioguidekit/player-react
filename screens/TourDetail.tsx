@@ -8,7 +8,8 @@ import { TourHeaderAlt } from '../components/TourHeaderAlt';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
 
 const Container = styled.div`
-  ${tw`flex flex-col h-full relative w-full bg-white pb-12`}
+  ${tw`flex flex-col h-full relative w-full pb-12`}
+  background-color: ${({ theme }) => theme.mainContent.backgroundColor};
   padding-top: env(safe-area-inset-top, 0px);
 `;
 

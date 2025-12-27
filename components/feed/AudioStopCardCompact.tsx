@@ -20,7 +20,11 @@ const OuterContainer = styled.div`
 `;
 
 const CardContainer = styled.div`
-  ${tw`relative rounded-2xl bg-white shadow-[0_2px_15px_rgba(0,0,0,0.05)] border border-gray-100 cursor-pointer overflow-hidden`}
+  ${tw`relative cursor-pointer overflow-hidden`}
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  box-shadow: 0 2px 15px ${({ theme }) => theme.cards.shadowColor};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
   transition: transform 0.15s ease-out;
   transform-origin: center;
 
@@ -30,7 +34,8 @@ const CardContainer = styled.div`
 `;
 
 const ImageContainer = styled.div`
-  ${tw`h-40 w-full bg-gray-200 relative overflow-hidden`}
+  ${tw`h-40 w-full relative overflow-hidden`}
+  background-color: ${({ theme }) => theme.cards.image.placeholderColor};
 `;
 
 const Image = styled.img`
@@ -38,7 +43,8 @@ const Image = styled.img`
 `;
 
 const DurationBadge = styled.div`
-  ${tw`absolute top-3 right-3 bg-black/40 backdrop-blur-sm px-3 py-1 rounded-full flex items-center`}
+  ${tw`absolute top-3 right-3 backdrop-blur-sm px-3 py-1 rounded-full flex items-center`}
+  background-color: ${({ theme }) => theme.cards.image.durationBadgeBackground};
 `;
 
 const LoaderContainer = styled(motion.div)`
@@ -46,7 +52,8 @@ const LoaderContainer = styled(motion.div)`
 `;
 
 const DurationText = styled.span`
-  ${tw`text-white text-sm font-normal`}
+  ${tw`text-sm font-normal`}
+  color: ${({ theme }) => theme.cards.image.durationBadgeText};
 `;
 
 const BottomSection = styled.div`
@@ -62,19 +69,37 @@ const NumberContainer = styled.div`
 const SpinnerRing = styled.svg`
   ${tw`absolute inset-0 z-10`}
   transform-origin: center;
+
+  circle {
+    stroke: ${({ theme }) => theme.stepIndicators.active.outlineColor};
+  }
 `;
 
-const NumberCircle = styled.div<{ $isPlaying: boolean }>(({ $isPlaying }) => [
-  tw`absolute rounded-full bg-white flex items-center justify-center`,
-  $isPlaying ? tw`inset-[1.5px]` : tw`inset-0 border border-[#CBCBCB]`,
+const NumberCircle = styled.div<{ $isPlaying: boolean }>(({ $isPlaying, theme }) => [
+  tw`absolute rounded-full flex items-center justify-center`,
+  {
+    backgroundColor: $isPlaying
+      ? theme.stepIndicators.active.backgroundColor
+      : theme.stepIndicators.inactive.backgroundColor,
+  },
+  $isPlaying ? tw`inset-[1.5px]` : [
+    tw`inset-0`,
+    {
+      border: `1px solid ${theme.stepIndicators.inactive.borderColor}`,
+    },
+  ],
 ]);
 
 const NumberText = styled.span`
-  ${tw`text-sm font-semibold text-gray-900 font-sans`}
+  ${tw`text-sm font-sans`}
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  color: ${({ theme }) => theme.stepIndicators.inactive.numberColor};
 `;
 
 const Title = styled.h3`
-  ${tw`text-lg font-medium text-gray-900 leading-tight flex-1 font-sans`}
+  ${tw`text-lg leading-tight flex-1 font-sans`}
+  font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
@@ -117,7 +142,6 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
                   cy="14"
                   r="12.5"
                   fill="none"
-                  stroke="#000000"
                   strokeWidth="3"
                   strokeDasharray="20 58.5"
                   strokeLinecap="round"

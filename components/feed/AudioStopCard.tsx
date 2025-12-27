@@ -22,20 +22,35 @@ const OuterContainer = styled.div`
 `;
 
 const CardContainer = styled.div`
-  ${tw`relative rounded-2xl bg-white shadow-[0_2px_15px_rgba(0,0,0,0.05)] border border-gray-100 cursor-pointer transition-transform active:scale-[0.99]`}
+  ${tw`relative cursor-pointer transition-transform active:scale-[0.99]`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.base};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const ImageContainer = styled.div`
-  ${tw`h-40 w-full bg-gray-200 rounded-t-2xl relative overflow-hidden`}
+  ${tw`h-40 w-full relative overflow-hidden`}
+  background-color: ${({ theme }) => theme.cards.image.placeholderColor};
+  border-top-left-radius: ${({ theme }) => theme.cards.cornerRadius};
+  border-top-right-radius: ${({ theme }) => theme.cards.cornerRadius};
 `;
 
 const Image = styled.img`
   ${tw`w-full h-full object-cover`}
 `;
 
-const PlayButton = styled.button<{ $isPlaying: boolean }>(({ $isPlaying }) => [
+const PlayButton = styled.button<{ $isPlaying: boolean }>(({ $isPlaying, theme }) => [
   tw`absolute top-[136px] right-6 w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden`,
-  $isPlaying ? tw`bg-black text-white` : tw`bg-white text-black border border-gray-100`,
+  $isPlaying && {
+    backgroundColor: theme.miniPlayer.controls.playButtonBackground,
+    color: theme.miniPlayer.controls.playButtonIcon,
+  },
+  !$isPlaying && {
+    backgroundColor: theme.cards.backgroundColor,
+    color: theme.colors.text.primary,
+    border: `1px solid ${theme.cards.borderColor}`,
+  },
 ]);
 
 const IconContainer = styled(motion.div)`
@@ -55,11 +70,13 @@ const InfoContent = styled.div`
 `;
 
 const NumberCircle = styled.div`
-  ${tw`w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center shrink-0`}
+  ${tw`w-9 h-9 rounded-full flex items-center justify-center shrink-0`}
+  background-color: ${({ theme }) => theme.colors.background.secondary};
 `;
 
 const NumberText = styled.span`
-  ${tw`text-sm font-bold text-gray-500`}
+  ${tw`text-sm font-bold`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const TextContent = styled.div`
@@ -67,11 +84,13 @@ const TextContent = styled.div`
 `;
 
 const Title = styled.h3`
-  ${tw`text-xl font-bold text-gray-900 mb-1 leading-tight`}
+  ${tw`text-xl font-bold mb-1 leading-tight`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 const Duration = styled.p`
-  ${tw`text-base font-medium text-gray-500`}
+  ${tw`text-base font-medium`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 export const AudioStopCard = memo<AudioStopCardProps>(({

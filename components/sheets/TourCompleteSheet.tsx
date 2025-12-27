@@ -16,23 +16,31 @@ const Container = styled.div`
 `;
 
 const IconCircle = styled.div`
-  ${tw`w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6`}
+  ${tw`w-20 h-20 rounded-full flex items-center justify-center mb-6`}
+  background-color: ${({ theme }) => `${theme.status.success}20`};
+  color: ${({ theme }) => theme.status.success};
 `;
 
 const Title = styled.h2`
-  ${tw`text-2xl font-bold text-gray-900 mb-2`}
+  ${tw`text-2xl font-bold mb-2`}
+  color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const Description = styled.p`
-  ${tw`text-gray-600 mb-8 max-w-xs`}
+  ${tw`mb-8 max-w-xs`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const RateButton = styled.button`
-  ${tw`w-full bg-black text-white font-bold py-4 px-6 rounded-full flex items-center justify-center gap-2 mb-3 active:scale-[0.98] transition-transform`}
+  ${tw`w-full font-bold py-4 px-6 rounded-full flex items-center justify-center gap-2 mb-3 active:scale-[0.98] transition-transform`}
+  background-color: ${({ theme }) => theme.buttons.primary.backgroundColor};
+  color: ${({ theme }) => theme.buttons.primary.textColor};
 `;
 
 const SkipButton = styled.button`
-  ${tw`w-full bg-gray-100 text-gray-900 font-bold py-4 px-6 rounded-full active:scale-[0.98] transition-transform`}
+  ${tw`w-full font-bold py-4 px-6 rounded-full active:scale-[0.98] transition-transform`}
+  background-color: ${({ theme }) => theme.buttons.secondary.backgroundColor};
+  color: ${({ theme }) => theme.buttons.secondary.textColor};
 `;
 
 export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
@@ -46,7 +54,7 @@ export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose}>
       <Container>
         <IconCircle>
-          <CircleCheckBig size={40} className="text-green-600" strokeWidth={2} />
+          <CircleCheckBig size={40} strokeWidth={2} />
         </IconCircle>
 
         <Title>{t.tourComplete.title}</Title>

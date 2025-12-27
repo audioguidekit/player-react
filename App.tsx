@@ -22,6 +22,8 @@ import { useTourNavigation } from './hooks/useTourNavigation';
 import { useAudioPreloader, eagerPreloadImage, eagerPreloadAudio } from './hooks/useAudioPreloader';
 import { RatingProvider, useRating } from './context/RatingContext';
 import { TranslationProvider } from './src/translations';
+import { ThemeProvider } from './src/theme/ThemeProvider';
+import { GlobalStyles } from './src/theme/GlobalStyles';
 import { LoadingScreen } from './src/components/screens/LoadingScreen';
 import { ErrorScreen } from './src/components/screens/ErrorScreen';
 import { AssetsLoadingScreen } from './src/components/screens/AssetsLoadingScreen';
@@ -713,21 +715,30 @@ const App: React.FC = () => {
     }
   }, [tour, currentStopId, audioPlayer.progress, progressTracking, hasShownCompletionSheet]);
 
+  // Get theme ID from tour data (fallback to 'default')
+  const themeId = tour?.themeId || 'default';
+
   // Loading state
   if (tourLoading || languagesLoading) {
     return (
-      <TranslationProvider language={selectedLanguage?.code || 'en'}>
-        <LoadingScreen />
-      </TranslationProvider>
+      <ThemeProvider themeId="default">
+        <GlobalStyles />
+        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+          <LoadingScreen />
+        </TranslationProvider>
+      </ThemeProvider>
     );
   }
 
   // Error state
   if (tourError || languagesError) {
     return (
-      <TranslationProvider language={selectedLanguage?.code || 'en'}>
-        <ErrorScreen error={tourError || languagesError} />
-      </TranslationProvider>
+      <ThemeProvider themeId="default">
+        <GlobalStyles />
+        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+          <ErrorScreen error={tourError || languagesError} />
+        </TranslationProvider>
+      </ThemeProvider>
     );
   }
 
@@ -736,18 +747,23 @@ const App: React.FC = () => {
   // Show loading screen while assets are being preloaded
   if (!assetsReady) {
     return (
-      <TranslationProvider language={selectedLanguage?.code || 'en'}>
-        <AssetsLoadingScreen />
-      </TranslationProvider>
+      <ThemeProvider themeId={themeId}>
+        <GlobalStyles />
+        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+          <AssetsLoadingScreen />
+        </TranslationProvider>
+      </ThemeProvider>
     );
   }
 
   return (
-    <TranslationProvider language={selectedLanguage?.code || 'en'}>
-      <MobileFrame>
-        <div className="relative w-full h-full bg-white overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
+    <ThemeProvider themeId={themeId}>
+      <GlobalStyles />
+      <TranslationProvider language={selectedLanguage?.code || 'en'}>
+        <MobileFrame>
+        <div className="relative w-full h-full overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
           {/* Main Content Area */}
-          <div className="flex-1 relative overflow-hidden bg-white">
+          <div className="flex-1 relative overflow-hidden">
             <TourStart
               tour={tour}
               onOpenRating={() => setActiveSheet('RATING')}
@@ -855,7 +871,8 @@ const App: React.FC = () => {
           />
         </div>
       </MobileFrame>
-    </TranslationProvider>
+      </TranslationProvider>
+    </ThemeProvider>
   );
 };
 

@@ -21,9 +21,12 @@ const LanguageList = styled.div`
   ${tw`space-y-0.5`}
 `;
 
-const LanguageButton = styled.button<{ $isSelected: boolean }>(({ $isSelected }) => [
+const LanguageButton = styled.button<{ $isSelected: boolean }>(({ $isSelected, theme }) => [
   tw`w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200`,
-  $isSelected ? tw`bg-gray-100` : tw`active:scale-[0.98]`,
+  $isSelected && {
+    backgroundColor: theme.colors.background.secondary,
+  },
+  !$isSelected && tw`active:scale-[0.98]`,
 ]);
 
 const LanguageContent = styled.div`
@@ -34,9 +37,16 @@ const Flag = styled.span`
   ${tw`text-2xl`}
 `;
 
-const LanguageName = styled.span<{ $isSelected: boolean }>(({ $isSelected }) => [
+const LanguageName = styled.span<{ $isSelected: boolean }>(({ $isSelected, theme }) => [
   tw`text-lg`,
-  $isSelected ? tw`font-bold text-black` : tw`font-medium text-gray-600`,
+  $isSelected && {
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
+  },
+  !$isSelected && {
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.text.secondary,
+  },
 ]);
 
 export const LanguageSheet: React.FC<LanguageSheetProps> = ({
@@ -63,7 +73,7 @@ export const LanguageSheet: React.FC<LanguageSheetProps> = ({
                 </LanguageName>
               </LanguageContent>
               {selectedLanguage.code === lang.code && (
-                <Check size={20} className="text-gray-500" strokeWidth={4} />
+                <Check size={20} strokeWidth={4} style={{ color: 'inherit', opacity: 0.5 }} />
               )}
             </LanguageButton>
           ))}

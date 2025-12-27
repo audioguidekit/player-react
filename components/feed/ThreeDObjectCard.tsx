@@ -31,15 +31,24 @@ interface ThreeDObjectCardProps {
 }
 
 const Container = styled.div`
-  ${tw`bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-gray-100`}
+  ${tw`overflow-hidden mb-4`}
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  border-radius: ${({ theme }) => theme.cards.cornerRadius};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+  border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
 const ViewerContainer = styled.div`
-  ${tw`w-full h-80 bg-gradient-to-br from-gray-50 to-gray-100 relative`}
+  ${tw`w-full h-80 bg-gradient-to-br relative`}
+  background-image: linear-gradient(to bottom right,
+    ${({ theme }) => theme.colors.background.secondary},
+    ${({ theme }) => theme.colors.background.tertiary}
+  );
 `;
 
 const SafariFallback = styled.div`
-  ${tw`w-full h-full flex items-center justify-center px-6 text-center text-sm text-gray-600`}
+  ${tw`w-full h-full flex items-center justify-center px-6 text-center text-sm`}
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 const CaptionContainer = styled.div`
@@ -47,7 +56,8 @@ const CaptionContainer = styled.div`
 `;
 
 const Caption = styled.p`
-  ${tw`text-gray-700 text-sm leading-relaxed`}
+  ${tw`text-sm leading-relaxed`}
+  color: ${({ theme }) => theme.cards.textColor};
 `;
 
 export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {

@@ -20,7 +20,9 @@ const Backdrop = styled(motion.div)`
 `;
 
 const SheetContainer = styled(motion.div)`
-  ${tw`absolute bottom-0 left-0 right-0 bg-white z-[70] rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col h-auto max-h-[90%]`}
+  ${tw`absolute bottom-0 left-0 right-0 z-[70] rounded-t-[2.5rem] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col h-auto max-h-[90%]`}
+  background-color: ${({ theme }) => theme.sheets.backgroundColor};
+  border-top: 1px solid ${({ theme }) => theme.sheets.borderColor || theme.colors.border.light};
   will-change: transform;
 `;
 
@@ -29,7 +31,8 @@ const HandleArea = styled.div`
 `;
 
 const Handle = styled.div`
-  ${tw`w-12 h-1.5 bg-gray-300 rounded-full`}
+  ${tw`w-12 h-1.5 rounded-full`}
+  background-color: ${({ theme }) => theme.sheets.handleColor};
 `;
 
 const Header = styled.div`
@@ -37,11 +40,18 @@ const Header = styled.div`
 `;
 
 const Title = styled.h3`
-  ${tw`text-lg font-bold text-gray-900`}
+  ${tw`text-lg`}
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  color: ${({ theme }) => theme.sheets.textColor};
 `;
 
 const CloseButton = styled.button`
-  ${tw`p-2 -mr-2 text-gray-400 rounded-full transition-colors`}
+  ${tw`p-2 -mr-2 rounded-full transition-colors`}
+  color: ${({ theme }) => theme.colors.text.tertiary};
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.text.secondary};
+  }
 `;
 
 const Content = styled.div`

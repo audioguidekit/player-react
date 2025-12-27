@@ -31,7 +31,8 @@ interface MiniPlayerProps {
 }
 
 const Container = styled(motion.div)`
-  ${tw`absolute bottom-0 left-0 right-0 z-[70] bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-t-[2.5rem] overflow-hidden`}
+  ${tw`absolute bottom-0 left-0 right-0 z-[70] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] rounded-t-[2.5rem] overflow-hidden`}
+  background-color: ${({ theme }) => theme.miniPlayer.backgroundColor};
   padding-bottom: calc(200px + ${({ theme }) => theme.platform.safeArea.bottom});
   margin-bottom: -200px;
 `;
@@ -41,16 +42,22 @@ const InnerContainer = styled.div`
 `;
 
 const BackgroundLayer = styled.div`
-  ${tw`absolute inset-0 bg-gray-100 rounded-t-[2.5rem] flex items-center justify-between px-4 h-full`}
+  ${tw`absolute inset-0 rounded-t-[2.5rem] flex items-center justify-between px-4 h-full`}
+  background-color: ${({ theme }) => theme.colors.background.secondary};
 `;
 
-const SwipeIcon = styled(motion.div)<{ $canNavigate: boolean }>(({ $canNavigate }) => [
+const SwipeIcon = styled(motion.div)<{ $canNavigate: boolean }>(({ $canNavigate, theme }) => [
   tw`flex items-center`,
-  $canNavigate ? tw`text-gray-800` : tw`text-gray-400`,
+  {
+    color: $canNavigate ? theme.miniPlayer.textColor : theme.colors.text.tertiary,
+  },
 ]);
 
-const ForegroundCard = styled(motion.div)<{ $isExpanded: boolean }>(({ $isExpanded }) => [
-  tw`bg-white relative rounded-t-[2.5rem] overflow-hidden`,
+const ForegroundCard = styled(motion.div)<{ $isExpanded: boolean }>(({ $isExpanded, theme }) => [
+  tw`relative rounded-t-[2.5rem] overflow-hidden`,
+  {
+    backgroundColor: theme.miniPlayer.backgroundColor,
+  },
   $isExpanded ? tw`w-full h-full` : tw`flex items-center justify-between gap-3`,
 ]);
 
@@ -59,7 +66,8 @@ const HandleContainer = styled(motion.div)<{ $isExpanded: boolean }>`
 `;
 
 const Handle = styled.div`
-  ${tw`w-10 h-1 bg-gray-300 rounded-full`}
+  ${tw`w-10 h-1 rounded-full`}
+  background-color: ${({ theme }) => theme.sheets.handleColor};
 `;
 
 const ExpandedContent = styled(motion.div)`
@@ -89,7 +97,8 @@ const TitleContainer = styled.div`
 `;
 
 const TitleText = styled(motion.span)`
-  ${tw`text-base text-gray-800 whitespace-nowrap inline-block leading-none pb-0.5`}
+  ${tw`text-base whitespace-nowrap inline-block leading-none pb-0.5`}
+  color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
 
 const MinimizedContent = styled(motion.div)`
@@ -106,7 +115,8 @@ const MinimizedTitleSection = styled(motion.div)`
 `;
 
 const MinimizedTitle = styled.span`
-  ${tw`text-base text-gray-800 truncate`}
+  ${tw`text-base truncate`}
+  color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
 
 
@@ -308,7 +318,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                   {/* Controls Row */}
                   <ControlsRow>
                     <SkipButton direction="backward" onClick={onRewind} seconds={15} className="w-14 h-14">
-                      <BackwardIcon size={32} className="ml-1 mb-0.5 text-gray-600" />
+                      <BackwardIcon size={32} className="ml-1 mb-0.5" />
                     </SkipButton>
 
                     <ProgressContainer>
@@ -317,8 +327,6 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                           progress={visualProgress}
                           size={64}
                           strokeWidth={3}
-                          color="#22BD53"
-                          backgroundColor="#dddddd"
                         />
                       )}
                       <PlayPauseButton
@@ -331,7 +339,7 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
                     </ProgressContainer>
 
                     <SkipButton direction="forward" onClick={onForward} seconds={15} className="w-14 h-14">
-                      <ForwardIcon size={32} className="mr-1 mb-0.5 text-gray-600" />
+                      <ForwardIcon size={32} className="mr-1 mb-0.5" />
                     </SkipButton>
                   </ControlsRow>
 

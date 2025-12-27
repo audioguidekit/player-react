@@ -1,6 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
+import { ExtendedTheme } from './ThemeProvider';
 
-export const GlobalStyles = createGlobalStyle`
+export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
   html {
     width: 100%;
     height: 100%;
@@ -25,18 +26,19 @@ export const GlobalStyles = createGlobalStyle`
     margin: 0;
     padding: 0;
     width: 100%;
-    font-family: ${({ theme }) => theme.typography.fontFamily.sans.join(', ')};
-    background-color: ${({ theme }) => theme.colors.white};
+    font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'};
+    background-color: ${({ theme }) => theme?.colors?.background?.primary || '#FFFFFF'};
+    color: ${({ theme }) => theme?.colors?.text?.primary || '#111827'};
     overscroll-behavior: none;
-    height: ${({ theme }) => theme.platform.viewport.height};
+    height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
   }
 
   #root {
     width: 100%;
-    height: ${({ theme }) => theme.platform.viewport.height};
+    height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
   }
 
-  /* Audio playing loader animation */
+  /* Audio playing loader animation - uses theme color */
   .audio-playing-loader {
     width: 3px;
     height: 16px;
@@ -44,7 +46,7 @@ export const GlobalStyles = createGlobalStyle`
     display: inline-block;
     position: relative;
     background: currentColor;
-    color: #FFF;
+    color: ${({ theme }) => theme?.colors?.text?.inverse || '#FFFFFF'};
     box-sizing: border-box;
     animation: animloader 0.3s 0.3s linear infinite alternate;
   }

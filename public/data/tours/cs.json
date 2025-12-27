@@ -8,6 +8,7 @@
   "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.jpeg",
   "offlineAvailable": false,
   "transitionAudio": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/end.m4a",
+  "themeId": "default",
   "stops": [
     {
       "id": "1",

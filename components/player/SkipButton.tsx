@@ -16,9 +16,13 @@ const Container = styled(motion.div)`
   ${tw`relative z-10 flex items-center justify-center`}
 `;
 
-const Button = styled.button<{ $disabled: boolean }>(({ $disabled }) => [
-  tw`w-12 h-12 rounded-full text-gray-950 flex items-center justify-center`,
+const Button = styled.button<{ $disabled: boolean }>(({ $disabled, theme }) => [
+  tw`w-12 h-12 rounded-full flex items-center justify-center`,
   tw`active:scale-90 transition-transform duration-100 ease-in-out`,
+  {
+    backgroundColor: theme.miniPlayer.controls.otherButtonsBackground,
+    color: theme.miniPlayer.controls.otherButtonsIcon,
+  },
   $disabled && tw`opacity-40`,
 ]);
 

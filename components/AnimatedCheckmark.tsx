@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import tw from 'twin.macro';
-import styled from 'styled-components';
+import styled, { useTheme } from 'styled-components';
 
 interface AnimatedCheckmarkProps {
   isVisible: boolean;
@@ -15,9 +15,15 @@ interface CheckmarkContainerProps {
   $circleSize: number;
 }
 
-const CheckmarkContainer = styled.div<CheckmarkContainerProps>(({ $isVisible, $circleSize }) => [
+const CheckmarkContainer = styled.div<CheckmarkContainerProps>(({ $isVisible, $circleSize, theme }) => [
   tw`rounded-full flex items-center justify-center`,
-  $isVisible ? tw`bg-[#22BD53] border-0` : tw`bg-transparent border border-neutral-200`,
+  $isVisible ? {
+    backgroundColor: theme.status.success,
+    border: '0',
+  } : {
+    backgroundColor: 'transparent',
+    border: `1px solid ${theme.colors.border.medium}`,
+  },
   {
     width: `${$circleSize}px`,
     height: `${$circleSize}px`,
@@ -30,6 +36,7 @@ export const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
   uniqueKey = 'checkmark',
   className = ''
 }) => {
+  const theme = useTheme();
   const circleSize = size * 3.5; // 28px for size 8
   const svgSize = size * 1.75;   // 14px for size 8
 
@@ -51,7 +58,7 @@ export const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
           >
             <motion.path
               d="M1 4L3.5 6.5L9 1"
-              stroke="#ffffff"
+              stroke={theme.colors.text.inverse}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"

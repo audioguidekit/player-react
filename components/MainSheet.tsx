@@ -18,11 +18,14 @@ const Container = styled.div`
 `;
 
 const Backdrop = styled.div`
-  ${tw`absolute inset-0 bg-black/20 z-10 pointer-events-auto`}
+  ${tw`absolute inset-0 z-10 pointer-events-auto`}
+  background-color: rgba(0, 0, 0, 0.2);
 `;
 
 const SheetContainer = styled(motion.div)<{ $isExpanded: boolean }>`
-  ${tw`absolute inset-x-0 bottom-0 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.1)] overflow-hidden z-20 flex flex-col pointer-events-auto`}
+  ${tw`absolute inset-x-0 bottom-0 overflow-hidden z-20 flex flex-col pointer-events-auto`}
+  background-color: ${({ theme }) => theme.sheets.backgroundColor};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
   padding-bottom: max(${({ theme }) => theme.platform.safeArea.bottom}, 0px);
   top: ${({ $isExpanded, theme }) => $isExpanded ? `calc(-1 * ${theme.platform.safeArea.top})` : '0'};
 `;

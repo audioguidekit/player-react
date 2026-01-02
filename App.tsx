@@ -767,15 +767,12 @@ const App: React.FC = () => {
           <div className="flex-1 relative overflow-hidden">
             <TourStart
               tour={tour}
+              selectedLanguage={selectedLanguage!}
               onOpenRating={() => setActiveSheet('RATING')}
               onOpenLanguage={() => setActiveSheet('LANGUAGE')}
               sheetY={sheetY}
               collapsedY={collapsedY}
               isVisible={true}
-              selectedLanguage={selectedLanguage}
-              onStart={handleStartTour}
-              availableLanguages={languages}
-              onLanguageChange={handleLanguageChange}
             />
 
             <MainSheet

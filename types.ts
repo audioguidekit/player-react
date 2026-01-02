@@ -86,6 +86,7 @@ export interface Language {
   code: string;
   name: string;
   flag: string;
+  countryCode: string;
 }
 
 export interface TourRating {

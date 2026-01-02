@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion, useTransform, MotionValue, useMotionTemplate } from 'framer-motion';
-import { MessageCircleMore, Languages } from 'lucide-react';
+import { MessageCircleMore, ChevronDown } from 'lucide-react';
+import * as flags from 'country-flag-icons/react/3x2';
 import tw from 'twin.macro';
 import styled from 'styled-components';
-import { TourData } from '../types';
+import { TourData, Language } from '../types';
 
 const Container = styled.div`
   ${tw`absolute inset-0 w-full h-full z-0 overflow-hidden`}
@@ -45,8 +46,38 @@ const ActionButton = styled.button`
   color: ${({ theme }) => theme.colors.text.inverse};
 `;
 
+const LanguageButton = styled.button`
+  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 px-4 py-3 transition-all active:scale-95`}
+  background-color: rgba(0, 0, 0, 0.4);
+  color: ${({ theme }) => theme.colors.text.inverse};
+`;
+
+const LanguageFlag = styled.div`
+  ${tw`flex items-center justify-center`}
+  width: 36px;
+  height: 24px;
+  border-radius: 10px;
+  overflow: hidden;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 10px;
+  }
+`;
+
+const LanguageName = styled.span`
+  ${tw`text-base font-normal`}
+`;
+
+const ChevronIcon = styled(ChevronDown)`
+  opacity: 0.8;
+`;
+
 interface TourStartProps {
   tour: TourData;
+  selectedLanguage: Language;
   onOpenRating: () => void;
   onOpenLanguage: () => void;
   sheetY?: MotionValue<number>;
@@ -56,6 +87,7 @@ interface TourStartProps {
 
 export const TourStart: React.FC<TourStartProps> = ({
   tour,
+  selectedLanguage,
   onOpenRating,
   onOpenLanguage,
   sheetY,
@@ -64,6 +96,9 @@ export const TourStart: React.FC<TourStartProps> = ({
 }) => {
   // Check if the media is a video
   const isVideo = tour.image.match(/\.(mp4|webm|ogg)$/i);
+
+  // Get the flag component dynamically
+  const FlagIcon = flags[selectedLanguage.countryCode as keyof typeof flags] as React.ComponentType<React.SVGProps<SVGSVGElement>>;
 
   // Animation Transforms
 
@@ -132,9 +167,13 @@ export const TourStart: React.FC<TourStartProps> = ({
           <ActionButton onClick={onOpenRating}>
             <MessageCircleMore size={24} />
           </ActionButton>
-          <ActionButton onClick={onOpenLanguage}>
-            <Languages size={24} />
-          </ActionButton>
+          <LanguageButton onClick={onOpenLanguage}>
+            <LanguageFlag>
+              <FlagIcon />
+            </LanguageFlag>
+            <LanguageName>{selectedLanguage.name}</LanguageName>
+            <ChevronIcon size={18} strokeWidth={2.5} />
+          </LanguageButton>
         </TopButtonsContainer>
       </MediaContainer>
     </Container>

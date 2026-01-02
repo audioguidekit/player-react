@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check } from 'lucide-react';
+import * as flags from 'country-flag-icons/react/3x2';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { BottomSheet } from '../BottomSheet';
@@ -33,18 +34,29 @@ const LanguageContent = styled.div`
   ${tw`flex items-center gap-4`}
 `;
 
-const Flag = styled.span`
-  ${tw`text-2xl`}
+const Flag = styled.div`
+  ${tw`flex items-center justify-center`}
+  width: 32px;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    border-radius: 8px;
+  }
 `;
 
 const LanguageName = styled.span<{ $isSelected: boolean }>(({ $isSelected, theme }) => [
   tw`text-lg`,
   $isSelected && {
-    fontWeight: theme.typography.fontWeight.bold,
+    fontWeight: theme.typography.fontWeight.medium,
     color: theme.colors.text.primary,
   },
   !$isSelected && {
-    fontWeight: theme.typography.fontWeight.medium,
+    fontWeight: theme.typography.fontWeight.normal,
     color: theme.colors.text.secondary,
   },
 ]);
@@ -60,23 +72,29 @@ export const LanguageSheet: React.FC<LanguageSheetProps> = ({
     <BottomSheet isOpen={isOpen} onClose={onClose}>
       <Container>
         <LanguageList>
-          {languages.map((lang) => (
-            <LanguageButton
-              key={lang.code}
-              onClick={() => onSelect(lang)}
-              $isSelected={selectedLanguage.code === lang.code}
-            >
-              <LanguageContent>
-                <Flag>{lang.flag}</Flag>
-                <LanguageName $isSelected={selectedLanguage.code === lang.code}>
-                  {lang.name}
-                </LanguageName>
-              </LanguageContent>
-              {selectedLanguage.code === lang.code && (
-                <Check size={20} strokeWidth={4} style={{ color: 'inherit', opacity: 0.5 }} />
-              )}
-            </LanguageButton>
-          ))}
+          {languages.map((lang) => {
+            const FlagIcon = flags[lang.countryCode as keyof typeof flags] as React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
+            return (
+              <LanguageButton
+                key={lang.code}
+                onClick={() => onSelect(lang)}
+                $isSelected={selectedLanguage.code === lang.code}
+              >
+                <LanguageContent>
+                  <Flag>
+                    <FlagIcon />
+                  </Flag>
+                  <LanguageName $isSelected={selectedLanguage.code === lang.code}>
+                    {lang.name}
+                  </LanguageName>
+                </LanguageContent>
+                {selectedLanguage.code === lang.code && (
+                  <Check size={20} strokeWidth={4} style={{ color: 'inherit', opacity: 0.5 }} />
+                )}
+              </LanguageButton>
+            );
+          })}
         </LanguageList>
       </Container>
     </BottomSheet>

@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",
+    "country-flag-icons": "^1.6.4",
     "framer-motion": "^12.23.24",
     "idb": "^8.0.3",
     "lucide-react": "^0.554.0",

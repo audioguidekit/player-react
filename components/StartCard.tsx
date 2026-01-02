@@ -44,7 +44,7 @@ const Title = styled.h1`
 const MetaContainer = styled.div`
   ${tw`flex items-center gap-6 mb-4 text-sm uppercase tracking-wider`}
   color: ${({ theme }) => theme.colors.text.secondary};
-  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.normal};
 `;
 
 const MetaItem = styled.div`

@@ -38,14 +38,14 @@ const Flag = styled.div`
   ${tw`flex items-center justify-center`}
   width: 32px;
   height: 24px;
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
 
   svg {
     width: 100%;
     height: 100%;
     display: block;
-    border-radius: 8px;
+    border-radius: 6px;
   }
 `;
 

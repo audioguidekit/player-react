@@ -19,7 +19,8 @@
       "WebFetch(domain:styled-components.com)",
       "WebSearch",
       "WebFetch(domain:github.com)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

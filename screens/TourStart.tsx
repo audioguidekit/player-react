@@ -47,7 +47,8 @@ const ActionButton = styled.button`
 `;
 
 const LanguageButton = styled.button`
-  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 px-4 py-3 transition-all active:scale-95`}
+  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 px-3 transition-all active:scale-95`}
+  height: 48px;
   background-color: rgba(0, 0, 0, 0.4);
   color: ${({ theme }) => theme.colors.text.inverse};
 `;
@@ -68,7 +69,8 @@ const LanguageFlag = styled.div`
 `;
 
 const LanguageName = styled.span`
-  ${tw`text-base font-normal`}
+  ${tw`font-normal`}
+  font-size: 15px;
 `;
 
 const ChevronIcon = styled(ChevronDown)`

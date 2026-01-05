@@ -98,7 +98,7 @@ const ProgressBar = styled.div<{ $progress: number }>`
 `;
 
 const ButtonContent = styled.span`
-  ${tw`relative z-10 flex items-center gap-3`}
+  ${tw`relative z-10 flex items-center gap-2`}
 `;
 
 const OfflineBox = styled.div`

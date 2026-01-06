@@ -6,9 +6,31 @@ AudioTour Pro supports multiple languages with seamless switching and progress p
 
 The language system allows you to:
 - Provide tours in multiple languages
+- Automatically detect user's device/browser language
+- Remember user's language preference across sessions
 - Let users switch languages on the fly
 - Preserve playback position and progress when switching
 - Maintain a single tour across all languages
+
+### Smart Language Selection
+
+The app provides a seamless multilingual experience:
+
+1. **First-time visitors:** App detects device language (e.g., Czech phone → Czech tour)
+2. **Returning visitors:** App remembers their language choice
+3. **Manual selection:** Users can change language anytime via language picker
+4. **Intelligent fallback:** If device language unavailable, defaults to English
+
+**Example User Flow:**
+```
+Czech user visits on iPhone → App auto-selects Czech
+  ↓
+User changes to English → Preference saved
+  ↓
+User refreshes page → App remembers English choice
+  ↓
+User clears localStorage → App detects Czech again
+```
 
 ## How It Works
 
@@ -203,6 +225,95 @@ Progress is tracked per **tour ID** (not per language):
 
 ## Technical Implementation
 
+### Language Preference Persistence
+
+The app automatically remembers the user's language preference across sessions using localStorage.
+
+#### Automatic Language Detection
+
+On first visit, the app intelligently selects a language using this priority:
+
+1. **Saved User Preference** (highest priority)
+   - If user previously selected a language, use that
+   - Stored in `localStorage` under key `app-preferences`
+   - Respects explicit user choice
+
+2. **Browser/Device Language** (auto-detection)
+   - Detects from `navigator.language` (e.g., "cs-CZ", "en-US", "de-DE")
+   - Extracts language code (e.g., "cs-CZ" → "cs")
+   - Matches against available languages
+   - Console logs: `[LANGUAGE] Detected browser language: cs-CZ, using: cs`
+
+3. **English Fallback**
+   - If browser language not available in app
+
+4. **First Available Language**
+   - Ultimate fallback
+
+#### Storage Implementation
+
+**Location:** `App.tsx` (lines 65-104)
+
+```typescript
+// On app mount - check saved preference first
+const preferences = storageService.getPreferences();
+const savedLanguageCode = preferences.selectedLanguage;
+
+if (savedLanguageCode) {
+  languageToUse = languages.find(l => l.code === savedLanguageCode);
+}
+
+// If no saved preference, detect browser language
+if (!languageToUse) {
+  const browserLanguage = navigator.language || navigator.languages?.[0];
+  const browserLangCode = browserLanguage.split('-')[0].toLowerCase();
+  languageToUse = languages.find(l => l.code === browserLangCode);
+}
+```
+
+**When user changes language:**
+
+```typescript
+// App.tsx - handleLanguageChange function
+const handleLanguageChange = (language: Language) => {
+  // Save preference to localStorage
+  storageService.setPreferences({ selectedLanguage: language.code });
+
+  // Update app state
+  setSelectedLanguage(language);
+};
+```
+
+#### localStorage Structure
+
+**Key:** `app-preferences`
+
+**Value:**
+```json
+{
+  "selectedLanguage": "cs",
+  "theme": "light"
+}
+```
+
+#### Mobile Device Language Detection
+
+**iOS Safari:**
+- Reads from: Settings → General → Language & Region → iPhone Language
+- Examples:
+  - Czech device (cs-CZ) → App opens in Czech
+  - German device (de-DE) → App opens in German
+
+**Android Chrome:**
+- Reads from: Settings → Languages → Preferred languages (first preference)
+- Examples:
+  - French phone (fr-FR) → App opens in French
+  - Spanish phone (es-ES) → App opens in Spanish
+
+**Fallback Behavior:**
+- Unsupported language (e.g., Polish "pl-PL") → Falls back to English
+- No browser language available → Falls back to English
+
 ### Data Loading
 
 Tours are loaded by language code:
@@ -358,6 +469,9 @@ For each language, verify:
 - [ ] Language switching works
 - [ ] Progress is preserved
 - [ ] No missing translations
+- [ ] Browser language auto-detection works
+- [ ] Language preference persists after refresh
+- [ ] Saved preference takes precedence over browser language
 
 ## Adding a New Language
 
@@ -462,6 +576,54 @@ npm run dev
 3. Clear browser cache
 4. Check audio file naming convention
 
+### Language Not Auto-Detected
+
+**Problem:** App doesn't detect browser language on first visit
+
+**Solutions:**
+1. Check browser language settings:
+   - Chrome: Settings → Languages
+   - Safari: System Preferences → Language & Region
+2. Verify language code matches available languages (case-sensitive)
+3. Check console for detection logs: `[LANGUAGE] Detected browser language: ...`
+4. Ensure no saved preference exists (clear localStorage)
+5. Test with: `console.log(navigator.language)`
+
+### Language Not Persisting
+
+**Problem:** App doesn't remember language choice after refresh
+
+**Solutions:**
+1. Check localStorage is enabled in browser
+2. Verify localStorage has `app-preferences` key:
+   ```javascript
+   localStorage.getItem('app-preferences')
+   ```
+3. Check for private/incognito mode (localStorage disabled)
+4. Verify `storageService.setPreferences()` is called on language change
+5. Check browser console for storage errors
+6. Test with:
+   ```javascript
+   // Should show saved language
+   JSON.parse(localStorage.getItem('app-preferences'))
+   ```
+
+### Wrong Language After Clearing Cache
+
+**Problem:** App shows wrong language after clearing browser cache
+
+**Expected Behavior:**
+- Clearing cache should trigger browser language detection again
+- If device is set to Czech, app should detect Czech
+
+**Solutions:**
+1. Verify device/browser language is set correctly
+2. Clear localStorage (cache clearing doesn't always clear localStorage):
+   ```javascript
+   localStorage.removeItem('app-preferences')
+   ```
+3. Hard refresh: Cmd/Ctrl + Shift + R
+
 ## API Reference
 
 ### Types
@@ -501,17 +663,41 @@ const { data: tour } = useTourData('en');
 
 ### Language Detection
 
+The app automatically detects and applies the user's language preference:
+
 ```typescript
-// Get user's browser language
-const browserLang = navigator.language.split('-')[0]; // 'en-US' → 'en'
+// Implemented in App.tsx (lines 65-104)
 
-// Check if supported
+// 1. Check for saved preference
+const preferences = storageService.getPreferences();
+const savedLanguageCode = preferences.selectedLanguage;
+
+// 2. Detect browser language if no saved preference
+const browserLanguage = navigator.language || navigator.languages?.[0];
+const browserLangCode = browserLanguage.split('-')[0].toLowerCase(); // 'en-US' → 'en'
+
+// 3. Match against available languages
 const languages = await dataService.getLanguages();
-const isSupported = languages.some(l => l.code === browserLang);
+const detectedLanguage = languages.find(l => l.code === browserLangCode);
 
-// Fallback to default
-const langCode = isSupported ? browserLang : 'en';
+// 4. Fallback chain: saved → detected → 'en' → first available
+const languageToUse = savedLanguage || detectedLanguage ||
+                      languages.find(l => l.code === 'en') ||
+                      languages[0];
 ```
+
+**Testing Language Detection:**
+
+Desktop browser:
+```javascript
+// Chrome DevTools → Console
+navigator.language  // Check current language
+localStorage.getItem('app-preferences')  // Check saved preference
+```
+
+Mobile device:
+- iOS: Settings → General → Language & Region
+- Android: Settings → Languages → Preferred languages
 
 ## Migration from Old System
 
@@ -557,16 +743,28 @@ If you have existing tour files, migrate them:
    - Change `useTourData(tourId)` to `useTourData(languageCode)`
    - Remove tour ID-based loading if not needed
 
+## Implemented Features
+
+✅ **Automatic Language Detection** (Implemented)
+- Detects browser/device language on first visit
+- Stores user preference across sessions
+- Intelligent fallback chain
+
+✅ **Language Preference Persistence** (Implemented)
+- Remembers user's language choice in localStorage
+- Works across page refreshes and browser sessions
+
 ## Future Enhancements
 
 Potential improvements to the language system:
 
-- **Automatic Language Detection:** Detect browser language and auto-select
 - **Language Fallback:** If translation missing, fall back to default language
 - **Partial Translations:** Allow mixing languages (English audio, Czech UI)
-- **Regional Variants:** Support `en-US` vs `en-GB`
+- **Regional Variants:** Support `en-US` vs `en-GB`, `pt-BR` vs `pt-PT`
 - **RTL Support:** Add right-to-left language support (Arabic, Hebrew)
 - **Translation Management:** Tools for managing translations
+- **Language Analytics:** Track which languages are most used
+- **Crowdsourced Translations:** Allow community contributions
 
 ## Resources
 

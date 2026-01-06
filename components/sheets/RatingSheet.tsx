@@ -28,11 +28,13 @@ const Header = styled.div`
 `;
 
 const Title = styled.h3`
-  ${tw`text-xl font-bold mb-2`}
+  ${tw`text-xl font-semibold mb-2`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
 `;
 
 const Description = styled.p`
   ${tw`text-base max-w-[280px]`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
@@ -58,6 +60,7 @@ const HintContainer = styled.div`
 
 const HintText = styled(motion.span)`
   ${tw`text-sm font-normal absolute top-0`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.colors.text.tertiary};
 `;
 
@@ -98,7 +101,7 @@ const Input = styled.input`
 `;
 
 const Button = styled.button<{ $disabled?: boolean }>(({ $disabled, theme }) => [
-  tw`w-full py-4 rounded-full font-bold text-base transition-all duration-300`,
+  tw`w-full py-4 rounded-full font-semibold text-base transition-all duration-300`,
   $disabled && {
     backgroundColor: theme.colors.background.secondary,
     color: theme.colors.text.tertiary,
@@ -130,11 +133,13 @@ const SuccessIconCircle = styled.div`
 `;
 
 const SuccessTitle = styled.h3`
-  ${tw`text-2xl font-bold mb-2`}
+  ${tw`text-2xl font-semibold mb-2`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
 `;
 
 const SuccessDescription = styled.p`
   ${tw`text-base mb-8`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 

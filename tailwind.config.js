@@ -15,9 +15,7 @@ export default {
     extend: {
       // Theme values are now managed via styled-components ThemeProvider
       // Tailwind is only used for utility classes
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-      },
+      // Font family is controlled by GlobalStyles via styled-components theme
     },
   },
   plugins: [],

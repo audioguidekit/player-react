@@ -20,7 +20,10 @@
       "WebSearch",
       "WebFetch(domain:github.com)",
       "Bash(git log:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(xargs cat:*)",
+      "WebFetch(domain:fonts.googleapis.com)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

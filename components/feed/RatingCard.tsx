@@ -96,7 +96,7 @@ const Textarea = styled.textarea`
 `;
 
 const SubmitButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }) => [
-  tw`w-full py-4 rounded-full font-bold text-base transition-all duration-300`,
+  tw`w-full py-4 rounded-full font-semibold text-base transition-all duration-300`,
   $disabled && {
     backgroundColor: theme.colors.background.secondary,
     color: theme.colors.text.tertiary,

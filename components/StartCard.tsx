@@ -37,12 +37,18 @@ const TitleSection = styled.div`
 
 const Title = styled.h1`
   ${tw`text-3xl mb-2 tracking-tight`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
   color: ${({ theme }) => theme.colors.text.primary};
 `;
 
 const MetaContainer = styled.div`
   ${tw`flex items-center gap-6 mb-4 text-sm uppercase tracking-wider`}
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
   color: ${({ theme }) => theme.colors.text.secondary};
   font-weight: ${({ theme }) => theme.typography.fontWeight.normal};
 `;
@@ -53,6 +59,7 @@ const MetaItem = styled.div`
 
 const Description = styled.p`
   ${tw`text-base mb-6 leading-relaxed px-2`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
@@ -85,7 +92,11 @@ const ActionButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }
   {
     backgroundColor: theme.buttons.primary.backgroundColor,
     color: theme.buttons.primary.textColor,
-    fontWeight: theme.typography.fontWeight.bold,
+    fontFamily: theme?.typography?.fontFamily?.sans?.join(', '),
+    fontWeight: theme.typography.fontWeight.semibold,
+    '& svg': {
+      color: theme.buttons.primary.iconColor || theme.buttons.primary.textColor,
+    },
   },
   $disabled && tw`opacity-50 cursor-not-allowed active:scale-100`,
 ]);

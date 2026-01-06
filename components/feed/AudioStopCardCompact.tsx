@@ -53,6 +53,11 @@ const LoaderContainer = styled(motion.div)`
 
 const DurationText = styled.span`
   ${tw`text-sm font-normal`}
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
   color: ${({ theme }) => theme.cards.image.durationBadgeText};
 `;
 
@@ -90,14 +95,24 @@ const NumberCircle = styled.div<{ $isPlaying: boolean }>(({ $isPlaying, theme })
   ],
 ]);
 
-const NumberText = styled.span`
+const NumberText = styled.span<{ $isPlaying: boolean }>`
   ${tw`text-sm font-sans`}
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
   font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
-  color: ${({ theme }) => theme.stepIndicators.inactive.numberColor};
+  color: ${({ $isPlaying, theme }) =>
+    $isPlaying
+      ? theme.stepIndicators.active.numberColor
+      : theme.stepIndicators.inactive.numberColor
+  };
 `;
 
 const Title = styled.h3`
   ${tw`text-lg leading-tight flex-1 font-sans`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
   color: ${({ theme }) => theme.cards.textColor};
 `;
@@ -150,7 +165,7 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
               </SpinnerRing>
             )}
             <NumberCircle $isPlaying={isPlaying}>
-              <NumberText>{index + 1}</NumberText>
+              <NumberText $isPlaying={isPlaying}>{index + 1}</NumberText>
             </NumberCircle>
             <AnimatedCheckmark
               isVisible={isCompleted}

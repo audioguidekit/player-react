@@ -18,7 +18,7 @@ interface CheckmarkContainerProps {
 const CheckmarkContainer = styled.div<CheckmarkContainerProps>(({ $isVisible, $circleSize, theme }) => [
   tw`rounded-full flex items-center justify-center`,
   $isVisible ? {
-    backgroundColor: theme.status.success,
+    backgroundColor: theme.stepIndicators.completed.backgroundColor,
     border: '0',
   } : {
     backgroundColor: 'transparent',
@@ -58,7 +58,7 @@ export const AnimatedCheckmark: React.FC<AnimatedCheckmarkProps> = ({
           >
             <motion.path
               d="M1 4L3.5 6.5L9 1"
-              stroke={theme.colors.text.inverse}
+              stroke={theme.stepIndicators.completed.checkmarkColor}
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"

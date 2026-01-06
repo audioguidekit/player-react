@@ -26,11 +26,20 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
     margin: 0;
     padding: 0;
     width: 100%;
-    font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'};
+    font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'} !important;
     background-color: ${({ theme }) => theme?.colors?.background?.primary || '#FFFFFF'};
     color: ${({ theme }) => theme?.colors?.text?.primary || '#111827'};
     overscroll-behavior: none;
     height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
+  }
+
+  /* Apply heading font from theme to all heading elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: ${({ theme }) =>
+      theme?.typography?.fontFamily?.heading
+        ? theme.typography.fontFamily.heading.join(', ')
+        : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+    } !important;
   }
 
   #root {

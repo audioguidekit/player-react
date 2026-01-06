@@ -103,6 +103,7 @@ const TitleContainer = styled.div`
 
 const TitleText = styled(motion.span)`
   ${tw`text-base whitespace-nowrap inline-block leading-none pb-0.5`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
 
@@ -121,16 +122,20 @@ const MinimizedTitleSection = styled(motion.div)`
 
 const MinimizedTitle = styled.span`
   ${tw`text-base truncate`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
 
 const TranscriptionButton = styled.button<{ $isExpanded: boolean }>(({ $isExpanded, theme }) => [
   tw`w-12 h-12 rounded-full flex items-center justify-center`,
-  tw`active:scale-90 transition-transform duration-100 ease-in-out`,
+  tw`active:scale-90 transition-all duration-100 ease-in-out`,
   tw`absolute right-8`,
   {
     backgroundColor: theme.buttons.transcription.backgroundColor,
     color: theme.buttons.transcription.iconColor,
+    '&:hover': {
+      backgroundColor: theme.buttons.transcription.hoverBackground || theme.buttons.transcription.backgroundColor,
+    },
   },
 ]);
 

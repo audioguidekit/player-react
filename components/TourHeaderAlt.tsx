@@ -49,6 +49,11 @@ const ProgressBar = styled(motion.div)`
 
 const TimeText = styled.div`
   ${tw`text-sm font-normal whitespace-nowrap tabular-nums`}
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
   color: ${({ theme }) => theme.header.textColor};
 `;
 

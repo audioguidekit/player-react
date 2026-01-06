@@ -61,12 +61,6 @@ export const defaultTheme: ThemeConfig = {
       hoverBackground: '#E60000',
       iconColor: '#FFFFFF',
     },
-    ghost: {
-      backgroundColor: '#5B96C2', // Blue
-      textColor: '#FFFFFF',
-      borderColor: 'transparent',
-      hoverBackground: '#4A85B1',
-    },
     secondary: {
       backgroundColor: '#F3F4F6',
       textColor: '#111827',
@@ -84,6 +78,7 @@ export const defaultTheme: ThemeConfig = {
     fontFamily: {
       sans: ['Inter', 'sans-serif'],
       heading: ['Inter', 'sans-serif'],
+      numbers: ['Inter', 'sans-serif'], // Use same font for numbers in default theme
     },
     fontSize: {
       xs: '0.75rem',    // 12px
@@ -119,6 +114,9 @@ export const defaultTheme: ThemeConfig = {
       playButtonIcon: '#FFFFFF',
       otherButtonsBackground: '#5B96C2', // Blue
       otherButtonsIcon: '#FFFFFF',
+    },
+    minimized: {
+      playButtonIcon: '#111827',
     },
   },
 

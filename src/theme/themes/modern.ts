@@ -61,12 +61,6 @@ export const modernTheme: ThemeConfig = {
       hoverBackground: '#6D28D9',
       iconColor: '#FFFFFF',
     },
-    ghost: {
-      backgroundColor: '#A78BFA', // Light purple
-      textColor: '#FFFFFF',
-      borderColor: 'transparent',
-      hoverBackground: '#8B5CF6',
-    },
     secondary: {
       backgroundColor: '#F3F4F6',
       textColor: '#7C3AED',
@@ -84,6 +78,7 @@ export const modernTheme: ThemeConfig = {
     fontFamily: {
       sans: ['Inter', 'sans-serif'],
       heading: ['Inter', 'sans-serif'],
+      numbers: ['Inter', 'sans-serif'], // Use same font for numbers in modern theme
     },
     fontSize: {
       xs: '0.75rem',
@@ -119,6 +114,9 @@ export const modernTheme: ThemeConfig = {
       playButtonIcon: '#FFFFFF',
       otherButtonsBackground: '#A78BFA',
       otherButtonsIcon: '#FFFFFF',
+    },
+    minimized: {
+      playButtonIcon: '#1F2937',
     },
   },
 

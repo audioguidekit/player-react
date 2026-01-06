@@ -51,6 +51,9 @@ const Flag = styled.div`
 
 const LanguageName = styled.span<{ $isSelected: boolean }>(({ $isSelected, theme }) => [
   tw`text-lg`,
+  {
+    fontFamily: theme?.typography?.fontFamily?.sans?.join(', '),
+  },
   $isSelected && {
     fontWeight: theme.typography.fontWeight.medium,
     color: theme.colors.text.primary,

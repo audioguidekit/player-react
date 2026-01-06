@@ -38,9 +38,14 @@ const RateButton = styled.button`
 `;
 
 const SkipButton = styled.button`
-  ${tw`w-full font-bold py-4 px-6 rounded-full active:scale-[0.98] transition-transform`}
+  ${tw`w-full font-bold py-4 px-6 rounded-full active:scale-[0.98] transition-all`}
   background-color: ${({ theme }) => theme.buttons.secondary.backgroundColor};
   color: ${({ theme }) => theme.buttons.secondary.textColor};
+  border: 1px solid ${({ theme }) => theme.buttons.secondary.borderColor || 'transparent'};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.buttons.secondary.hoverBackground || theme.buttons.secondary.backgroundColor};
+  }
 `;
 
 export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({

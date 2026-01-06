@@ -65,12 +65,6 @@ export interface ThemeConfig {
       hoverBackground?: string;
       iconColor?: string;
     };
-    ghost: {
-      backgroundColor: string;
-      textColor: string;
-      borderColor?: string;
-      hoverBackground?: string;
-    };
     secondary: {
       backgroundColor: string;
       textColor: string;
@@ -89,6 +83,7 @@ export interface ThemeConfig {
     fontFamily: {
       sans: string[]; // e.g., ['Inter', 'sans-serif']
       heading?: string[];
+      numbers?: string[]; // For numerical displays (time, duration, progress, etc.)
     };
     fontSize: {
       xs: string;
@@ -128,6 +123,9 @@ export interface ThemeConfig {
       playButtonIcon: string;
       otherButtonsBackground: string;
       otherButtonsIcon: string;
+    };
+    minimized: {
+      playButtonIcon: string;
     };
   };
 

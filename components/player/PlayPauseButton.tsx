@@ -32,7 +32,7 @@ const StyledButton = styled(motion.button)<StyledButtonProps>(({ $size, $variant
 
   // Mini variant styling
   $variant === 'mini' && {
-    color: theme.miniPlayer.textColor,
+    color: theme.miniPlayer.minimized.playButtonIcon,
   },
   $variant === 'mini' && tw`shrink-0`,
 

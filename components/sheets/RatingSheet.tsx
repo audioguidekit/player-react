@@ -147,7 +147,7 @@ const ButtonGroup = styled.div`
   ${tw`flex flex-col gap-3 w-full mt-4`}
 `;
 
-export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSubmit }) => {
+export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSubmit }) => {
   const {
     rating, setRating,
     feedback, setFeedback,
@@ -358,4 +358,6 @@ export const RatingSheet: React.FC<RatingSheetProps> = ({ isOpen, onClose, onSub
       </Container>
     </BottomSheet>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.isOpen === nextProps.isOpen;
+});

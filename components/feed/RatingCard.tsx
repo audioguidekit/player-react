@@ -110,7 +110,7 @@ const SubmitButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }
   !$disabled && tw`active:scale-[0.98]`,
 ]);
 
-export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
+export const RatingCard = React.memo<RatingCardProps>(({ item }) => {
   const { rating, setRating, feedback, setFeedback, isSubmitted, submitRating } = useRating();
 
   const handleSubmit = () => {
@@ -216,4 +216,6 @@ export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
       </AnimatePresence>
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.item?.id === nextProps.item?.id;
+});

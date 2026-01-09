@@ -21,7 +21,7 @@ const StyledProgressSvg = styled(motion.svg)`
  * SVG circular progress ring component.
  * Used in MiniPlayer to show audio playback progress.
  */
-export const ProgressRing: React.FC<ProgressRingProps> = ({
+export const ProgressRing = React.memo<ProgressRingProps>(({
     progress,
     size = 64,
     strokeWidth = 3,
@@ -74,4 +74,14 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
             />
         </StyledProgressSvg>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.progress === nextProps.progress &&
+        prevProps.size === nextProps.size &&
+        prevProps.strokeWidth === nextProps.strokeWidth &&
+        prevProps.color === nextProps.color &&
+        prevProps.backgroundColor === nextProps.backgroundColor &&
+        prevProps.className === nextProps.className &&
+        prevProps.animated === nextProps.animated
+    );
+});

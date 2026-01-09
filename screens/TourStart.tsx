@@ -70,7 +70,10 @@ const LanguageFlag = styled.div`
 
 const LanguageName = styled.span`
   ${tw`font-normal`}
-  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.heading?.join(', ') ||
+    theme?.typography?.fontFamily?.sans?.join(', ')
+  };
   font-size: 15px;
 `;
 

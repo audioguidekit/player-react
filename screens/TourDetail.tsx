@@ -35,7 +35,7 @@ interface TourDetailProps {
   onScrollComplete?: () => void;
 }
 
-export const TourDetail: React.FC<TourDetailProps> = ({
+export const TourDetail = React.memo<TourDetailProps>(({
   tour,
   currentStopId,
   isPlaying,
@@ -182,4 +182,17 @@ export const TourDetail: React.FC<TourDetailProps> = ({
       </ScrollableList>
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.tour?.id === nextProps.tour?.id &&
+    prevProps.currentStopId === nextProps.currentStopId &&
+    prevProps.isPlaying === nextProps.isPlaying &&
+    prevProps.tourProgress === nextProps.tourProgress &&
+    prevProps.consumedMinutes === nextProps.consumedMinutes &&
+    prevProps.totalMinutes === nextProps.totalMinutes &&
+    prevProps.completedStopsCount === nextProps.completedStopsCount &&
+    prevProps.scrollToStopId === nextProps.scrollToStopId &&
+    prevProps.scrollTrigger === nextProps.scrollTrigger &&
+    prevProps.isStopCompleted === nextProps.isStopCompleted
+  );
+});

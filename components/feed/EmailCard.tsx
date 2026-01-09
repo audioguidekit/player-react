@@ -94,7 +94,7 @@ const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid, theme }) 
   $isValid && tw`active:scale-[0.98]`,
 ]);
 
-export const EmailCard: React.FC<EmailCardProps> = ({ item }) => {
+export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -153,4 +153,6 @@ export const EmailCard: React.FC<EmailCardProps> = ({ item }) => {
       </FlexContent>
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.item?.id === nextProps.item?.id;
+});

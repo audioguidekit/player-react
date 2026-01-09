@@ -177,7 +177,7 @@ const EmptyStateText = styled.p`
 `;
 
 
-export const MiniPlayer: React.FC<MiniPlayerProps> = ({
+export const MiniPlayer = React.memo<MiniPlayerProps>(({
   currentStop,
   isPlaying,
   onTogglePlay,
@@ -512,4 +512,19 @@ export const MiniPlayer: React.FC<MiniPlayerProps> = ({
       </InnerContainer>
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if relevant props change
+  return (
+    prevProps.currentStop?.id === nextProps.currentStop?.id &&
+    prevProps.isPlaying === nextProps.isPlaying &&
+    prevProps.progress === nextProps.progress &&
+    prevProps.isExpanded === nextProps.isExpanded &&
+    prevProps.isCompleting === nextProps.isCompleting &&
+    prevProps.isTransitioning === nextProps.isTransitioning &&
+    prevProps.canGoNext === nextProps.canGoNext &&
+    prevProps.canGoPrev === nextProps.canGoPrev &&
+    prevProps.isTranscriptionExpanded === nextProps.isTranscriptionExpanded &&
+    prevProps.transcription === nextProps.transcription &&
+    prevProps.transcriptionAvailable === nextProps.transcriptionAvailable
+  );
+});

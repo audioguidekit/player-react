@@ -114,6 +114,24 @@ const App: React.FC = () => {
   const [isMiniPlayerExpanded, setIsMiniPlayerExpanded] = useState(false);
   const [isTranscriptionExpanded, setIsTranscriptionExpanded] = useState(false);
 
+  // Local state for app flow - MUST be declared before callbacks that use them
+  const [hasStarted, setHasStarted] = useState(false);
+  const [scrollToStopId, setScrollToStopId] = useState<{ id: string; timestamp: number } | null>(null);
+  const [hasShownCompletionSheet, setHasShownCompletionSheet] = useState(false);
+  const [assetsReady, setAssetsReady] = useState(false);
+  const hasPreloadedEagerRef = useRef(false);
+
+  // Resume tracking refs
+  const resumeStopIdRef = useRef<string | null>(null);
+  const resumePositionRef = useRef<number>(0);
+  const pendingSeekRef = useRef<number | null>(null);
+
+  // Callback for track change - memoized for referential stability
+  // Must be declared after scrollToStopId state
+  const handleTrackChange = useCallback((stopId: string) => {
+    setScrollToStopId({ id: stopId, timestamp: Date.now() });
+  }, []);
+
   // Tour Navigation Hook
   const {
     currentStopId,
@@ -135,22 +153,8 @@ const App: React.FC = () => {
   } = useTourNavigation({
     tour,
     allowAutoPlay,
-    onTrackChange: (stopId) => {
-      setScrollToStopId({ id: stopId, timestamp: Date.now() });
-    }
+    onTrackChange: handleTrackChange
   });
-
-  // Local state for app flow
-  const [hasStarted, setHasStarted] = useState(false);
-  const [scrollToStopId, setScrollToStopId] = useState<{ id: string; timestamp: number } | null>(null);
-  const [hasShownCompletionSheet, setHasShownCompletionSheet] = useState(false);
-  const [assetsReady, setAssetsReady] = useState(false);
-  const hasPreloadedEagerRef = useRef(false);
-
-  // Resume tracking refs
-  const resumeStopIdRef = useRef<string | null>(null);
-  const resumePositionRef = useRef<number>(0);
-  const pendingSeekRef = useRef<number | null>(null);
 
   const getArtworkType = (src: string | undefined) => {
     if (!src) return undefined;
@@ -683,8 +687,8 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Handlers
-  const handleStartTour = () => {
+  // Handlers - wrapped with useCallback for referential stability
+  const handleStartTour = useCallback(() => {
     if (!tour || tour.stops.length === 0) return;
     setHasStarted(true);
     setAllowAutoPlay(true); // user initiated
@@ -707,13 +711,17 @@ const App: React.FC = () => {
         }
       }
     }
-  };
+  }, [tour, currentStopId, setCurrentStopId, setIsPlaying, setIsMiniPlayerExpanded, setHasStarted, setAllowAutoPlay]);
 
-  const handleBackToStart = () => {
+  const handleBackToStart = useCallback(() => {
     setHasStarted(false);
-  };
+  }, [setHasStarted]);
 
-  const handleResetTour = () => {
+  const closeSheet = useCallback(() => {
+    setActiveSheet('NONE');
+  }, [setActiveSheet]);
+
+  const handleResetTour = useCallback(() => {
     if (!tour) return;
     progressTracking.resetProgress();
     setHasShownCompletionSheet(false);
@@ -731,11 +739,9 @@ const App: React.FC = () => {
       setAllowAutoPlay(true);
     }
     setActiveSheet('NONE');
-  };
+  }, [tour, progressTracking, setCurrentStopId, setIsPlaying, setHasStarted, setAllowAutoPlay, setHasShownCompletionSheet, setActiveSheet]);
 
-  const closeSheet = () => setActiveSheet('NONE');
-
-  const handleLanguageChange = (language: Language) => {
+  const handleLanguageChange = useCallback((language: Language) => {
     // Stop playback if audio is currently playing
     if (isPlaying) {
       setIsPlaying(false);
@@ -754,19 +760,53 @@ const App: React.FC = () => {
 
     // Change language (this will trigger tour reload via useTourData dependency)
     setSelectedLanguage(language);
-    closeSheet();
-  };
+    setActiveSheet('NONE');
+  }, [isPlaying, setIsPlaying, currentStopId, audioPlayer.audioElement, setSelectedLanguage, setActiveSheet]);
 
-  const handleRatingSubmit = (rating: number) => {
+  const handleRatingSubmit = useCallback((rating: number) => {
     console.log('Rated:', rating);
-    closeSheet();
-  };
+    setActiveSheet('NONE');
+  }, [setActiveSheet]);
+
+  // Callbacks for inline handlers - memoized
+  const handleOpenRating = useCallback(() => {
+    setActiveSheet('RATING');
+  }, [setActiveSheet]);
+
+  const handleOpenLanguage = useCallback(() => {
+    setActiveSheet('LANGUAGE');
+  }, [setActiveSheet]);
+
+  const handleScrollComplete = useCallback(() => {
+    setScrollToStopId(null);
+  }, [setScrollToStopId]);
+
+  const handleMiniPlayerClick = useCallback(() => {
+    if (currentStopId) {
+      setScrollToStopId({ id: currentStopId, timestamp: Date.now() });
+    }
+  }, [currentStopId, setScrollToStopId]);
+
+  const handleRewind = useCallback(() => {
+    audioPlayer.skipBackward(15);
+  }, [audioPlayer]);
+
+  const handleForward = useCallback(() => {
+    audioPlayer.skipForward(15);
+  }, [audioPlayer]);
+
+  const handleRateTour = useCallback(() => {
+    setActiveSheet('RATING');
+  }, [setActiveSheet]);
+
+  // Download manager callback - memoized
+  const handleDownloadComplete = useCallback(() => {
+    handleStartTour();
+  }, [handleStartTour]);
 
   // Download manager
   const downloadManager = useDownloadManager(tour, {
-    onDownloadComplete: () => {
-      handleStartTour();
-    }
+    onDownloadComplete: handleDownloadComplete
   });
 
   // Memoize progress
@@ -861,8 +901,8 @@ const App: React.FC = () => {
             <TourStart
               tour={tour}
               selectedLanguage={selectedLanguage!}
-              onOpenRating={() => setActiveSheet('RATING')}
-              onOpenLanguage={() => setActiveSheet('LANGUAGE')}
+              onOpenRating={handleOpenRating}
+              onOpenLanguage={handleOpenLanguage}
               sheetY={sheetY}
               collapsedY={collapsedY}
               isVisible={true}
@@ -904,7 +944,7 @@ const App: React.FC = () => {
                   isStopCompleted={progressTracking.isStopCompleted}
                   scrollToStopId={scrollToStopId?.id ?? null}
                   scrollTrigger={scrollToStopId?.timestamp ?? null}
-                  onScrollComplete={() => setScrollToStopId(null)}
+                  onScrollComplete={handleScrollComplete}
                 />
               }
             />
@@ -916,13 +956,9 @@ const App: React.FC = () => {
                   currentStop={currentAudioStop}
                   isPlaying={isPlaying}
                   onTogglePlay={handlePlayPause}
-                  onRewind={() => audioPlayer.skipBackward(15)}
-                  onForward={() => audioPlayer.skipForward(15)}
-                  onClick={() => {
-                    if (currentStopId) {
-                      setScrollToStopId({ id: currentStopId, timestamp: Date.now() });
-                    }
-                  }}
+                  onRewind={handleRewind}
+                  onForward={handleForward}
+                  onClick={handleMiniPlayerClick}
                   progress={audioPlayer.progress}
                   isExpanded={isMiniPlayerExpanded}
                   onToggleExpanded={setIsMiniPlayerExpanded}
@@ -961,7 +997,7 @@ const App: React.FC = () => {
           <TourCompleteSheet
             isOpen={activeSheet === 'TOUR_COMPLETE'}
             onClose={closeSheet}
-            onRate={() => setActiveSheet('RATING')}
+            onRate={handleRateTour}
             onReplay={handleResetTour}
           />
         </div>

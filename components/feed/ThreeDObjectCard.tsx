@@ -60,7 +60,7 @@ const Caption = styled.p`
   color: ${({ theme }) => theme.cards.textColor};
 `;
 
-export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {
+export const ThreeDObjectCard = React.memo<ThreeDObjectCardProps>(({ item }) => {
   // Safari (especially iOS) can lose the WebGL context and crash the page when
   // model-viewer initializes heavy GLB files. Detect Safari and render a safe
   // fallback to avoid the repeated page reload loop the user reported.
@@ -99,4 +99,6 @@ export const ThreeDObjectCard: React.FC<ThreeDObjectCardProps> = ({ item }) => {
       )}
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.item?.id === nextProps.item?.id;
+});

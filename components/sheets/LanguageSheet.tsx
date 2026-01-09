@@ -66,7 +66,7 @@ const LanguageName = styled.span<{ $isSelected: boolean }>(({ $isSelected, theme
   },
 ]);
 
-export const LanguageSheet: React.FC<LanguageSheetProps> = ({
+export const LanguageSheet = React.memo<LanguageSheetProps>(({
   isOpen,
   selectedLanguage,
   languages,
@@ -104,4 +104,10 @@ export const LanguageSheet: React.FC<LanguageSheetProps> = ({
       </Container>
     </BottomSheet>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.selectedLanguage?.code === nextProps.selectedLanguage?.code &&
+    prevProps.languages?.length === nextProps.languages?.length
+  );
+});

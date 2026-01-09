@@ -95,7 +95,7 @@ const ActionButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }
   {
     backgroundColor: theme.buttons.primary.backgroundColor,
     color: theme.buttons.primary.textColor,
-    fontFamily: theme?.typography?.fontFamily?.sans?.join(', '),
+    fontFamily: theme.buttons.primary.fontFamily?.join(', ') || theme?.typography?.fontFamily?.sans?.join(', '),
     fontSize: theme.buttons.primary.fontSize,
     fontWeight: theme.buttons.primary.fontWeight,
     '& svg': {
@@ -129,7 +129,7 @@ const OfflineMessage = styled.p`
   filter: brightness(0.6);
 `;
 
-export const StartCard: React.FC<StartCardProps> = ({
+export const StartCard = React.memo<StartCardProps>(({
   tour,
   hasStarted,
   onAction,
@@ -274,4 +274,14 @@ export const StartCard: React.FC<StartCardProps> = ({
       )}
     </Container>
   );
-};
+}, (prevProps, nextProps) => {
+  return (
+    prevProps.tour?.id === nextProps.tour?.id &&
+    prevProps.hasStarted === nextProps.hasStarted &&
+    prevProps.isDownloading === nextProps.isDownloading &&
+    prevProps.isDownloaded === nextProps.isDownloaded &&
+    prevProps.downloadProgress === nextProps.downloadProgress &&
+    prevProps.tourProgress === nextProps.tourProgress &&
+    prevProps.downloadError === nextProps.downloadError
+  );
+});

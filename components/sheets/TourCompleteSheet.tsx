@@ -48,7 +48,7 @@ const SkipButton = styled.button`
   }
 `;
 
-export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
+export const TourCompleteSheet = React.memo<TourCompleteSheetProps>(({
   isOpen,
   onClose,
   onRateTour
@@ -82,4 +82,6 @@ export const TourCompleteSheet: React.FC<TourCompleteSheetProps> = ({
       </Container>
     </BottomSheet>
   );
-};
+}, (prevProps, nextProps) => {
+  return prevProps.isOpen === nextProps.isOpen;
+});

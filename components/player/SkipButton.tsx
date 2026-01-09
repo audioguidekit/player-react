@@ -26,7 +26,7 @@ const Button = styled.button<{ $disabled: boolean }>(({ $disabled, theme }) => [
   $disabled && tw`opacity-40`,
 ]);
 
-export const SkipButton: React.FC<SkipButtonProps> = ({
+export const SkipButton = React.memo<SkipButtonProps>(({
     direction,
     seconds = 15,
     onClick,
@@ -50,4 +50,12 @@ export const SkipButton: React.FC<SkipButtonProps> = ({
             </Button>
         </Container>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.direction === nextProps.direction &&
+        prevProps.seconds === nextProps.seconds &&
+        prevProps.disabled === nextProps.disabled &&
+        prevProps.className === nextProps.className &&
+        prevProps.children === nextProps.children
+    );
+});

@@ -75,7 +75,7 @@ const sizeConfig = {
  * Play/Pause button with animated icon transitions.
  * Supports checkmark state for track completion.
  */
-export const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
+export const PlayPauseButton = React.memo<PlayPauseButtonProps>(({
     isPlaying,
     isCompleting = false,
     isTransitioning = false,
@@ -145,4 +145,13 @@ export const PlayPauseButton: React.FC<PlayPauseButtonProps> = ({
             </AnimatePresence>
         </StyledButton>
     );
-};
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.isPlaying === nextProps.isPlaying &&
+        prevProps.isCompleting === nextProps.isCompleting &&
+        prevProps.isTransitioning === nextProps.isTransitioning &&
+        prevProps.size === nextProps.size &&
+        prevProps.variant === nextProps.variant &&
+        prevProps.className === nextProps.className
+    );
+});

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import { motion, useSpring, useTransform, animate } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
@@ -140,6 +140,12 @@ export const TourDetail = React.memo<TourDetailProps>(({
 
   const width = useTransform(progressSpring, (value) => `${value}%`);
 
+  // Memoize stop click handler to prevent unnecessary re-renders
+  // Use a single handler that accepts stopId to maintain referential equality
+  const handleStopClick = useCallback((stopId: string) => {
+    onStopClick(stopId);
+  }, [onStopClick]);
+
   return (
     <Container>
 
@@ -162,6 +168,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
         {tour.stops.map((stop, index) => {
           // Render audio stops with compact card
           if (stop.type === 'audio') {
+            const stopIsPlaying = stop.id === currentStopId && isPlaying;
             return (
               <AudioStopCardCompact
                 key={stop.id}
@@ -169,9 +176,9 @@ export const TourDetail = React.memo<TourDetailProps>(({
                 item={stop}
                 index={index}
                 isActive={stop.id === currentStopId}
-                isPlaying={stop.id === currentStopId && isPlaying}
+                isPlaying={stopIsPlaying}
                 isCompleted={isStopCompleted(stop.id)}
-                onClick={() => onStopClick(stop.id)}
+                onClick={() => handleStopClick(stop.id)}
               />
             );
           }
@@ -182,17 +189,24 @@ export const TourDetail = React.memo<TourDetailProps>(({
       </ScrollableList>
     </Container>
   );
-}, (prevProps, nextProps) => {
-  return (
-    prevProps.tour?.id === nextProps.tour?.id &&
-    prevProps.currentStopId === nextProps.currentStopId &&
-    prevProps.isPlaying === nextProps.isPlaying &&
-    prevProps.tourProgress === nextProps.tourProgress &&
-    prevProps.consumedMinutes === nextProps.consumedMinutes &&
-    prevProps.totalMinutes === nextProps.totalMinutes &&
-    prevProps.completedStopsCount === nextProps.completedStopsCount &&
-    prevProps.scrollToStopId === nextProps.scrollToStopId &&
-    prevProps.scrollTrigger === nextProps.scrollTrigger &&
-    prevProps.isStopCompleted === nextProps.isStopCompleted
-  );
-});
+  }, (prevProps, nextProps) => {
+    // Custom comparison: only re-render if relevant props change
+    return (
+      prevProps.tour.id === nextProps.tour.id &&
+      prevProps.currentStopId === nextProps.currentStopId &&
+      prevProps.isPlaying === nextProps.isPlaying &&
+      prevProps.tourProgress === nextProps.tourProgress &&
+      prevProps.consumedMinutes === nextProps.consumedMinutes &&
+      prevProps.totalMinutes === nextProps.totalMinutes &&
+      prevProps.completedStopsCount === nextProps.completedStopsCount &&
+      prevProps.scrollToStopId === nextProps.scrollToStopId &&
+      prevProps.scrollTrigger === nextProps.scrollTrigger &&
+      // Compare function references for stability
+      prevProps.onStopClick === nextProps.onStopClick &&
+      prevProps.onTogglePlay === nextProps.onTogglePlay &&
+      prevProps.onStopPlayPause === nextProps.onStopPlayPause &&
+      prevProps.onBack === nextProps.onBack &&
+      prevProps.isStopCompleted === nextProps.isStopCompleted &&
+      prevProps.onScrollComplete === nextProps.onScrollComplete
+    );
+  });

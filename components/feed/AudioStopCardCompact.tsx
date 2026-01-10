@@ -72,9 +72,10 @@ const NumberContainer = styled.div`
   height: 28px;
 `;
 
-const SpinnerRing = styled.svg`
+const SpinnerRing = styled.svg<{ $isPlaying: boolean }>`
   ${tw`absolute inset-0 z-10`}
   transform-origin: center;
+  animation-play-state: ${({ $isPlaying }) => $isPlaying ? 'running' : 'paused'};
 
   circle {
     stroke: ${({ theme }) => theme.stepIndicators.active.outlineColor};
@@ -134,15 +135,17 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
         <ImageContainer>
           <Image src={item.image} alt={item.title} />
           <DurationBadge>
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {isPlaying && (
                 <LoaderContainer
+                  key="loader"
                   initial={{ width: 0, opacity: 0, marginRight: 0 }}
                   animate={{ width: 24, opacity: 1, marginRight: 8 }}
                   exit={{ width: 0, opacity: 0, marginRight: 0 }}
-                  transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+                  transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ animationPlayState: isPlaying ? 'running' : 'paused' }}
                 >
-                  <span className="audio-playing-loader" />
+                  <span className="audio-playing-loader" style={{ animationPlayState: isPlaying ? 'running' : 'paused' }} />
                 </LoaderContainer>
               )}
             </AnimatePresence>
@@ -153,7 +156,12 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
         <BottomSection>
           <NumberContainer>
             {isPlaying && !isCompleted && (
-              <SpinnerRing viewBox="0 0 28 28" className="audio-spinner-ring">
+              <SpinnerRing 
+                viewBox="0 0 28 28" 
+                className="audio-spinner-ring"
+                $isPlaying={isPlaying}
+                key="spinner"
+              >
                 <circle
                   cx="14"
                   cy="14"
@@ -180,5 +188,29 @@ export const AudioStopCardCompact = memo<AudioStopCardCompactProps>(({
         </BottomSection>
       </CardContainer>
     </OuterContainer>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison: re-render when isPlaying, isActive, or isCompleted changes
+  // Also re-render if item id changes (different stop)
+  // Note: onClick comparison is less strict since it's often recreated
+  // Priority: isPlaying changes MUST trigger re-render for animations to stop
+  if (prevProps.isPlaying !== nextProps.isPlaying) {
+    return false; // Re-render if isPlaying changed
+  }
+  if (prevProps.isActive !== nextProps.isActive) {
+    return false; // Re-render if isActive changed
+  }
+  if (prevProps.isCompleted !== nextProps.isCompleted) {
+    return false; // Re-render if isCompleted changed
+  }
+  if (prevProps.item.id !== nextProps.item.id) {
+    return false; // Re-render if different stop
+  }
+  // For other props, use shallow comparison
+  return (
+    prevProps.index === nextProps.index &&
+    prevProps.id === nextProps.id
+    // onClick is intentionally excluded from strict comparison
+    // to prevent unnecessary re-renders when only onClick reference changes
   );
 });

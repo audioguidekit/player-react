@@ -19,7 +19,7 @@ The app provides a seamless multilingual experience:
 1. **First-time visitors:** App detects device language (e.g., Czech phone → Czech tour)
 2. **Returning visitors:** App remembers their language choice
 3. **Manual selection:** Users can change language anytime via language picker
-4. **Intelligent fallback:** If device language unavailable, defaults to English
+4. **Intelligent fallback:** If device language unavailable, defaults to configurable default language
 
 **Example User Flow:**
 ```
@@ -38,7 +38,7 @@ The app separates **tour content languages** (tour data files) from **UI languag
 
 ### Configuration File
 
-Edit `src/config/languages.ts` to select which UI languages to bundle:
+Edit `src/config/languages.ts` to configure languages:
 
 ```typescript
 // Language imports - uncomment languages you need
@@ -46,17 +46,31 @@ import { en } from '../translations/locales/en';
 import { cs } from '../translations/locales/cs';
 // import { de } from '../translations/locales/de';  // Not needed
 // import { fr } from '../translations/locales/fr';  // Not needed
-// import { it } from '../translations/locales/it';  // Not needed
-// import { es } from '../translations/locales/es';  // Not needed
+
+/**
+ * Default language for the app.
+ * Used when user's browser language is not supported.
+ */
+export const defaultLanguage: LanguageCode = 'en';
 
 export const supportedLanguages = {
   en,
   cs,
   // de,
   // fr,
-  // it,
-  // es,
 };
+```
+
+### Default Language
+
+The `defaultLanguage` setting controls the fallback language used when:
+- User's browser/device language is not supported
+- A tour is not available in the requested language
+- No language preference has been set
+
+Change it to any supported language code:
+```typescript
+export const defaultLanguage: LanguageCode = 'de';  // German as default
 ```
 
 ### Tree-Shaking
@@ -80,48 +94,52 @@ This allows you to support tour content in many languages while keeping the bund
 
 ## How It Works
 
+### Tour Discovery System
+
+Tours are automatically discovered at build time using Vite's `import.meta.glob`. The system reads the `language` field from each tour JSON file to determine which language it belongs to.
+
+**Key benefit:** You can name files however you want - the language is determined by the JSON content, not the filename.
+
 ### File Structure
 
-Each language has its own tour file named with the language code:
+Tour files can be organized flexibly. The `language` field inside each JSON determines the language:
 
 ```
 /public/data/tours/
-├── en.json          # English tour
-├── cs.json          # Czech tour
-├── de.json          # German tour
-├── fr.json          # French tour
-├── it.json          # Italian tour
-└── es.json          # Spanish tour
+├── en.json          # Has "language": "en"
+├── cs.json          # Has "language": "cs"
+├── de.json          # Has "language": "de"
+└── ...
 ```
 
-### Language Codes
-
-Language codes are defined in `/public/data/languages.json`:
-
-```json
-[
-  {
-    "code": "en",
-    "name": "English",
-    "flag": "🇬🇧"
-  },
-  {
-    "code": "cs",
-    "name": "Česky",
-    "flag": "🇨🇿"
-  },
-  {
-    "code": "de",
-    "name": "Deutsch",
-    "flag": "🇩🇪"
-  }
-]
+Future structure for multiple tours:
+```
+/public/data/tours/
+├── barcelona/
+│   ├── en.json      # "id": "barcelona", "language": "en"
+│   ├── cs.json      # "id": "barcelona", "language": "cs"
+│   └── de.json      # "id": "barcelona", "language": "de"
+└── london/
+    ├── en.json      # "id": "london", "language": "en"
+    └── fr.json      # "id": "london", "language": "fr"
 ```
 
-**Field Descriptions:**
-- `code`: ISO 639-1 language code (2 letters, lowercase)
-- `name`: Native language name
-- `flag`: Emoji flag representing the language
+### Language Detection
+
+Available languages are automatically detected from tour files at build time. No separate `languages.json` file is required - the system discovers languages from the `language` field in tour JSONs.
+
+**Language display names** are defined in `src/services/tourDiscovery.ts`:
+
+```typescript
+const languageNames: Record<string, string> = {
+  en: 'English',
+  cs: 'Čeština',
+  de: 'Deutsch',
+  fr: 'Français',
+  it: 'Italiano',
+  es: 'Español',
+};
+```
 
 ## Creating Multi-Language Tours
 
@@ -357,8 +375,8 @@ const handleLanguageChange = (language: Language) => {
   - Spanish phone (es-ES) → App opens in Spanish
 
 **Fallback Behavior:**
-- Unsupported language (e.g., Polish "pl-PL") → Falls back to English
-- No browser language available → Falls back to English
+- Unsupported language (e.g., Polish "pl-PL") → Falls back to default language
+- No browser language available → Falls back to default language
 
 ### Data Loading
 
@@ -726,9 +744,9 @@ const browserLangCode = browserLanguage.split('-')[0].toLowerCase(); // 'en-US' 
 const languages = await dataService.getLanguages();
 const detectedLanguage = languages.find(l => l.code === browserLangCode);
 
-// 4. Fallback chain: saved → detected → 'en' → first available
+// 4. Fallback chain: saved → detected → defaultLanguage → first available
 const languageToUse = savedLanguage || detectedLanguage ||
-                      languages.find(l => l.code === 'en') ||
+                      languages.find(l => l.code === defaultLanguage) ||
                       languages[0];
 ```
 

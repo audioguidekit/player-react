@@ -25,7 +25,11 @@
       "WebFetch(domain:fonts.googleapis.com)",
       "Bash(ls:*)",
       "Bash({ echo '=== Checking for theme.shadows ===')",
-      "Bash(})"
+      "Bash(})",
+      "Bash(git -C /Users/mike/Documents/GitHub/superguided-audio check-ignore:*)",
+      "Bash(git -C /Users/mike/Documents/GitHub/superguided-audio ls-files:*)",
+      "Bash(git rm:*)",
+      "Bash(bun run test:*)"
     ],
     "deny": [],
     "ask": []

@@ -42,6 +42,8 @@ export const es: Translations = {
     thankYou: '¡Gracias!',
     appreciateFeedback: 'Apreciamos tus comentarios.',
     close: 'Cerrar',
+    subscribed: '¡Estás suscrito!',
+    checkInbox: 'Revisa tu bandeja de entrada.',
   },
   tourComplete: {
     title: '¡Tour completado!',

@@ -18,6 +18,7 @@ interface FeedItemRendererProps {
   isCompleted?: boolean;
   onClick?: () => void;
   onPlayPause?: () => void;
+  onOpenRatingSheet?: () => void;
 }
 
 export const FeedItemRenderer: React.FC<FeedItemRendererProps> = ({
@@ -27,7 +28,8 @@ export const FeedItemRenderer: React.FC<FeedItemRendererProps> = ({
   isPlaying = false,
   isCompleted = false,
   onClick,
-  onPlayPause
+  onPlayPause,
+  onOpenRatingSheet
 }) => {
   switch (item.type) {
     case 'audio':
@@ -53,7 +55,7 @@ export const FeedItemRenderer: React.FC<FeedItemRendererProps> = ({
     case 'headline':
       return <HeadlineCard item={item} />;
     case 'rating':
-      return <RatingCard item={item} />;
+      return <RatingCard item={item} onOpenRatingSheet={onOpenRatingSheet} />;
     case 'email':
       return <EmailCard item={item} />;
     case 'quote':

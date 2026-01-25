@@ -33,6 +33,7 @@ interface TourDetailProps {
   scrollToStopId?: string | null;
   scrollTrigger?: number | null;
   onScrollComplete?: () => void;
+  onOpenRatingSheet?: () => void;
 }
 
 export const TourDetail: React.FC<TourDetailProps> = ({
@@ -50,7 +51,8 @@ export const TourDetail: React.FC<TourDetailProps> = ({
   isStopCompleted,
   scrollToStopId,
   scrollTrigger,
-  onScrollComplete
+  onScrollComplete,
+  onOpenRatingSheet
 }) => {
   // Slower spring: reduced stiffness from 75 to 35 to match counter
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
@@ -177,7 +179,7 @@ export const TourDetail: React.FC<TourDetailProps> = ({
           }
 
           // Render other content types with FeedItemRenderer
-          return <FeedItemRenderer key={stop.id} item={stop} />;
+          return <FeedItemRenderer key={stop.id} item={stop} onOpenRatingSheet={onOpenRatingSheet} />;
         })}
       </ScrollableList>
     </Container>

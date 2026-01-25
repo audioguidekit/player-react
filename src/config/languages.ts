@@ -7,8 +7,6 @@
  * To add a language:
  * 1. Uncomment the import statement
  * 2. Add it to the supportedLanguages object
- *
- * English (en) is always required as the fallback language.
  */
 
 import type { Translations, LanguageCode } from '../translations/types';
@@ -22,6 +20,17 @@ import { it } from '../translations/locales/it';
 import { es } from '../translations/locales/es';
 
 /**
+ * Default language for the app.
+ * Used when:
+ * - User's browser language is not supported
+ * - A tour is not available in the requested language
+ * - No language preference has been set
+ *
+ * Must be one of the supported languages.
+ */
+export const defaultLanguage: LanguageCode = 'en';
+
+/**
  * Supported UI languages for this build.
  * Only languages listed here will be included in the bundle.
  */
@@ -32,7 +41,7 @@ export const supportedLanguages = {
   fr,
   it,
   es,
-} satisfies Partial<Record<LanguageCode, Translations>> & { en: Translations };
+} satisfies Partial<Record<LanguageCode, Translations>>;
 
 /**
  * Type representing the languages available in this build.

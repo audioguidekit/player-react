@@ -39,6 +39,8 @@ export interface Translations {
     thankYou: string;
     appreciateFeedback: string;
     close: string;
+    subscribed: string;
+    checkInbox: string;
   };
   tourComplete: {
     title: string;

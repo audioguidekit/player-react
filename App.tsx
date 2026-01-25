@@ -13,6 +13,7 @@ import { MiniPlayer } from './components/MiniPlayer';
 import { TourHeaderAlt } from './components/TourHeaderAlt';
 import { useTourData, useLanguages } from './hooks/useDataLoader';
 import { DEFAULT_TOUR_ID } from './src/config/tours';
+import { defaultLanguage } from './src/config/languages';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import { useBackgroundAudio } from './hooks/useBackgroundAudio';
 import { MobileFrame } from './components/shared/MobileFrame';
@@ -91,7 +92,7 @@ const App: React.FC = () => {
 
       // 3. Fall back to English
       if (!languageToUse) {
-        languageToUse = languages.find(l => l.code === 'en');
+        languageToUse = languages.find(l => l.code === defaultLanguage);
       }
 
       // 4. Fall back to first available language
@@ -755,12 +756,22 @@ const App: React.FC = () => {
   // Get theme ID from tour data (fallback to 'default')
   const themeId = tour?.themeId || 'default';
 
+<<<<<<< Updated upstream
+  // UI language: use the tour's language field to ensure UI matches content
+  // Falls back to selectedLanguage code (which is the user's preference)
+  const uiLanguage = tour?.language || selectedLanguage?.code || defaultLanguage;
+=======
+  // Determine UI language from tour content (not user selection)
+  // This ensures UI matches tour content language
+  const uiLanguage = tour?.language || selectedLanguage?.code || 'en';
+>>>>>>> Stashed changes
+
   // Loading state
   if (tourLoading || languagesLoading) {
     return (
       <ThemeProvider themeId="default">
         <GlobalStyles />
-        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+        <TranslationProvider language={selectedLanguage?.code || defaultLanguage}>
           <LoadingScreen />
         </TranslationProvider>
       </ThemeProvider>
@@ -772,7 +783,7 @@ const App: React.FC = () => {
     return (
       <ThemeProvider themeId="default">
         <GlobalStyles />
-        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+        <TranslationProvider language={selectedLanguage?.code || defaultLanguage}>
           <ErrorScreen error={tourError || languagesError} />
         </TranslationProvider>
       </ThemeProvider>
@@ -786,7 +797,7 @@ const App: React.FC = () => {
     return (
       <ThemeProvider themeId={themeId}>
         <GlobalStyles />
-        <TranslationProvider language={selectedLanguage?.code || 'en'}>
+        <TranslationProvider language={uiLanguage}>
           <AssetsLoadingScreen />
         </TranslationProvider>
       </ThemeProvider>
@@ -796,7 +807,7 @@ const App: React.FC = () => {
   return (
     <ThemeProvider themeId={themeId}>
       <GlobalStyles />
-      <TranslationProvider language={selectedLanguage?.code || 'en'}>
+      <TranslationProvider language={uiLanguage}>
         <MobileFrame>
         <div className="relative w-full h-full overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
           {/* Main Content Area */}
@@ -848,6 +859,7 @@ const App: React.FC = () => {
                   scrollToStopId={scrollToStopId?.id ?? null}
                   scrollTrigger={scrollToStopId?.timestamp ?? null}
                   onScrollComplete={() => setScrollToStopId(null)}
+                  onOpenRatingSheet={() => setActiveSheet('RATING')}
                 />
               }
             />

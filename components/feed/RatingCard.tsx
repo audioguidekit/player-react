@@ -1,13 +1,15 @@
 import React from 'react';
 import { Star, CircleCheckBig } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { RatingStop } from '../../types';
 import { useRating } from '../../context/RatingContext';
+import { useTranslation } from '../../src/translations';
 
 interface RatingCardProps {
   item: RatingStop;
+  onOpenRatingSheet?: () => void;
 }
 
 const Container = styled.div`
@@ -34,10 +36,6 @@ const SuccessIconCircle = styled.div`
   ${tw`w-20 h-20 rounded-full flex items-center justify-center mb-6 mx-auto`}
   background-color: ${({ theme }) => `${theme.status.success}20`};
   color: ${({ theme }) => theme.status.success};
-`;
-
-const Checkmark = styled.span`
-  ${tw`text-2xl`}
 `;
 
 const Title = styled.h3`
@@ -75,50 +73,17 @@ const HintText = styled(motion.span)`
   color: ${({ theme }) => theme.colors.text.tertiary};
 `;
 
-const FeedbackForm = styled(motion.div)`
-  ${tw`w-full overflow-hidden flex flex-col gap-4`}
-`;
+export const RatingCard: React.FC<RatingCardProps> = ({ item, onOpenRatingSheet }) => {
+  const { rating, setRating, isSubmitted } = useRating();
+  const { t } = useTranslation();
 
-const Textarea = styled.textarea`
-  ${tw`w-full p-4 text-base focus:outline-none resize-none h-28 transition-colors`}
-  border: 1px solid ${({ theme }) => theme.inputs.borderColor};
-  border-radius: 16px;
-  background-color: ${({ theme }) => theme.inputs.backgroundColor};
-  color: ${({ theme }) => theme.inputs.textColor};
-
-  &::placeholder {
-    color: ${({ theme }) => theme.inputs.placeholderColor};
-  }
-
-  &:focus {
-    border-color: ${({ theme }) => theme.inputs.focusBorderColor};
-  }
-`;
-
-const SubmitButton = styled.button<{ $disabled: boolean }>(({ $disabled, theme }) => [
-  tw`w-full py-4 rounded-full font-semibold text-base transition-all duration-300`,
-  $disabled && {
-    backgroundColor: theme.colors.background.secondary,
-    color: theme.colors.text.tertiary,
-    cursor: 'not-allowed',
-  },
-  !$disabled && {
-    backgroundColor: theme.buttons.primary.backgroundColor,
-    color: theme.buttons.primary.textColor,
-    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1)',
-  },
-  !$disabled && tw`active:scale-[0.98]`,
-]);
-
-export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
-  const { rating, setRating, feedback, setFeedback, isSubmitted, submitRating } = useRating();
-
-  const handleSubmit = () => {
-    if (feedback.trim().length === 0) return;
-    submitRating();
+  const handleStarClick = (star: number) => {
+    setRating(star);
+    // Open the rating sheet to continue with feedback and email
+    if (onOpenRatingSheet) {
+      onOpenRatingSheet();
+    }
   };
-
-  const isFeedbackButtonDisabled = feedback.trim().length === 0;
 
   if (isSubmitted) {
     return (
@@ -130,8 +95,8 @@ export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
           <SuccessIconCircle>
             <CircleCheckBig size={40} strokeWidth={2} />
           </SuccessIconCircle>
-          <Title>Thank you!</Title>
-          <Description>We appreciate your feedback.</Description>
+          <Title>{t.rating.thankYou}</Title>
+          <Description>{t.rating.appreciateFeedback}</Description>
         </CenterContent>
       </SuccessContainer>
     );
@@ -141,9 +106,9 @@ export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
     <Container>
       <HeaderSection>
         <Title>
-          {item.question || 'How did you like this tour?'}
+          {item.question || t.rating.title}
         </Title>
-        <Description>{item.description || 'Your feedback is valuable for us!'}</Description>
+        <Description>{item.description || t.rating.subtitle}</Description>
       </HeaderSection>
 
       {/* Stars */}
@@ -151,7 +116,7 @@ export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
         {[1, 2, 3, 4, 5].map((star) => (
           <StarButton
             key={star}
-            onClick={() => setRating(star)}
+            onClick={() => handleStarClick(star)}
           >
             <StyledStar
               size={36}
@@ -165,56 +130,14 @@ export const RatingCard: React.FC<RatingCardProps> = ({ item }) => {
 
       {/* Hint Text */}
       <HintContainer>
-        <AnimatePresence mode="wait">
-          {rating === 0 ? (
-            <HintText
-              key="hint-start"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              Tap to rate
-            </HintText>
-          ) : (
-            <HintText
-              key="hint-details"
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              Mind sharing more details?
-            </HintText>
-          )}
-        </AnimatePresence>
+        <HintText
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {t.rating.tapToRate}
+        </HintText>
       </HintContainer>
-
-      {/* Feedback Form */}
-      <AnimatePresence>
-        {rating > 0 && (
-          <FeedbackForm
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 200 }}
-          >
-            <Textarea
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="Describe what you liked or disliked..."
-            />
-
-            <SubmitButton
-              onClick={handleSubmit}
-              disabled={isFeedbackButtonDisabled}
-              $disabled={isFeedbackButtonDisabled}
-            >
-              Submit feedback
-            </SubmitButton>
-          </FeedbackForm>
-        )}
-      </AnimatePresence>
     </Container>
   );
 };

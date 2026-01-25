@@ -12,9 +12,17 @@ declare const self: ServiceWorkerGlobalScope;
 const DEV_MODE = import.meta.env.DEV;
 const SW_VERSION = '1.0.3-NAVIGATION-FIX';
 
+// Storage origin for caching external media assets (configured via .env)
+const STORAGE_ORIGIN = import.meta.env.VITE_STORAGE_ORIGIN || '';
+
 if (DEV_MODE) {
   console.log(`[SW ${SW_VERSION}] Service Worker initializing...`);
   console.log(`[SW ${SW_VERSION}] ⚡ This is the NEW service worker with navigation handler and CDN warmup!`);
+  if (!STORAGE_ORIGIN) {
+    console.warn(`[SW ${SW_VERSION}] ⚠️ VITE_STORAGE_ORIGIN not configured - external media caching disabled`);
+  } else {
+    console.log(`[SW ${SW_VERSION}] 📦 Storage origin: ${STORAGE_ORIGIN}`);
+  }
 }
 
 // Critical CDN dependencies that MUST be cached for offline use
@@ -180,7 +188,7 @@ registerRoute(
 registerRoute(
   ({ url }) => {
     return (
-      url.origin === 'https://ewrhpiibxstiipkqafwf.supabase.co' &&
+      url.origin === STORAGE_ORIGIN &&
       url.pathname.includes('/storage/v1/object/public/') &&
       (url.pathname.endsWith('.mp3') ||
         url.pathname.endsWith('.wav') ||
@@ -196,7 +204,7 @@ registerRoute(
 registerRoute(
   ({ url }) => {
     return (
-      url.origin === 'https://ewrhpiibxstiipkqafwf.supabase.co' &&
+      url.origin === STORAGE_ORIGIN &&
       url.pathname.includes('/storage/v1/object/public/') &&
       (url.pathname.endsWith('.jpg') ||
         url.pathname.endsWith('.jpeg') ||
@@ -222,7 +230,7 @@ registerRoute(
 registerRoute(
   ({ url }) => {
     return (
-      url.origin === 'https://ewrhpiibxstiipkqafwf.supabase.co' &&
+      url.origin === STORAGE_ORIGIN &&
       url.pathname.includes('/storage/v1/object/public/') &&
       (url.pathname.endsWith('.mp4') || url.pathname.endsWith('.webm'))
     );
@@ -245,7 +253,7 @@ registerRoute(
 registerRoute(
   ({ url }) => {
     return (
-      url.origin === 'https://ewrhpiibxstiipkqafwf.supabase.co' &&
+      url.origin === STORAGE_ORIGIN &&
       url.pathname.includes('/storage/v1/object/public/') &&
       (url.pathname.endsWith('.glb') || url.pathname.endsWith('.gltf'))
     );

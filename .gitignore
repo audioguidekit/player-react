@@ -24,6 +24,17 @@ dist-ssr
 *.sw?
 _work
 
+# Environment files (contain sensitive URLs/keys)
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings
+.claude/
+
+# Build artifacts
+dev-dist/
+
 # Playwright
 /test-results/
 /playwright-report/

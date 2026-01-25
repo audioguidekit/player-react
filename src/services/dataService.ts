@@ -1,7 +1,15 @@
+<<<<<<< Updated upstream
 import { TourData, Language } from '../types';
+import {
+  getAnyTourByLanguage,
+  getTourWithFallback,
+  getAllAvailableLanguages,
+  getAvailableTourIds,
+} from './tourDiscovery';
+import { defaultLanguage } from '../config/languages';
 
 /**
- * Interface for tour manifest entry
+ * Interface for tour manifest entry (legacy, kept for compatibility)
  */
 export interface TourManifestEntry {
   id: string;
@@ -12,182 +20,216 @@ export interface TourManifestEntry {
 }
 
 /**
- * Interface for tour manifest structure
+ * Interface for tour manifest structure (legacy, kept for compatibility)
  */
 export interface TourManifest {
   tours: TourManifestEntry[];
 }
 
 /**
- * Base path for data files
- */
-const DATA_BASE_PATH = '/data';
-
-/**
- * Fetches and parses a JSON file
- * @param path - Relative path from public directory
- * @returns Parsed JSON data
- */
-async function fetchJSON<T>(path: string): Promise<T> {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${path}: ${response.statusText}`);
-    }
-    return await response.json();
-  } catch (error) {
-    console.error(`Error fetching ${path}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Loads the tour manifest which lists all available tours
- * @returns Promise resolving to tour manifest
- */
-export async function loadTourManifest(): Promise<TourManifest> {
-  return fetchJSON<TourManifest>(`${DATA_BASE_PATH}/tours/index.json`);
-}
-
-/**
- * Loads a specific tour by its filename
- * @param filename - Tour JSON filename (e.g., 'tour.json')
- * @returns Promise resolving to tour data
- */
-export async function loadTour(filename: string): Promise<TourData> {
-  return fetchJSON<TourData>(`${DATA_BASE_PATH}/tours/${filename}`);
-}
-
-/**
  * Loads a tour by language code
+ * Uses the tour discovery system to find tours by their internal language field
  * @param languageCode - Language code (e.g., 'en', 'de', 'cs')
  * @returns Promise resolving to tour data
  */
 export async function loadTourByLanguage(languageCode: string): Promise<TourData> {
-  return fetchJSON<TourData>(`${DATA_BASE_PATH}/tours/${languageCode}.json`);
+  const tour = getAnyTourByLanguage(languageCode);
+  if (!tour) {
+    throw new Error(`No tour found for language '${languageCode}'`);
+  }
+  return tour;
 }
 
 /**
- * Loads a tour by its ID from the manifest
- * @param tourId - Tour ID (e.g., 'rome-01')
+ * Loads a tour by its ID with language preference
+ * @param tourId - Tour ID (e.g., 'barcelona')
+ * @param languageCode - Preferred language code
  * @returns Promise resolving to tour data
  */
-export async function loadTourById(tourId: string): Promise<TourData> {
-  const manifest = await loadTourManifest();
-  const tourEntry = manifest.tours.find(t => t.id === tourId);
-
-  if (!tourEntry) {
-    throw new Error(`Tour with ID '${tourId}' not found in manifest`);
+export async function loadTourById(tourId: string, languageCode: string = defaultLanguage): Promise<TourData> {
+  const tour = getTourWithFallback(tourId, languageCode);
+  if (!tour) {
+    throw new Error(`Tour with ID '${tourId}' not found`);
   }
-
-  return loadTour(tourEntry.filename);
+  return tour;
 }
 
 /**
  * Loads all available languages
+ * Uses the tour discovery system to get languages from tour files
  * @returns Promise resolving to array of languages
  */
 export async function loadLanguages(): Promise<Language[]> {
-  return fetchJSON<Language[]>(`${DATA_BASE_PATH}/languages.json`);
+  return getAllAvailableLanguages();
 }
 
 /**
- * Loads all available tours
- * @returns Promise resolving to array of all tour data
+ * Gets all available tour IDs
+ * @returns Array of tour IDs
  */
-export async function loadAllTours(): Promise<TourData[]> {
-  const manifest = await loadTourManifest();
-  const tourPromises = manifest.tours.map(entry => loadTour(entry.filename));
-  return Promise.all(tourPromises);
+export function getAvailableTours(): string[] {
+  return getAvailableTourIds();
 }
 
 /**
  * Data service with caching support
+ * Note: With the discovery system, caching is less critical since tours are
+ * loaded at build time. This class is kept for API compatibility.
+=======
+import { TourData, Language } from '../../types';
+import {
+  getTour,
+  getTourWithFallback,
+  getAvailableLanguages,
+  getTourLanguages,
+  getDefaultTourId,
+  getTourRegistry,
+} from './tourDiscovery';
+
+/**
+ * Data service with caching support
+ * Now uses tour discovery for automatic tour detection
+>>>>>>> Stashed changes
  */
 export class DataService {
   private tourCache: Map<string, TourData> = new Map();
   private languageCache: Language[] | null = null;
-  private manifestCache: TourManifest | null = null;
+<<<<<<< Updated upstream
+=======
 
   /**
-   * Loads tour with caching
+   * Get cache key for tour
    */
-  async getTour(filename: string): Promise<TourData> {
-    if (this.tourCache.has(filename)) {
-      return this.tourCache.get(filename)!;
+  private getCacheKey(tourId: string, language: string): string {
+    return `${tourId}:${language}`;
+  }
+
+  /**
+   * Loads tour by ID and language with caching
+   */
+  async getTourByIdAndLanguage(tourId: string, language: string): Promise<TourData | null> {
+    const cacheKey = this.getCacheKey(tourId, language);
+
+    if (this.tourCache.has(cacheKey)) {
+      return this.tourCache.get(cacheKey)!;
     }
 
-    const tour = await loadTour(filename);
-    this.tourCache.set(filename, tour);
+    const tour = getTour(tourId, language);
+    if (tour) {
+      this.tourCache.set(cacheKey, tour);
+    }
     return tour;
   }
-
-  /**
-   * Loads tour by ID with caching
-   */
-  async getTourById(tourId: string): Promise<TourData> {
-    const manifest = await this.getManifest();
-    const tourEntry = manifest.tours.find(t => t.id === tourId);
-
-    if (!tourEntry) {
-      throw new Error(`Tour with ID '${tourId}' not found in manifest`);
-    }
-
-    return this.getTour(tourEntry.filename);
-  }
+>>>>>>> Stashed changes
 
   /**
    * Loads tour by language code with caching
+   * Uses the default/first tour ID for single-tour apps
    */
   async getTourByLanguage(languageCode: string): Promise<TourData> {
-    const filename = `${languageCode}.json`;
-    if (this.tourCache.has(filename)) {
-      return this.tourCache.get(filename)!;
+<<<<<<< Updated upstream
+    const cacheKey = `lang:${languageCode}`;
+    if (this.tourCache.has(cacheKey)) {
+      return this.tourCache.get(cacheKey)!;
     }
 
     const tour = await loadTourByLanguage(languageCode);
-    this.tourCache.set(filename, tour);
+=======
+    const tourId = getDefaultTourId();
+
+    if (!tourId) {
+      throw new Error('No tours discovered');
+    }
+
+    const cacheKey = this.getCacheKey(tourId, languageCode);
+
+    if (this.tourCache.has(cacheKey)) {
+      return this.tourCache.get(cacheKey)!;
+    }
+
+    // Try to get tour in requested language, with fallback
+    const tour = getTourWithFallback(tourId, languageCode, 'en');
+
+    if (!tour) {
+      throw new Error(`Tour '${tourId}' not available in language '${languageCode}' or fallback`);
+    }
+
+>>>>>>> Stashed changes
+    this.tourCache.set(cacheKey, tour);
     return tour;
   }
 
   /**
-   * Loads languages with caching
+<<<<<<< Updated upstream
+   * Loads tour by ID with language preference
+   */
+  async getTourById(tourId: string, languageCode: string = 'en'): Promise<TourData> {
+    const cacheKey = `${tourId}:${languageCode}`;
+    if (this.tourCache.has(cacheKey)) {
+      return this.tourCache.get(cacheKey)!;
+    }
+
+    const tour = await loadTourById(tourId, languageCode);
+    this.tourCache.set(cacheKey, tour);
+    return tour;
+  }
+
+  /**
+   * Loads languages (uses discovery system)
+=======
+   * Loads languages - now derived from discovered tours
+>>>>>>> Stashed changes
    */
   async getLanguages(): Promise<Language[]> {
     if (this.languageCache) {
       return this.languageCache;
     }
 
-    this.languageCache = await loadLanguages();
+    this.languageCache = getAvailableLanguages();
     return this.languageCache;
   }
 
   /**
-   * Loads manifest with caching
+<<<<<<< Updated upstream
+=======
+   * Get available languages for a specific tour
    */
-  async getManifest(): Promise<TourManifest> {
-    if (this.manifestCache) {
-      return this.manifestCache;
-    }
-
-    this.manifestCache = await loadTourManifest();
-    return this.manifestCache;
+  getTourLanguageCodes(tourId: string): string[] {
+    return getTourLanguages(tourId);
   }
 
   /**
+   * Get the default tour ID
+   */
+  getDefaultTourId(): string | null {
+    return getDefaultTourId();
+  }
+
+  /**
+   * Get all tours registry
+   */
+  getAllTours() {
+    return getTourRegistry();
+  }
+
+  /**
+>>>>>>> Stashed changes
    * Clears all caches
    */
   clearCache(): void {
     this.tourCache.clear();
     this.languageCache = null;
-    this.manifestCache = null;
+<<<<<<< Updated upstream
+=======
   }
 
   /**
    * Clears specific tour from cache
    */
-  clearTourCache(filename: string): void {
-    this.tourCache.delete(filename);
+  clearTourCache(tourId: string, language: string): void {
+    const cacheKey = this.getCacheKey(tourId, language);
+    this.tourCache.delete(cacheKey);
+>>>>>>> Stashed changes
   }
 }
 
@@ -195,3 +237,6 @@ export class DataService {
  * Default singleton instance
  */
 export const dataService = new DataService();
+
+// Re-export types that might be used elsewhere
+export type { TourRegistry } from './tourDiscovery';

@@ -1,5 +1,36 @@
 # Development Log
 
+## 2025-01-25: Tour Discovery System & Configurable Default Language
+
+### What was done
+- Created `src/services/tourDiscovery.ts` - automatic tour discovery using Vite's `import.meta.glob`
+- Tours are now indexed by their internal `language` field, not by filename
+- Added `defaultLanguage` config in `src/config/languages.ts` for fallback behavior
+- Updated `dataService.ts` to use the discovery system
+- Updated `App.tsx` to use `tour?.language` for UI translations (ensures UI matches content)
+- Fixed `de.json` which had incorrect `"language": "en"` → `"language": "de"`
+- Updated tests in `language.spec.ts` to work with bundled approach
+- Updated documentation in `CLAUDE.md` and `docs/LANGUAGES.md`
+
+### How it works
+1. At build time, `import.meta.glob` discovers all JSON files in `/public/data/tours/`
+2. Each tour is indexed by `{tourId}:{languageCode}` from the JSON's `id` and `language` fields
+3. `getTourWithFallback()` tries preferred language, then `defaultLanguage`, then first available
+4. Developers configure `defaultLanguage` in `src/config/languages.ts`
+
+### Benefits
+- Filename no longer matters - language is determined by JSON content
+- Supports future folder-based organization (`/tours/barcelona/en.json`)
+- Single config point for fallback behavior
+- No runtime fetch for `languages.json` - languages discovered from tour files
+
+### Lessons Learned
+- `import.meta.glob` with `eager: true` bundles files at build time (no runtime fetch)
+- Keep fallback language configurable, not hardcoded
+- UI language should follow tour's `language` field for consistency
+
+---
+
 ## 2026-01-25: Configurable UI Languages for Bundle Size Optimization
 
 ### What was done

@@ -42,6 +42,8 @@ export const cs: Translations = {
     thankYou: 'Děkujeme!',
     appreciateFeedback: 'Vážíme si vaší zpětné vazby.',
     close: 'Zavřít',
+    subscribed: 'Jste přihlášeni!',
+    checkInbox: 'Zkontrolujte svou e-mailovou schránku.',
   },
   tourComplete: {
     title: 'Prohlídka dokončena!',

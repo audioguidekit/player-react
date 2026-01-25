@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - before starting work, always check `docs/DEVLOG.md` for additional context
 - start dev server in the background and keep it running
 - always test the new feature before you say it is done (`docs/TESTING.md`)
+- after work is done, make sure it is documented in relevant file in `docs/` and mention it in your response
 
 ## Project Overview
 
@@ -46,10 +47,10 @@ See [docs/TESTING.md](docs/TESTING.md) for full guide on writing and debugging t
 The `useAudioPlayer` hook uses a singleton `HTMLAudioElement` that persists across re-renders. Recreating audio elements causes Safari crashes ("A problem repeatedly occurred"). Only change the `src` property, never recreate the element. See `hooks/useAudioPlayer.ts:38-65`.
 
 **Data Loading:**
-- `DataService` class with in-memory Map-based caching
+- Tour discovery via Vite's `import.meta.glob` - tours bundled at build time
+- Language determined by `language` field in tour JSON, not filename
 - `useDataLoader` hooks provide reactive loading states
-- Tour data in `/public/data/tours/*.json`, languages in `/public/data/languages.json`
-- Changes to JSON files load on refresh without restart
+- Tour data in `/public/data/tours/*.json`
 
 **Stop Types (9 total):** audio, text, image-text, video, 3d-object, headline, quote, rating, email. Rendered by `components/feed/FeedItemRenderer.tsx`.
 
@@ -85,9 +86,10 @@ React Router v6 with URL structure:
 - `hooks/useAudioPlayer.ts` - Audio playback (iOS-critical singleton pattern)
 - `components/MiniPlayer.tsx` - Complex UI with gesture handling
 - `components/MainSheet.tsx` - Core drag interaction handler
+- `src/services/tourDiscovery.ts` - Tour discovery via import.meta.glob
 - `src/services/dataService.ts` - Data loading and caching
 - `src/sw.ts` - Service Worker configuration
-- `src/config/languages.ts` - UI language bundle configuration
+- `src/config/languages.ts` - Language configuration (defaultLanguage, supported UI languages)
 
 ## Environment Variables
 
@@ -99,10 +101,14 @@ VITE_DEBUG_AUDIO=true  # Enable audio debug logs
 ## Multi-Language System
 
 - 6 languages: en, cs, de, fr, it, es
-- Per-language tour files: `/public/data/tours/{lang}.json`
+- Tours discovered automatically via `import.meta.glob` from `/public/data/tours/`
+- Language determined by `"language"` field in tour JSON (not filename)
 - Auto-detects device language, remembers preference in localStorage
 - UI translations in `src/translations/locales/`
-- Configure which UI languages to bundle in `src/config/languages.ts` (tree-shaking removes unused)
+- Configure in `src/config/languages.ts`:
+  - `defaultLanguage` - fallback when user's language not supported
+  - `supportedLanguages` - which UI translations to bundle (tree-shaking removes unused)
+- Tour discovery service: `src/services/tourDiscovery.ts`
 
 ## Documentation
 

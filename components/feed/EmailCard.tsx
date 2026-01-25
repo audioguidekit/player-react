@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { EmailStop } from '../../types';
+import { useTranslation } from '../../src/translations';
 
 interface EmailCardProps {
   item: EmailStop;
@@ -97,6 +98,7 @@ const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid, theme }) 
 export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { t } = useTranslation();
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -116,8 +118,8 @@ export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
           <SuccessIconCircle>
             <EnvelopeSimpleIcon size={32} weight="light" />
           </SuccessIconCircle>
-          <Title>You're subscribed!</Title>
-          <Description>Check your inbox for updates.</Description>
+          <Title>{t.rating.subscribed}</Title>
+          <Description>{t.rating.checkInbox}</Description>
         </CenterContent>
       </SuccessContainer>
     );
@@ -130,9 +132,9 @@ export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
           <Mail size={32} strokeWidth={1.5} />
         </IconCircle>
         <TextSection>
-          <Title>{item.title || 'Stay in the loop?'}</Title>
+          <Title>{item.title || t.rating.stayInLoop}</Title>
           <Description>
-            {item.description || 'Enter your email to receive updates about new tours and exclusive offers.'}
+            {item.description || t.rating.emailInfo}
           </Description>
         </TextSection>
         <FormContainer>
@@ -140,14 +142,14 @@ export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={item.placeholder || 'your@email.com'}
+            placeholder={item.placeholder || t.rating.emailPlaceholder}
           />
           <SubmitButton
             onClick={handleSubmit}
             disabled={!isEmailValid}
             $isValid={isEmailValid}
           >
-            {item.buttonText || 'Subscribe'}
+            {item.buttonText || t.rating.subscribe}
           </SubmitButton>
         </FormContainer>
       </FlexContent>

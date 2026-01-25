@@ -128,18 +128,20 @@ Future structure for multiple tours:
 
 Available languages are automatically detected from tour files at build time. No separate `languages.json` file is required - the system discovers languages from the `language` field in tour JSONs.
 
-**Language display names** are defined in `src/services/tourDiscovery.ts`:
+**Language metadata** is defined in `src/services/tourDiscovery.ts`:
 
 ```typescript
-const languageNames: Record<string, string> = {
-  en: 'English',
-  cs: 'Čeština',
-  de: 'Deutsch',
-  fr: 'Français',
-  it: 'Italiano',
-  es: 'Español',
+const languageMetadata: Record<string, { name: string; flag: string; countryCode: string }> = {
+  en: { name: 'English', flag: '🇬🇧', countryCode: 'GB' },
+  cs: { name: 'Čeština', flag: '🇨🇿', countryCode: 'CZ' },
+  de: { name: 'Deutsch', flag: '🇩🇪', countryCode: 'DE' },
+  fr: { name: 'Français', flag: '🇫🇷', countryCode: 'FR' },
+  it: { name: 'Italiano', flag: '🇮🇹', countryCode: 'IT' },
+  es: { name: 'Español', flag: '🇪🇸', countryCode: 'ES' },
 };
 ```
+
+The `countryCode` is used for SVG flag icons from the `country-flag-icons` package.
 
 ## Creating Multi-Language Tours
 
@@ -208,31 +210,25 @@ Create one JSON file per language using the language code as the filename:
    - Example: Stop with `"id": "1"` in English = Stop with `"id": "1"` in Czech
 
 3. **Matching Language Codes**
-   - The `language` field must match a code in `languages.json`
-   - Example: `"language": "en"` must have `{"code": "en", ...}` in languages.json
+   - The `language` field should use standard ISO 639-1 codes
+   - Add the language metadata in `src/services/tourDiscovery.ts` if not already present
 
 4. **Same Number of Stops**
    - All language versions should have the same stops
    - Users can switch languages at any point
 
-### Step 3: Add Language to languages.json
+### Step 3: Add Language Metadata
 
-If adding a new language, update `/public/data/languages.json`:
+If adding a new language, update the `languageMetadata` object in `src/services/tourDiscovery.ts`:
 
-```json
-[
-  {
-    "code": "en",
-    "name": "English",
-    "flag": "🇬🇧"
-  },
-  {
-    "code": "pt",
-    "name": "Português",
-    "flag": "🇵🇹"
-  }
-]
+```typescript
+const languageMetadata: Record<string, { name: string; flag: string; countryCode: string }> = {
+  // ... existing languages ...
+  pt: { name: 'Português', flag: '🇵🇹', countryCode: 'PT' },
+};
 ```
+
+The `countryCode` is required for SVG flag icons (uses `country-flag-icons` package).
 
 ## Language Switching Behavior
 
@@ -541,7 +537,7 @@ For each language, verify:
 
 ### Quick Checklist
 
-1. [ ] Add language to `/public/data/languages.json`
+1. [ ] Add language metadata to `src/services/tourDiscovery.ts` (name, flag, countryCode)
 2. [ ] Create `/public/data/tours/{code}.json`
 3. [ ] Use same tour ID as other languages
 4. [ ] Use same stop IDs as other languages
@@ -552,15 +548,12 @@ For each language, verify:
 
 ### Example: Adding Portuguese
 
-**1. Update languages.json:**
-```json
-[
-  {
-    "code": "pt",
-    "name": "Português",
-    "flag": "🇵🇹"
-  }
-]
+**1. Add language metadata in `src/services/tourDiscovery.ts`:**
+```typescript
+const languageMetadata: Record<string, { name: string; flag: string; countryCode: string }> = {
+  // ... existing languages ...
+  pt: { name: 'Português', flag: '🇵🇹', countryCode: 'PT' },
+};
 ```
 
 **2. Create pt.json:**
@@ -710,6 +703,7 @@ interface Language {
   code: string;         // ISO 639-1 code
   name: string;         // Native name
   flag: string;         // Emoji flag
+  countryCode: string;  // ISO 3166-1 alpha-2 code for SVG flags
 }
 ```
 

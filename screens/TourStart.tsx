@@ -51,6 +51,7 @@ const LanguageButton = styled.button`
   height: 48px;
   background-color: rgba(0, 0, 0, 0.4);
   color: #FFFFFF;
+  margin-left: auto; /* Stay on right side even when rating button is hidden */
 `;
 
 const LanguageFlag = styled.div`

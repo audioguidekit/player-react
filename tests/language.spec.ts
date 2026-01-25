@@ -5,10 +5,13 @@ test.describe('Language System', () => {
     // Languages are now bundled at build time via import.meta.glob
     // Verify the app loads and has language data available
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
-    // Wait for the app to fully load (tour title should appear)
-    await expect(page.getByText(/Barcelona|Unlimited/i)).toBeVisible({ timeout: 10000 });
+    // Wait for loading to complete (loading spinner to disappear)
+    await expect(page.getByText('Preparing your tour')).toBeHidden({ timeout: 30000 });
+
+    // Wait for the tour title to appear (h1 element with tour title)
+    const title = page.locator('h1').filter({ hasText: /Barcelona|Unlimited/i }).first();
+    await expect(title).toBeVisible({ timeout: 10000 });
 
     // Verify language selector is functional (languages are available)
     const languageButton = page.getByRole('button', { name: /language|English|Čeština|Deutsch/i });
@@ -19,10 +22,13 @@ test.describe('Language System', () => {
   test('should load English tour data by default', async ({ page }) => {
     // Tours are bundled at build time - verify the tour loads
     await page.goto('/');
-    await page.waitForLoadState('networkidle');
 
-    // Wait for tour content to appear
-    await expect(page.getByText(/Barcelona|tour|stops/i)).toBeVisible({ timeout: 10000 });
+    // Wait for loading to complete
+    await expect(page.getByText('Preparing your tour')).toBeHidden({ timeout: 30000 });
+
+    // Wait for tour content to appear (h1 element with tour title)
+    const title = page.locator('h1').filter({ hasText: /Barcelona|Unlimited/i }).first();
+    await expect(title).toBeVisible({ timeout: 10000 });
   });
 
   test('should have language configuration in local storage', async ({ page }) => {

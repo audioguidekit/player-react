@@ -1,5 +1,40 @@
 # Development Log
 
+## 2026-01-25: Language Button Position Fix
+
+### What was done
+- Fixed language button position in `TourStart.tsx` when rating button is hidden
+- Added `margin-left: auto` to `LanguageButton` styled component
+- The language button now stays on the right side regardless of `ratingAvailable` setting
+
+### Why this matters
+- When `ratingAvailable: false`, the rating button is not rendered
+- Without the fix, `justify-between` caused the language button to move left
+- Now the layout is consistent with or without the rating button
+
+---
+
+## 2026-01-25: Documentation Update for Language System
+
+### What was done
+- Updated `docs/LANGUAGES.md` to match current implementation:
+  - Changed `languageNames` to `languageMetadata` (includes `name`, `flag`, `countryCode`)
+  - Updated "Adding a New Language" section to reference `tourDiscovery.ts` instead of `languages.json`
+  - Added `countryCode` to the `Language` interface documentation
+  - Updated Quick Checklist and Example sections
+- Updated `README.md` Language interface to include `countryCode`
+
+### Why this matters
+- The `country-flag-icons` package requires `countryCode` for SVG flag rendering
+- The `languages.json` file is now legacy - languages are auto-discovered from tour files
+- Documentation was outdated after tour discovery system was implemented
+
+### Lessons Learned
+- When changing core data structures, update documentation in all places (types.ts, docs/, README.md)
+- Keep legacy files (like `languages.json`) but document that they're unused
+
+---
+
 ## 2026-01-25: Migrate from Lucide to Phosphor Icons
 
 ### What was done

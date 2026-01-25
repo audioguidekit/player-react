@@ -276,6 +276,7 @@ interface Language {
   code: string;
   name: string;
   flag: string;
+  countryCode: string;  // ISO 3166-1 alpha-2 code for SVG flags
 }
 ```
 

@@ -170,9 +170,11 @@ export const TourStart: React.FC<TourStartProps> = ({
 
         {/* Top Buttons */}
         <TopButtonsContainer>
-          <ActionButton onClick={onOpenRating}>
-            <ChatCircleDotsIcon size={24} weight="bold" />
-          </ActionButton>
+          {tour.ratingAvailable !== false && (
+            <ActionButton onClick={onOpenRating}>
+              <ChatCircleDotsIcon size={24} weight="bold" />
+            </ActionButton>
+          )}
           <LanguageButton onClick={onOpenLanguage}>
             <LanguageFlag>
               <FlagIcon />

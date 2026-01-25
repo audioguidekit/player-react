@@ -1,6 +1,6 @@
-# AudioTour Pro
+# Audio Tour Player
 
-A high-fidelity mobile-first progressive web application for guided audio tours. This interactive prototype showcases an immersive audio tour experience for Barcelona, featuring sophisticated animations, gesture-based navigation, and a modern mobile UI.
+A mobile-first progressive web application for guided audio tours. By [Superguided](https://github.com/superguided). This interactive prototype showcases an immersive audio tour experience for Barcelona, featuring sophisticated animations, gesture-based navigation, and a modern mobile UI.
 
 ## 📚 Documentation
 
@@ -11,7 +11,7 @@ A high-fidelity mobile-first progressive web application for guided audio tours.
 
 ## Overview
 
-AudioTour Pro is a React-based mobile web application designed to simulate a premium audio tour guide experience. The app demonstrates professional UI/UX patterns with production-ready animations, bottom sheet navigation, and an intuitive audio player interface - perfect for museums, historical sites, or city tours.
+Audio Tour Player is a React-based mobile web application designed to simulate a premium audio tour guide experience. The app demonstrates professional UI/UX patterns with production-ready animations, bottom sheet navigation, and an intuitive audio player interface - perfect for museums, historical sites, or city tours.
 
 ## Features
 

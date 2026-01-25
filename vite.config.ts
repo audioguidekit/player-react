@@ -39,8 +39,8 @@ export default defineConfig(({ mode }) => {
         filename: 'sw.ts',
         injectRegister: null, // We register manually in index.html
         manifest: {
-          name: 'Audio Tour Pro - Guided Historical Tours',
-          short_name: 'AudioTour',
+          name: 'Audio Tour Player by Superguided',
+          short_name: 'Audio Tour',
           description: 'Explore rich history with immersive guided audio tours',
           theme_color: '#ffffff',
           background_color: '#f3f4f6',

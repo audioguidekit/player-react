@@ -1,12 +1,16 @@
 {
-  "name": "audiotour-pro",
+  "name": "audio-tour-player",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "bunx @react-grab/claude-code@latest && vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",
@@ -21,6 +25,7 @@
     "twin.macro": "^3.4.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
     "@types/node": "^22.14.0",
     "@types/styled-components": "^5.1.36",
     "@vitejs/plugin-react": "^5.0.0",

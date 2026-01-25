@@ -1,6 +1,6 @@
 # Custom Themes
 
-AudioTour Pro features a comprehensive theming system that allows complete customization of the visual appearance. This guide explains how to create custom themes and what each theme property controls.
+Audio Tour Player features a comprehensive theming system that allows complete customization of the visual appearance. This guide explains how to create custom themes and what each theme property controls.
 
 ## Overview
 

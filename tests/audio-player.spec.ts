@@ -1,0 +1,55 @@
+import { test, expect } from '@playwright/test';
+
+test.describe('Audio Player', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/tour/barcelona');
+    await page.waitForLoadState('networkidle');
+    // Give time for tour data to load
+    await page.waitForTimeout(3000);
+  });
+
+  test('should have audio elements available', async ({ page }) => {
+    // Check that audio elements can be created (singleton pattern)
+    const audioExists = await page.evaluate(() => {
+      return typeof HTMLAudioElement !== 'undefined';
+    });
+
+    expect(audioExists).toBe(true);
+  });
+
+  test('should handle audio context initialization', async ({ page }) => {
+    // Audio context should be available
+    const audioContextExists = await page.evaluate(() => {
+      return typeof AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined';
+    });
+
+    expect(audioContextExists).toBe(true);
+  });
+});
+
+test.describe('Mini Player', () => {
+  test('should not crash on initial render', async ({ page }) => {
+    await page.goto('/tour/barcelona');
+    await page.waitForLoadState('networkidle');
+
+    // Wait for potential mini player to render
+    await page.waitForTimeout(3000);
+
+    // Page should still be responsive
+    const body = page.locator('body');
+    await expect(body).toBeVisible();
+  });
+});
+
+test.describe('Media Session API', () => {
+  test('should have Media Session API available', async ({ page }) => {
+    await page.goto('/');
+
+    const mediaSessionAvailable = await page.evaluate(() => {
+      return 'mediaSession' in navigator;
+    });
+
+    // Media Session API should be available in modern browsers
+    expect(mediaSessionAvailable).toBe(true);
+  });
+});

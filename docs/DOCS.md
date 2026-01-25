@@ -1,4 +1,4 @@
-# AudioTour Pro - Documentation Guide
+# Audio Tour Player - Documentation Guide
 
 Complete documentation for developers, content creators, and stakeholders.
 
@@ -127,7 +127,7 @@ npm run preview  # Preview production build
 
 **Quick start:**
 - Use the template in ADDING_TOURS.md
-- Look at `/public/data/tours/ancient-rome.json` as example
+- Look at existing tour files in `/public/data/tours/` as examples
 - Validate JSON at [jsonlint.com](https://jsonlint.com)
 
 ### Developers
@@ -172,4 +172,4 @@ npm run preview  # Preview production build
 
 ---
 
-**Last Updated:** 2025-12-10 | **Version:** 1.0.1
+**Last Updated:** 2025-01-25 | **Version:** 1.1.0

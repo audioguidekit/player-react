@@ -39,6 +39,11 @@ This directory contains all project documentation.
   - Progress preservation
   - Best practices
 
+- **[THEMES.md](./THEMES.md)** - Custom theming system
+  - Theme configuration
+  - Built-in themes (default, modern, calm)
+  - Creating custom themes
+
 ### 📖 General Documentation
 - **[DOCS.md](./DOCS.md)** - General project documentation
   - Project overview

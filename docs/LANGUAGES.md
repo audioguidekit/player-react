@@ -1,6 +1,6 @@
 # Multi-Language Tour System
 
-AudioTour Pro supports multiple languages with seamless switching and progress preservation.
+Audio Tour Player supports multiple languages with seamless switching and progress preservation.
 
 ## Overview
 

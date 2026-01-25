@@ -395,8 +395,8 @@ Generated during build by `vite-plugin-pwa`:
 
 ```json
 {
-  "name": "Audio Tour Pro - Guided Historical Tours",
-  "short_name": "AudioTour",
+  "name": "Audio Tour Player by Superguided",
+  "short_name": "Audio Tour",
   "description": "Explore rich history with immersive guided audio tours",
   "theme_color": "#ffffff",
   "background_color": "#f3f4f6",
@@ -423,7 +423,7 @@ Generated during build by `vite-plugin-pwa`:
 <!-- iOS Specific -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="AudioTour" />
+<meta name="apple-mobile-web-app-title" content="Audio Tour" />
 <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
 ```
 

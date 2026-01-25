@@ -1,6 +1,6 @@
 # How to Add New Tours - Step by Step Guide
 
-This guide walks you through adding a new tour to AudioTour Pro.
+This guide walks you through adding a new tour to Audio Tour Player.
 
 ## Quick Start
 
@@ -335,7 +335,7 @@ Before deploying your tour:
 
 ### Multiple Languages
 
-AudioTour Pro has a built-in multi-language system. Tours are automatically loaded based on the user's selected language.
+Audio Tour Player has a built-in multi-language system. Tours are automatically loaded based on the user's selected language.
 
 **Quick Overview:**
 - Create one file per language: `en.json`, `cs.json`, `de.json`
@@ -460,7 +460,6 @@ async function createTourFromAPI(apiData) {
 ## Getting Help
 
 - **Data Structure:** See `/public/data/README.md`
-- **Code Integration:** See `MIGRATION_GUIDE.md`
 - **Main Documentation:** See `README.md`
 - **TypeScript Types:** See `types.ts`
 

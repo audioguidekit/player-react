@@ -1,7 +1,0 @@
-{
-  "projectId": "6857c758-2a7c-48b6-a151-12d5746f3182",
-  "createdAt": 1765324858589,
-  "startupCommands": [
-    "npm install; npx vite"
-  ]
-}

@@ -538,6 +538,7 @@ const App: React.FC = () => {
                   scrollToStopId={scrollToStopId?.id ?? null}
                   scrollTrigger={scrollToStopId?.timestamp ?? null}
                   onScrollComplete={handleScrollComplete}
+                  onOpenRatingSheet={() => setActiveSheet('RATING')}
                 />
               }
             />

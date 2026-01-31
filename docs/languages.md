@@ -32,65 +32,57 @@ User refreshes page → App remembers English choice
 User clears localStorage → App detects Czech again
 ```
 
-## Configuring UI Languages
+## Configuring Languages
 
-The app separates **tour content languages** (tour data files) from **UI languages** (buttons, labels, messages). You can configure which UI languages to include in your build to reduce bundle size.
+Languages are **automatically derived from your tour files**. The app discovers which languages are available by scanning tour JSON files at build time, and only exposes UI translations for those languages.
 
-### Configuration File
+### Configuration via Tour Metadata
 
-Edit `src/config/languages.ts` to configure languages:
+Configure the default language in your tour's `metadata.json` file:
 
-```typescript
-// Language imports - uncomment languages you need
-import { en } from '../translations/locales/en';
-import { cs } from '../translations/locales/cs';
-// import { de } from '../translations/locales/de';  // Not needed
-// import { fr } from '../translations/locales/fr';  // Not needed
-
-/**
- * Default language for the app.
- * Used when user's browser language is not supported.
- */
-export const defaultLanguage: LanguageCode = 'en';
-
-export const supportedLanguages = {
-  en,
-  cs,
-  // de,
-  // fr,
-};
+**File: `/public/data/tour/metadata.json`**
+```json
+{
+  "id": "barcelona",
+  "defaultLanguage": "en",
+  "offlineMode": "optional",
+  "themeId": "terminal"
+}
 ```
 
 ### Default Language
 
-The `defaultLanguage` setting controls the fallback language used when:
+The `defaultLanguage` setting in `metadata.json` controls the fallback language used when:
 - User's browser/device language is not supported
 - A tour is not available in the requested language
 - No language preference has been set
 
-Change it to any supported language code:
-```typescript
-export const defaultLanguage: LanguageCode = 'de';  // German as default
+Change it to any language code that exists in your tours:
+```json
+{
+  "defaultLanguage": "de"
+}
 ```
 
-### Tree-Shaking
+### Automatic UI Translation Matching
 
-Vite automatically removes unused language files from the bundle:
-- **All 6 languages:** ~1,734 KB
-- **English only:** ~1,726 KB
-- Savings grow as translation files expand
+The app automatically includes UI translations (buttons, labels, messages) for all languages that exist in your tour files:
+
+- If you have tour files with `"language": "en"`, `"language": "de"`, `"language": "cs"` → the app will expose English, German, and Czech UI translations
+- No manual configuration needed - just add tour files and the UI adapts
+- All available UI translations (en, cs, de, fr, it, es) are bundled but only those matching tour languages are exposed
 
 ### Graceful Fallback
 
-If a tour is in a language without UI translations, the app falls back to English automatically:
+If a tour uses a language without UI translations, the app falls back to the default language automatically:
 
 ```
-Tour in German (de.json) + UI only supports English
-  → Tour content in German
-  → UI labels in English (no error shown)
+Tour in Portuguese (pt.json) + No UI translation for Portuguese
+  → Tour content in Portuguese
+  → UI labels in default language (no error shown)
 ```
 
-This allows you to support tour content in many languages while keeping the bundle small.
+This allows you to support tour content in any language while maintaining a clean UI experience.
 
 ## How It Works
 
@@ -105,7 +97,7 @@ Tours are automatically discovered at build time using Vite's `import.meta.glob`
 Tour files can be organized flexibly. The `language` field inside each JSON determines the language:
 
 ```
-/public/data/tours/
+/public/data/tour/
 ├── en.json          # Has "language": "en"
 ├── cs.json          # Has "language": "cs"
 ├── de.json          # Has "language": "de"
@@ -114,7 +106,7 @@ Tour files can be organized flexibly. The `language` field inside each JSON dete
 
 Future structure for multiple tours:
 ```
-/public/data/tours/
+/public/data/tour/
 ├── barcelona/
 │   ├── en.json      # "id": "barcelona", "language": "en"
 │   ├── cs.json      # "id": "barcelona", "language": "cs"
@@ -149,7 +141,7 @@ The `countryCode` is used for SVG flag icons from the `country-flag-icons` packa
 
 Create one JSON file per language using the language code as the filename:
 
-**File: `/public/data/tours/en.json`**
+**File: `/public/data/tour/en.json`**
 ```json
 {
   "id": "barcelona",
@@ -173,7 +165,7 @@ Create one JSON file per language using the language code as the filename:
 }
 ```
 
-**File: `/public/data/tours/cs.json`**
+**File: `/public/data/tour/cs.json`**
 ```json
 {
   "id": "barcelona",
@@ -405,7 +397,7 @@ The data service loads tours by language:
 const tour = await dataService.getTourByLanguage('en');
 ```
 
-This fetches `/data/tours/en.json` and caches it for performance.
+This fetches `/data/tour/en.json` and caches it for performance.
 
 ## Tour JSON Structure
 
@@ -537,26 +529,21 @@ For each language, verify:
 
 ### Quick Checklist
 
-1. [ ] Add language metadata to `src/services/tourDiscovery.ts` (name, flag, countryCode)
-2. [ ] Create `/public/data/tours/{code}.json`
-3. [ ] Use same tour ID as other languages
-4. [ ] Use same stop IDs as other languages
-5. [ ] Translate all text content
-6. [ ] Update audio file URLs to language-specific files
-7. [ ] Test language switching
-8. [ ] Verify progress preservation
+1. [ ] Create `/public/data/tour/{code}.json` with tour content
+2. [ ] Use same tour ID as other languages
+3. [ ] Use same stop IDs as other languages
+4. [ ] Translate all text content
+5. [ ] Update audio file URLs to language-specific files
+6. [ ] (Optional) Add language metadata to `src/services/tourDiscovery.ts` for display name/flag
+7. [ ] (Optional) Add UI translation file to `src/translations/locales/{code}.ts`
+8. [ ] Test language switching
+9. [ ] Verify progress preservation
+
+**Note:** Steps 6-7 are optional. If not provided, the app will use the language code as the display name and fall back to the default UI language.
 
 ### Example: Adding Portuguese
 
-**1. Add language metadata in `src/services/tourDiscovery.ts`:**
-```typescript
-const languageMetadata: Record<string, { name: string; flag: string; countryCode: string }> = {
-  // ... existing languages ...
-  pt: { name: 'Português', flag: '🇵🇹', countryCode: 'PT' },
-};
-```
-
-**2. Create pt.json:**
+**1. Create pt.json tour file:**
 ```json
 {
   "id": "barcelona",
@@ -580,9 +567,17 @@ const languageMetadata: Record<string, { name: string; flag: string; countryCode
 }
 ```
 
+**2. (Optional) Add language metadata in `src/services/tourDiscovery.ts`:**
+```typescript
+const languageMetadata: Record<string, { name: string; flag: string; countryCode: string }> = {
+  // ... existing languages ...
+  pt: { name: 'Português', flag: '🇵🇹', countryCode: 'PT' },
+};
+```
+
 **3. Test:**
 ```bash
-npm run dev
+bun run dev
 # Open app
 # Select Portuguese from language picker
 # Verify content loads in Portuguese
@@ -597,21 +592,21 @@ npm run dev
 **Problem:** New language doesn't show in language picker
 
 **Solutions:**
-1. Check `languages.json` syntax
+1. Verify tour file has `language` field set correctly
 2. Verify language code is lowercase
 3. Clear browser cache
 4. Restart dev server
+5. Check console for `[TourDiscovery]` logs to verify the tour was registered
 
 ### Tour Doesn't Load
 
 **Problem:** Selecting language shows error
 
 **Solutions:**
-1. Verify `{code}.json` file exists
-2. Check tour file has `language` field
-3. Ensure `language` matches code in `languages.json`
-4. Validate JSON syntax
-5. Check browser console for errors
+1. Verify `{code}.json` file exists in `/public/data/tour/`
+2. Check tour file has both `id` and `language` fields
+3. Validate JSON syntax
+4. Check browser console for errors
 
 ### Progress Not Preserved
 
@@ -763,13 +758,13 @@ If you have existing tour files, migrate them:
 
 ### Before (old system)
 ```
-/public/data/tours/
+/public/data/tour/
 └── tour.json
 ```
 
 ### After (new system)
 ```
-/public/data/tours/
+/public/data/tour/
 ├── en.json
 ├── cs.json
 └── de.json

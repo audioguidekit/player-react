@@ -126,7 +126,7 @@ export default defineConfig(({ mode }) => {
         injectManifest: {
           globPatterns: [
             '**/*.{js,css,html,ico,png,svg,woff2}',
-            'data/tours/**/*.json' // Precache tour data for offline access
+            'data/tour/**/*.json' // Precache tour data for offline access
           ],
           globIgnores: ['**/node_modules/**/*'],
         }

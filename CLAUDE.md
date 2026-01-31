@@ -50,7 +50,7 @@ The `useAudioPlayer` hook uses a singleton `HTMLAudioElement` that persists acro
 - Tour discovery via Vite's `import.meta.glob` - tours bundled at build time
 - Language determined by `language` field in tour JSON, not filename
 - `useDataLoader` hooks provide reactive loading states
-- Tour data in `/public/data/tours/*.json`
+- Tour data in `/public/data/tour/*.json`
 
 **Stop Types (9 total):** audio, text, image-text, video, 3d-object, headline, quote, rating, email. Rendered by `components/feed/FeedItemRenderer.tsx`.
 
@@ -86,10 +86,11 @@ React Router v6 with URL structure:
 - `hooks/useAudioPlayer.ts` - Audio playback (iOS-critical singleton pattern)
 - `components/MiniPlayer.tsx` - Complex UI with gesture handling
 - `components/MainSheet.tsx` - Core drag interaction handler
-- `src/services/tourDiscovery.ts` - Tour discovery via import.meta.glob
+- `src/services/tourDiscovery.ts` - Tour discovery via import.meta.glob, provides defaultLanguage from metadata
 - `src/services/dataService.ts` - Data loading and caching
 - `src/sw.ts` - Service Worker configuration
-- `src/config/languages.ts` - Language configuration (defaultLanguage, supported UI languages)
+- `src/config/languages.ts` - UI translations (auto-derived from tour languages)
+- `public/data/tour/metadata.json` - Tour metadata including defaultLanguage setting
 
 ## Environment Variables
 
@@ -101,14 +102,20 @@ VITE_DEBUG_AUDIO=true  # Enable audio debug logs
 
 ## Multi-Language System
 
-- 6 languages: en, cs, de, fr, it, es
-- Tours discovered automatically via `import.meta.glob` from `/public/data/tours/`
+- 6 UI translations available: en, cs, de, fr, it, es
+- **Languages are automatically derived from tour files** - no manual configuration needed
+- Tours discovered automatically via `import.meta.glob` from `/public/data/tour/`
 - Language determined by `"language"` field in tour JSON (not filename)
 - Auto-detects device language, remembers preference in localStorage
 - UI translations in `src/translations/locales/`
-- Configure in `src/config/languages.ts`:
-  - `defaultLanguage` - fallback when user's language not supported
-  - `supportedLanguages` - which UI translations to bundle (tree-shaking removes unused)
+- Configure `defaultLanguage` in tour's `metadata.json` (not in code):
+  ```json
+  {
+    "id": "barcelona",
+    "defaultLanguage": "en"
+  }
+  ```
+- Only languages that exist in tours are exposed to users
 - Tour discovery service: `src/services/tourDiscovery.ts`
 
 ## Documentation

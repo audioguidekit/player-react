@@ -30,7 +30,7 @@ interface MiniPlayerProps {
   canGoPrev?: boolean;
   // Transcription
   transcription?: string;
-  transcriptionAvailable?: boolean;
+  transcriptAvailable?: boolean;
   isTranscriptionExpanded?: boolean;
   onToggleTranscription?: (expanded: boolean) => void;
 }
@@ -207,7 +207,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
   canGoNext = true,
   canGoPrev = true,
   transcription,
-  transcriptionAvailable,
+  transcriptAvailable,
   isTranscriptionExpanded: externalIsTranscriptionExpanded,
   onToggleTranscription
 }) => {
@@ -224,7 +224,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
   const setIsTranscriptionExpanded = onToggleTranscription || setLocalIsTranscriptionExpanded;
 
   // Only show transcription if both flag and text exist
-  const hasTranscription = transcriptionAvailable && transcription && transcription.trim().length > 0;
+  const hasTranscription = transcriptAvailable && transcription && transcription.trim().length > 0;
 
   // Use real progress from audio player
   const visualProgress = Math.max(0, Math.min(100, progress || 0));
@@ -524,6 +524,6 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
     prevProps.canGoPrev === nextProps.canGoPrev &&
     prevProps.isTranscriptionExpanded === nextProps.isTranscriptionExpanded &&
     prevProps.transcription === nextProps.transcription &&
-    prevProps.transcriptionAvailable === nextProps.transcriptionAvailable
+    prevProps.transcriptAvailable === nextProps.transcriptAvailable
   );
 });

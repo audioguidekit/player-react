@@ -330,11 +330,12 @@ The app loads tour data dynamically from JSON files in the `/public/data/` direc
 
 Quick steps to add a tour:
 
-1. **Create a tour JSON file** in `/public/data/tours/`
-2. **Update the manifest** in `/public/data/tours/index.json`
-3. **Update DEFAULT_TOUR_ID** in `src/config/tours.ts` (optional)
+1. **Create metadata.json** in `/public/data/tour/` with shared properties
+2. **Create language files** (e.g., `en.json`, `cs.json`) with translated content
 
-For complete step-by-step guide with examples, see **[ADDING_TOURS.md](docs/ADDING_TOURS.md)**
+Tours are auto-discovered - no manifest needed.
+
+For complete step-by-step guide with examples, see **[docs/adding-tours.md](docs/adding-tours.md)**
 
 ### Loading Data
 
@@ -369,9 +370,9 @@ Data is automatically cached for performance. See [`src/services/dataService.ts`
 
 The application uses dynamic data loading from JSON files:
 
-1. **Tour files** - `/public/data/tours/*.json`
-2. **Languages** - `/public/data/languages.json`
-3. **Tour manifest** - `/public/data/tours/index.json`
+1. **Tour metadata** - `/public/data/tour/metadata.json` (shared properties)
+2. **Tour language files** - `/public/data/tour/*.json` (e.g., `en.json`, `cs.json`)
+3. **Languages** - Auto-discovered from tour files
 
 To add or modify tours, edit the JSON files directly. The app will load changes automatically on refresh.
 

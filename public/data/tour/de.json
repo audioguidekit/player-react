@@ -5,12 +5,8 @@
   "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
   "totalDuration": "20 minutes",
   "totalStops": 10,
-  "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.jpeg",
   "offlineMode": "offline-only",
-  "transitionAudio": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/end.m4a",
   "themeId": "minimalDark",
-  "transcriptionAvailable": true,
-  "collectFeedback": true,
   "stops": [
     {
       "id": "1",

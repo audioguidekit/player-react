@@ -496,6 +496,7 @@ const App: React.FC = () => {
             <TourStart
               tour={tour}
               selectedLanguage={selectedLanguage!}
+              languages={languages}
               onOpenRating={handleOpenRating}
               onOpenLanguage={handleOpenLanguage}
               sheetY={sheetY}
@@ -512,7 +513,7 @@ const App: React.FC = () => {
               startContent={
                 <StartCard
                   tour={tour}
-                  hasStarted={!!currentStopId}
+                  hasStarted={!!currentStopId || progressTracking.hasAnyProgress()}
                   onAction={handleStartTour}
                   isDownloading={downloadManager.isDownloading}
                   isDownloaded={downloadManager.isDownloaded}
@@ -565,7 +566,7 @@ const App: React.FC = () => {
                   canGoNext={canGoNext}
                   canGoPrev={canGoPrev}
                   transcription={currentAudioStop.transcription}
-                  transcriptionAvailable={tour?.transcriptionAvailable}
+                  transcriptAvailable={tour?.transcriptAvailable}
                   isTranscriptionExpanded={isTranscriptionExpanded}
                   onToggleTranscription={setIsTranscriptionExpanded}
                 />

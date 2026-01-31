@@ -260,6 +260,13 @@ export const useProgressTracking = (tourId: string) => {
     setProgress({ stops: {} });
   }, []);
 
+  // Check if there's any saved progress (for determining Resume vs Start)
+  const hasAnyProgress = useCallback((): boolean => {
+    return Object.values(progress.stops).some(
+      stopProgress => stopProgress.isCompleted || stopProgress.lastPosition > 0 || (stopProgress.maxPercentageReached ?? 0) > 0
+    );
+  }, [progress]);
+
   return {
     markStopCompleted,
     updateStopPosition,
@@ -270,6 +277,7 @@ export const useProgressTracking = (tourId: string) => {
     getCompletedStopsCount,
     getRealtimeProgressPercentage,
     getConsumedMinutes,
-    resetProgress
+    resetProgress,
+    hasAnyProgress
   };
 };

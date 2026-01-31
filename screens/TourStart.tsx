@@ -91,6 +91,7 @@ const ChevronIcon = styled(CaretDownIcon)`
 interface TourStartProps {
   tour: TourData;
   selectedLanguage: Language;
+  languages: Language[];
   onOpenRating: () => void;
   onOpenLanguage: () => void;
   sheetY?: MotionValue<number>;
@@ -101,6 +102,7 @@ interface TourStartProps {
 export const TourStart: React.FC<TourStartProps> = ({
   tour,
   selectedLanguage,
+  languages,
   onOpenRating,
   onOpenLanguage,
   sheetY,
@@ -182,13 +184,15 @@ export const TourStart: React.FC<TourStartProps> = ({
               <ChatCircleDotsIcon size={24} weight="bold" />
             </ActionButton>
           )}
-          <LanguageButton onClick={onOpenLanguage}>
-            <LanguageFlag>
-              <FlagIcon />
-            </LanguageFlag>
-            <LanguageName>{selectedLanguage.name}</LanguageName>
-            <ChevronIcon size={18} weight="bold" />
-          </LanguageButton>
+          {languages.length > 1 && (
+            <LanguageButton onClick={onOpenLanguage}>
+              <LanguageFlag>
+                <FlagIcon />
+              </LanguageFlag>
+              <LanguageName>{selectedLanguage.name}</LanguageName>
+              <ChevronIcon size={18} weight="bold" />
+            </LanguageButton>
+          )}
         </TopButtonsContainer>
       </MediaContainer>
     </Container>

@@ -2,6 +2,21 @@ export type StopType = 'audio' | 'text' | 'image-text' | '3d-object' | 'video' |
 
 export type OfflineMode = 'online-only' | 'optional' | 'offline-only';
 
+/**
+ * Tour metadata - shared properties across all language versions
+ * These can be overridden in individual language files
+ */
+export interface TourMetadata {
+  id: string;
+  defaultLanguage?: string;
+  offlineMode?: OfflineMode;
+  transitionAudio?: string;
+  themeId?: string;
+  transcriptAvailable?: boolean;
+  collectFeedback?: boolean;
+  image?: string;
+}
+
 export interface BaseStop {
   id: string;
   type: StopType;
@@ -81,7 +96,7 @@ export interface TourData {
   offlineMode?: OfflineMode;
   transitionAudio?: string;
   themeId?: string; // Optional theme ID for custom branding
-  transcriptionAvailable?: boolean;
+  transcriptAvailable?: boolean;
   collectFeedback?: boolean; // Show rating button on main screen (default: true)
 }
 

@@ -48,6 +48,12 @@ const getOrCreateAudioElement = (): HTMLAudioElement => {
     globalAudioElement.preload = 'metadata';
     globalAudioElement.volume = 1.0;
     globalAudioElement.muted = false;
+
+    // CRITICAL FOR iOS: Append audio element to DOM
+    // iOS Safari may need the audio element in the DOM for Media Session to work properly
+    globalAudioElement.style.display = 'none';
+    document.body.appendChild(globalAudioElement);
+    debugLog('[AUDIO] Audio element appended to DOM for iOS compatibility');
   }
   return globalAudioElement;
 };

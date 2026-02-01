@@ -3,7 +3,7 @@
   "defaultLanguage": "en",
   "offlineMode": "optional",
   "transitionAudio": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/audio/end.mp3",
-  "themeId": "default-dark",
+  "themeId": "default-light",
   "transcriptAvailable": true,
   "collectFeedback": true,
   "showLanguageLabel": true,

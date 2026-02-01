@@ -1,6 +1,6 @@
 # Custom Themes
 
-Audio Tour Player features a comprehensive theming system that allows complete customization of the visual appearance. This guide explains how to create custom themes and what each theme property controls.
+AudioGuideKit features a comprehensive theming system that allows complete customization of the visual appearance. This guide explains how to create custom themes and what each theme property controls.
 
 ## Overview
 

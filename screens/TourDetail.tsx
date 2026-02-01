@@ -6,6 +6,7 @@ import { TourData } from '../types';
 import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
 import { TourHeader } from '../components/TourHeader';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
+import { HeadphonesIcon } from '@phosphor-icons/react';
 
 const Container = styled.div`
   ${tw`flex flex-col h-full relative w-full pb-12`}
@@ -21,6 +22,23 @@ const ScrollableList = styled(motion.div)`
 const StopItemWrapper = styled.div`
   content-visibility: auto;
   contain-intrinsic-size: 0 120px; /* Approximate height of a stop card */
+`;
+
+const Signature = styled.a`
+  ${tw`flex items-center justify-center gap-1.5 py-1 mt-2`}
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.text.tertiary};
+  text-decoration: none;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
 `;
 
 // Animation variants hoisted outside component to prevent recreation on each render
@@ -210,6 +228,15 @@ export const TourDetail = React.memo<TourDetailProps>(({
             </StopItemWrapper>
           );
         })}
+
+        <Signature
+          href="https://github.com/audioguidekit"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <HeadphonesIcon weight="bold" />
+          AudioGuideKit · open-source audio player
+        </Signature>
       </ScrollableList>
     </Container>
   );

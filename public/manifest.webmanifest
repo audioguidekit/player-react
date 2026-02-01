@@ -1,7 +1,7 @@
 {
-  "name": "Audio Tour Pro - Guided Historical Tours",
-  "short_name": "AudioTour",
-  "description": "Explore rich history with immersive guided audio tours",
+  "name": "AudioGuideKit",
+  "short_name": "AudioGuideKit",
+  "description": "Mobile-first PWA for guided audio tours",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3f4f6",

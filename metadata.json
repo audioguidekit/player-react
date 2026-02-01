@@ -1,5 +1,5 @@
 {
-  "name": "Audio Tour Player",
-  "description": "A high-fidelity mobile web prototype for an audio tour guide application featuring bottom sheets, smooth transitions, and a rating flow.",
+  "name": "AudioGuideKit",
+  "description": "A high-fidelity mobile web prototype for an audio guide application featuring bottom sheets, smooth transitions, and a rating flow.",
   "requestFramePermissions": []
 }

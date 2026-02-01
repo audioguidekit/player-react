@@ -30,7 +30,6 @@ const CRITICAL_CDN_URLS = [
   'https://aistudiocdn.com/react@^19.2.0',
   'https://aistudiocdn.com/react-dom@^19.2.0',
   'https://aistudiocdn.com/framer-motion@^12.23.24',
-  'https://aistudiocdn.com/lucide-react@^0.554.0',
 ];
 
 // Warmup cache: Pre-fetch critical CDN resources during install
@@ -122,7 +121,7 @@ registerRoute(
   })
 );
 
-// External CDN Dependencies (React, Framer Motion, Lucide) - Cache First
+// External CDN Dependencies (React, Framer Motion) - Cache First
 registerRoute(
   /^https:\/\/aistudiocdn\.com\/.*/i,
   new CacheFirst({

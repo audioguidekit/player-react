@@ -97,7 +97,7 @@ export const useMediaSession = ({
     navigator.mediaSession.metadata = new MediaMetadata({
       title: firstAudioStop.title,
       artist: tour.title,
-      album: 'Audio Tour',
+      album: 'AudioGuideKit',
       artwork: artworkArray,
     });
 
@@ -130,7 +130,7 @@ export const useMediaSession = ({
     navigator.mediaSession.metadata = new MediaMetadata({
       title: currentAudioStop.title,
       artist: tour.title,
-      album: 'Audio Tour',
+      album: 'AudioGuideKit',
       artwork: artworkArray,
     });
 
@@ -165,7 +165,7 @@ export const useMediaSession = ({
         navigator.mediaSession.metadata = new MediaMetadata({
           title: currentAudioStop.title,
           artist: tour.title,
-          album: 'Audio Tour',
+          album: 'AudioGuideKit',
           artwork: artworkArray,
         });
 
@@ -197,7 +197,7 @@ export const useMediaSession = ({
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentAudioStop.title,
         artist: tour.title,
-        album: 'Audio Tour',
+        album: 'AudioGuideKit',
         artwork: artworkArray,
       });
 

@@ -1,6 +1,6 @@
 # Multi-Language Tour System
 
-Audio Tour Player supports multiple languages with seamless switching and progress preservation.
+AudioGuideKit supports multiple languages with seamless switching and progress preservation.
 
 ## Overview
 

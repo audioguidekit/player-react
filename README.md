@@ -1,6 +1,6 @@
-# Audio Tour Player
+# AudioGuideKit
 
-A mobile-first progressive web application for guided audio tours. By [Superguided](https://github.com/superguided). This interactive prototype showcases an immersive audio tour experience for Barcelona, featuring sophisticated animations, gesture-based navigation, and a modern mobile UI.
+A mobile-first progressive web application for guided audio tours. This interactive prototype showcases an immersive audio tour experience for Barcelona, featuring sophisticated animations, gesture-based navigation, and a modern mobile UI.
 
 ## 📚 Documentation
 
@@ -13,7 +13,7 @@ A mobile-first progressive web application for guided audio tours. By [Superguid
 
 ## Overview
 
-Audio Tour Player is a React-based mobile web application designed to simulate a premium audio tour guide experience. The app demonstrates professional UI/UX patterns with production-ready animations, bottom sheet navigation, and an intuitive audio player interface - perfect for museums, historical sites, or city tours.
+AudioGuideKit is a React-based mobile web application designed to simulate a premium audio tour guide experience. The app demonstrates professional UI/UX patterns with production-ready animations, bottom sheet navigation, and an intuitive audio player interface - perfect for museums, historical sites, or city tours.
 
 ## Features
 
@@ -62,7 +62,7 @@ Audio Tour Player is a React-based mobile web application designed to simulate a
 
 ### Libraries
 - **Framer Motion 12.23.24** - Animation and gesture library
-- **Lucide React 0.554.0** - Icon system
+- **Phosphor Icons 2.1.10** - Icon system
 - **Styled Components 6.1** - CSS-in-JS styling
 - **@google/model-viewer 4.1** - 3D model rendering
 - **idb 8.0** - IndexedDB wrapper for storage
@@ -462,7 +462,7 @@ This project is private and not currently licensed for public use.
 
 ## Acknowledgments
 
-- Icons from [Lucide](https://lucide.dev)
+- Icons from [Phosphor Icons](https://phosphoricons.com)
 - Built with [AI Studio](https://ai.studio)
 
 ---

@@ -1,6 +1,6 @@
 # How to Add New Tours - Step by Step Guide
 
-This guide walks you through adding a new tour to Audio Tour Player.
+This guide walks you through adding a new tour to AudioGuideKit.
 
 ## Quick Start
 
@@ -291,7 +291,7 @@ Before deploying your tour:
 
 ### Offline Modes
 
-Audio Tour Player supports three offline modes that control how users interact with tour downloads:
+AudioGuideKit supports three offline modes that control how users interact with tour downloads:
 
 | Mode | Description | Use Case |
 |------|-------------|----------|
@@ -321,7 +321,7 @@ Audio Tour Player supports three offline modes that control how users interact w
 
 ### Multiple Languages
 
-Audio Tour Player has a built-in multi-language system. Tours are automatically loaded based on the user's selected language.
+AudioGuideKit has a built-in multi-language system. Tours are automatically loaded based on the user's selected language.
 
 **Quick Overview:**
 - Create `metadata.json` with shared properties

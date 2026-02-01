@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { TourData, AudioStop } from '../types';
 
-// Module-level flag to track if Media Session handlers are initialized
-// Prevents re-initialization on HMR which can cause iOS issues
-let mediaSessionInitialized = false;
+// REMOVED module-level flag (mediaSessionInitialized).
+// It causes bugs on component remount/navigation.
 
 type AudioPlayer = {
   audioElement: HTMLAudioElement | null;
@@ -26,9 +25,6 @@ export interface UseMediaSessionProps {
   audioPlayer: AudioPlayer;
 }
 
-/**
- * Helper to determine artwork MIME type from file extension
- */
 const getArtworkType = (src: string | undefined): string | undefined => {
   if (!src) return undefined;
   const lower = src.toLowerCase();
@@ -38,10 +34,6 @@ const getArtworkType = (src: string | undefined): string | undefined => {
   return undefined;
 };
 
-/**
- * Hook to manage Media Session API for iOS lock screen controls.
- * Handles metadata, playback state, action handlers, and position state.
- */
 export const useMediaSession = ({
   tour,
   currentAudioStop,
@@ -55,76 +47,36 @@ export const useMediaSession = ({
   setIsPlaying,
   audioPlayer,
 }: UseMediaSessionProps) => {
-  // Media Session refs for position state management
-  const lastMetadataTrackIdRef = useRef<string | null>(null);
-  const lastPositionUpdateRef = useRef(0);
-  const lastPositionValuesRef = useRef({ duration: 0, position: 0 });
+  // --- STATE REFS ---
+  // We use refs to hold the LATEST values. This allows the Action Handlers
+  // to be defined ONCE (on mount) but always access current data/functions.
 
-  // Refs for navigation state - used by Media Session handlers
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+  const setIsPlayingRef = useRef(setIsPlaying);
   const canGoNextRef = useRef(canGoNext);
   const canGoPrevRef = useRef(canGoPrev);
   const handleNextStopRef = useRef(handleNextStop);
   const handlePrevStopRef = useRef(handlePrevStop);
 
-  // Keep refs updated with latest values
+  // Sync Refs with props/state
   useEffect(() => {
+    audioElRef.current = audioPlayer.audioElement;
+    setIsPlayingRef.current = setIsPlaying;
     canGoNextRef.current = canGoNext;
     canGoPrevRef.current = canGoPrev;
     handleNextStopRef.current = handleNextStop;
     handlePrevStopRef.current = handlePrevStop;
-  }, [canGoNext, canGoPrev, handleNextStop, handlePrevStop]);
+  }, [audioPlayer.audioElement, setIsPlaying, canGoNext, canGoPrev, handleNextStop, handlePrevStop]);
 
-  // EARLY Media Session metadata - set initial metadata on tour load
-  // This ensures Control Center shows controls immediately, even before playback starts
-  useEffect(() => {
-    if (!('mediaSession' in navigator)) return;
-    if (!tour) return;
-
-    // Find first audio stop
-    const firstAudioStop = tour.stops.find(stop => stop.type === 'audio' && 'audioFile' in stop);
-    if (!firstAudioStop || firstAudioStop.type !== 'audio') return;
-
-    // Set initial metadata with first stop
-    const artworkType = getArtworkType(firstAudioStop.image);
-    const artworkArray = firstAudioStop.image
-      ? [{
-          src: firstAudioStop.image,
-          sizes: '512x512',
-          type: artworkType || 'image/png'
-        }]
-      : [];
-
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: firstAudioStop.title,
-      artist: tour.title,
-      album: 'AudioGuideKit',
-      artwork: artworkArray,
-    });
-
-    console.log('[MediaSession] Initial metadata set:', firstAudioStop.title);
-  }, [tour]);
-
-  // Media Session metadata - only update when track actually changes
+  // --- 1. METADATA UPDATES ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
     if (!tour || !currentAudioStop) return;
-
-    // Don't update metadata during transitions - transition audio should not show metadata
     if (isTransitioning) return;
 
-    // Only update metadata if track changed
-    if (lastMetadataTrackIdRef.current === currentAudioStop.id) return;
-    lastMetadataTrackIdRef.current = currentAudioStop.id;
-
     const artworkType = getArtworkType(currentAudioStop.image);
-
-    // Use single artwork entry with type always present for iOS compatibility
     const artworkArray = currentAudioStop.image
-      ? [{
-          src: currentAudioStop.image,
-          sizes: '512x512',
-          type: artworkType || 'image/png'  // Always provide type with fallback
-        }]
+      ? [{ src: currentAudioStop.image, sizes: '512x512', type: artworkType || 'image/png' }]
       : [];
 
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -133,229 +85,134 @@ export const useMediaSession = ({
       album: 'AudioGuideKit',
       artwork: artworkArray,
     });
-
-    console.log('[MediaSession] Metadata updated:', currentAudioStop.title);
   }, [tour, currentAudioStop, isTransitioning]);
 
-  // Media Session playback state - sync with actual audio element events
-  // CRITICAL: iOS requires playbackState to match actual audio state, not React state.
-  // Setting playbackState based on React state causes timing issues where iOS ignores
-  // the state change because audio hasn't actually started playing yet.
+  // --- 2. PLAYBACK STATE SYNC ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
-
     const audio = audioPlayer.audioElement;
     if (!audio) return;
 
-    const handlePlay = () => {
+    const setPlaying = () => {
       navigator.mediaSession.playbackState = 'playing';
-      console.log('[MediaSession] playbackState set to playing (from audio event)');
     };
 
-    const handlePause = () => {
+    const setPaused = () => {
       navigator.mediaSession.playbackState = 'paused';
-      console.log('[MediaSession] playbackState set to paused (from audio event)');
     };
 
-    // Sync immediately with current audio element state
+    // Listen to 'playing' (happens when media is actually running)
+    // AND 'play' (happens when request is made) for robustness.
+    audio.addEventListener('play', setPlaying);
+    audio.addEventListener('playing', setPlaying);
+    audio.addEventListener('pause', setPaused);
+    audio.addEventListener('ended', setPaused);
+    audio.addEventListener('waiting', setPaused); // Optional: show pause/loading spinner while buffering
+
+    // Immediate check on mount/update
     if (!audio.paused) {
       navigator.mediaSession.playbackState = 'playing';
     } else {
       navigator.mediaSession.playbackState = 'paused';
     }
 
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
-
     return () => {
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener('play', setPlaying);
+      audio.removeEventListener('playing', setPlaying);
+      audio.removeEventListener('pause', setPaused);
+      audio.removeEventListener('ended', setPaused);
+      audio.removeEventListener('waiting', setPaused);
     };
-  }, [audioPlayer.audioElement]);
+  }, [audioPlayer.audioElement]); // Re-bind only if the actual DOM node changes
 
-  // Visibility change handler - refresh metadata when app becomes visible
-  // This ensures Control Center has fresh data when user returns to app
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        if (!('mediaSession' in navigator)) return;
-        if (!tour || !currentAudioStop) return;
-        if (isTransitioning) return;
-
-        const artworkType = getArtworkType(currentAudioStop.image);
-        const artworkArray = currentAudioStop.image
-          ? [{
-              src: currentAudioStop.image,
-              sizes: '512x512',
-              type: artworkType || 'image/png'
-            }]
-          : [];
-
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: currentAudioStop.title,
-          artist: tour.title,
-          album: 'AudioGuideKit',
-          artwork: artworkArray,
-        });
-
-        console.log('[MediaSession] Metadata refreshed on visibility change:', currentAudioStop.title);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [tour, currentAudioStop, isTransitioning]);
-
-  // Periodic metadata refresh - keep iOS audio session alive
-  // Re-assert metadata every 30s to prevent iOS from thinking session is stale
+  // --- 3. ACTION HANDLERS ---
+  // We initialize this ONCE on mount. Because we use Refs inside,
+  // we never need to remove/re-add listeners, which keeps iOS happy.
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
-    if (!currentAudioStop || !tour) return;
-    if (isTransitioning) return;
 
-    const refreshInterval = setInterval(() => {
-      const artworkType = getArtworkType(currentAudioStop.image);
-      const artworkArray = currentAudioStop.image
-        ? [{
-            src: currentAudioStop.image,
-            sizes: '512x512',
-            type: artworkType || 'image/png'
-          }]
-        : [];
+    const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
+      ['play', () => {
+        setIsPlayingRef.current(true);
+        audioElRef.current?.play().catch(console.error);
+      }],
+      ['pause', () => {
+        setIsPlayingRef.current(false);
+        audioElRef.current?.pause();
+      }],
+      ['nexttrack', () => {
+        if (canGoNextRef.current) handleNextStopRef.current();
+      }],
+      ['previoustrack', () => {
+        if (canGoPrevRef.current) handlePrevStopRef.current();
+      }],
+      ['seekforward', (details) => {
+        const audio = audioElRef.current;
+        if (!audio) return;
+        const seekOffset = details?.seekOffset ?? 10;
+        audio.currentTime = Math.min(audio.currentTime + seekOffset, audio.duration);
+      }],
+      ['seekbackward', (details) => {
+        const audio = audioElRef.current;
+        if (!audio) return;
+        const seekOffset = details?.seekOffset ?? 10;
+        audio.currentTime = Math.max(audio.currentTime - seekOffset, 0);
+      }],
+      ['seekto', (details) => {
+        const audio = audioElRef.current;
+        if (!audio || details?.seekTime === undefined) return;
+        audio.currentTime = details.seekTime;
+      }]
+    ];
 
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: currentAudioStop.title,
-        artist: tour.title,
-        album: 'AudioGuideKit',
-        artwork: artworkArray,
-      });
+    actionHandlers.forEach(([action, handler]) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch (e) {
+        console.warn(`MediaSession action ${action} not supported`);
+      }
+    });
 
-      console.log('[MediaSession] Periodic metadata refresh:', currentAudioStop.title);
-    }, 30000); // Refresh every 30 seconds
+    // We do NOT clean up action handlers (return logic).
+    // Clearing them on unmount can confuse the browser if the user navigates quickly.
+    // Since we use refs, leaving them active is safe.
+  }, []); // Empty dependency array = Runs once on mount
 
-    return () => clearInterval(refreshInterval);
-  }, [currentAudioStop, tour, isTransitioning]);
-
-  // Media Session action handlers - set once and DON'T clean up
-  // Cleaning up handlers (setting to null) can cause iOS to think the session ended
+  // --- 4. POSITION STATE ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
-    const audioEl = audioPlayer.audioElement;
-    if (!audioEl) return;
 
-    // Only initialize once to avoid iOS quirks with handler changes
-    if (mediaSessionInitialized) return;
-    mediaSessionInitialized = true;
+    const updatePosition = () => {
+      const audio = audioPlayer.audioElement;
+      if (!audio) return;
 
-    console.log('[MediaSession] Initializing action handlers');
-
-    navigator.mediaSession.setActionHandler('play', () => {
-      setIsPlaying(true);
-      audioEl.play().catch((err) => console.error('MediaSession play failed', err));
-    });
-    navigator.mediaSession.setActionHandler('pause', () => {
-      setIsPlaying(false);
-      audioEl.pause();
-    });
-    navigator.mediaSession.setActionHandler('nexttrack', () => {
-      if (canGoNextRef.current) {
-        handleNextStopRef.current();
-      }
-    });
-    navigator.mediaSession.setActionHandler('previoustrack', () => {
-      if (canGoPrevRef.current) {
-        handlePrevStopRef.current();
-      }
-    });
-    navigator.mediaSession.setActionHandler('seekforward', (details) => {
-      const seekOffset = details.seekOffset ?? 10;
-      const duration = audioEl.duration;
-      const currentTime = audioEl.currentTime;
-      if (isFinite(duration) && isFinite(currentTime)) {
-        audioEl.currentTime = Math.min(currentTime + seekOffset, duration);
-      }
-    });
-    navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-      const seekOffset = details.seekOffset ?? 10;
-      const currentTime = audioEl.currentTime;
-      if (isFinite(currentTime)) {
-        audioEl.currentTime = Math.max(currentTime - seekOffset, 0);
-      }
-    });
-    navigator.mediaSession.setActionHandler('seekto', (details) => {
-      if (details.seekTime !== undefined && isFinite(details.seekTime)) {
-        audioEl.currentTime = details.seekTime;
-      }
-    });
-
-    // NO CLEANUP - keeping handlers prevents iOS from dropping the session
-  }, [audioPlayer.audioElement, setIsPlaying]);
-
-  // Media Session position state update - periodic timer reading directly from audio element
-  // CRITICAL: We read from audio element directly, NOT React state, to avoid stale values
-  useEffect(() => {
-    if (!('mediaSession' in navigator)) return;
-    if (!navigator.mediaSession.setPositionState) return;
-
-    // Don't update position during transitions or track switching
-    if (isTransitioning || isSwitchingTracks) return;
-
-    const audio = audioPlayer.audioElement;
-    if (!audio) return;
-
-    // Function to update position state from audio element
-    const updatePositionState = () => {
-      // Read values DIRECTLY from audio element to avoid stale React state
       const duration = audio.duration;
       const currentTime = audio.currentTime;
-      const now = Date.now();
 
-      // Guard against invalid values
-      if (duration < 0.5 || !isFinite(duration)) return;
-      if (!isFinite(currentTime) || currentTime < 0) return;
+      if (isFinite(duration) && duration > 0 && isFinite(currentTime)) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: duration,
+            playbackRate: audio.playbackRate,
+            position: currentTime,
+          });
 
-      // Guard against track loading state
-      // If currentTime is very close to 0 but last position was much higher,
-      // AND duration changed significantly, we're likely loading a new track
-      const likelyTrackLoading =
-        currentTime < 1.0 &&
-        lastPositionValuesRef.current.position > 5.0 &&
-        Math.abs(duration - lastPositionValuesRef.current.duration) > 2.0;
+          // SELF-HEALING: If audio is playing but MediaSession says "paused", force it to "playing"
+          // This fixes the issue where the button gets stuck as "Play" while audio is heard.
+          if (!audio.paused && navigator.mediaSession.playbackState !== 'playing') {
+             console.log('[MediaSession] Healing playbackState mismatch');
+             navigator.mediaSession.playbackState = 'playing';
+          }
 
-      if (likelyTrackLoading) {
-        console.log('[MediaSession] Skipping position update - track loading detected');
-        return;
-      }
-
-      // Throttle updates
-      const timeSinceLastUpdate = now - lastPositionUpdateRef.current;
-      const durationChanged = Math.abs(duration - lastPositionValuesRef.current.duration) > 0.5;
-      const positionChanged = Math.abs(currentTime - lastPositionValuesRef.current.position) > 2;
-
-      if (lastPositionUpdateRef.current > 0 && timeSinceLastUpdate < 2000 && !durationChanged && !positionChanged) return;
-
-      try {
-        const position = Math.min(Math.max(0, currentTime), duration);
-        navigator.mediaSession.setPositionState({
-          duration: duration,
-          position: position,
-          playbackRate: 1.0,
-        });
-        lastPositionUpdateRef.current = now;
-        lastPositionValuesRef.current = { duration, position };
-      } catch (e) {
-        console.warn('[MediaSession] Position state update failed:', e);
+        } catch (e) {
+          // Ignore errors (often happens if duration is not yet available)
+        }
       }
     };
 
-    // Update immediately
-    updatePositionState();
+    // Update more frequently when playing for smoother UI sync
+    const intervalId = setInterval(updatePosition, 1000);
 
-    // Update periodically: 2s when playing, 10s when paused
-    // This keeps iOS audio session alive even when paused
-    const updateInterval = isPlaying ? 2000 : 10000;
-    const interval = setInterval(updatePositionState, updateInterval);
-
-    return () => clearInterval(interval);
-  }, [audioPlayer.audioElement, isPlaying, isTransitioning, isSwitchingTracks]);
+    return () => clearInterval(intervalId);
+  }, [audioPlayer.audioElement]); // Re-create interval if audio element changes
 };

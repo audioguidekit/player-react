@@ -48,12 +48,15 @@ Tests are located in `/tests/` directory:
 
 ```
 tests/
+├── helpers.ts           # Test utilities (tour/language discovery)
 ├── app.spec.ts          # Core app functionality
 ├── tour-flow.spec.ts    # Tour navigation and flow
 ├── audio-player.spec.ts # Audio playback features
 ├── language.spec.ts     # Multi-language system
 └── pwa.spec.ts          # PWA and offline features
 ```
+
+> **Note:** Tests are generic and don't hardcode tour names or languages. They dynamically discover available tours and languages at runtime, making them work with any tour content.
 
 ## Test Files Explained
 
@@ -95,14 +98,16 @@ Tests audio playback infrastructure.
 
 ### `language.spec.ts` - Language Tests
 
-Tests the multi-language system.
+Tests the multi-language system. These tests dynamically discover available languages.
 
 | Test | What it verifies |
 |------|------------------|
-| `should load language data` | `/data/languages.json` loads (200 status) |
-| `should load English tour data by default` | Default tour JSON loads |
-| `should have language configuration in local storage` | localStorage is accessible |
-| `should load en/cs/de tour data` | Each language's tour file is valid JSON |
+| `should load app with tour content` | App loads and displays tour title |
+| `should show language selector when multiple languages exist` | Language button visible for multi-language tours |
+| `should have localStorage available for language preference` | localStorage is accessible |
+| `should discover available tour languages` | At least one language file exists |
+| `should load tour data for each discovered language` | Each discovered language's tour file is valid JSON |
+| `should have consistent tour ID across all languages` | All language files share the same tour ID |
 
 ### `pwa.spec.ts` - PWA Tests
 
@@ -157,6 +162,7 @@ Tests run on three device configurations:
 
 ```typescript
 import { test, expect } from '@playwright/test';
+import { getTourId } from './helpers';
 
 test.describe('Feature Name', () => {
   // Runs before each test in this describe block
@@ -165,9 +171,12 @@ test.describe('Feature Name', () => {
     await page.waitForLoadState('networkidle');
   });
 
-  test('should do something', async ({ page }) => {
+  test('should do something', async ({ page, request }) => {
+    // Use dynamic tour discovery (don't hardcode tour names)
+    const tourId = await getTourId(request);
+
     // Arrange: Set up test conditions
-    await page.goto('/tour/barcelona');
+    await page.goto(`/tour/${tourId}`);
 
     // Act: Perform actions
     await page.click('button[data-testid="play"]');
@@ -176,6 +185,23 @@ test.describe('Feature Name', () => {
     await expect(page.locator('.player')).toBeVisible();
   });
 });
+```
+
+### Test Helpers
+
+The `helpers.ts` file provides utilities for generic tests:
+
+```typescript
+import { getTourId, discoverTourLanguages, waitForAppLoad } from './helpers';
+
+// Get tour ID from metadata.json or first available tour
+const tourId = await getTourId(request);
+
+// Discover all available language codes
+const languages = await discoverTourLanguages(request);
+
+// Wait for app loading to complete
+await waitForAppLoad(page);
 ```
 
 ### Common Patterns

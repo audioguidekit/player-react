@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { getTourId } from './helpers';
 
 test.describe('Tour Start Flow', () => {
   test.beforeEach(async ({ page }) => {
@@ -29,9 +30,11 @@ test.describe('Tour Start Flow', () => {
 });
 
 test.describe('Tour Navigation', () => {
-  test('should load tour data', async ({ page }) => {
+  test('should load tour data', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+
     // Navigate directly to a tour
-    await page.goto('/tour/barcelona');
+    await page.goto(`/tour/${tourId}`);
 
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(2000);
@@ -41,11 +44,13 @@ test.describe('Tour Navigation', () => {
     await expect(body).toBeVisible();
   });
 
-  test('should maintain state during navigation', async ({ page }) => {
+  test('should maintain state during navigation', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+
     await page.goto('/');
 
     // Navigate to tour
-    await page.goto('/tour/barcelona');
+    await page.goto(`/tour/${tourId}`);
     await page.waitForLoadState('networkidle');
 
     // Go back
@@ -59,8 +64,10 @@ test.describe('Tour Navigation', () => {
 });
 
 test.describe('Stop Feed', () => {
-  test('should display stops when tour is loaded', async ({ page }) => {
-    await page.goto('/tour/barcelona');
+  test('should display stops when tour is loaded', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+
+    await page.goto(`/tour/${tourId}`);
 
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(3000);

@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
+import { getTourId } from './helpers';
 
 test.describe('Audio Player', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/tour/barcelona');
+  test('should have audio elements available', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+    await page.goto(`/tour/${tourId}`);
     await page.waitForLoadState('networkidle');
     // Give time for tour data to load
     await page.waitForTimeout(3000);
-  });
 
-  test('should have audio elements available', async ({ page }) => {
     // Check that audio elements can be created (singleton pattern)
     const audioExists = await page.evaluate(() => {
       return typeof HTMLAudioElement !== 'undefined';
@@ -17,7 +17,12 @@ test.describe('Audio Player', () => {
     expect(audioExists).toBe(true);
   });
 
-  test('should handle audio context initialization', async ({ page }) => {
+  test('should handle audio context initialization', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+    await page.goto(`/tour/${tourId}`);
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);
+
     // Audio context should be available
     const audioContextExists = await page.evaluate(() => {
       return typeof AudioContext !== 'undefined' || typeof (window as any).webkitAudioContext !== 'undefined';
@@ -28,8 +33,9 @@ test.describe('Audio Player', () => {
 });
 
 test.describe('Mini Player', () => {
-  test('should not crash on initial render', async ({ page }) => {
-    await page.goto('/tour/barcelona');
+  test('should not crash on initial render', async ({ page, request }) => {
+    const tourId = await getTourId(request);
+    await page.goto(`/tour/${tourId}`);
     await page.waitForLoadState('networkidle');
 
     // Wait for potential mini player to render

@@ -2,9 +2,9 @@
   "id": "barcelona",
   "defaultLanguage": "en",
   "offlineMode": "optional",
-  "transitionAudio": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/end.m4a",
+  "transitionAudio": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/audio/end.mp3",
   "themeId": "terminal",
   "transcriptAvailable": true,
   "collectFeedback": true,
-  "image": "https://ewrhpiibxstiipkqafwf.supabase.co/storage/v1/object/public/_test/01.jpeg"
+  "image": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/images/01.jpeg"
 }

@@ -7,7 +7,7 @@ import { AnimatedCounter } from './shared/AnimatedCounter';
 import { useTranslation } from '../src/translations';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 
-interface TourHeaderAltProps {
+interface TourHeaderProps {
     onBack: () => void;
     progressWidth: MotionValue<string>;
     consumedMinutes: number;
@@ -66,7 +66,7 @@ const OfflineBadge = styled(motion.div)`
 `;
 
 
-export const TourHeaderAlt: React.FC<TourHeaderAltProps> = ({
+export const TourHeader: React.FC<TourHeaderProps> = ({
     onBack,
     progressWidth,
     consumedMinutes,

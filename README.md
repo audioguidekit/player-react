@@ -105,7 +105,7 @@ superguided-audio/
 │   ├── BottomSheet.tsx        # Base sheet component
 │   ├── MiniPlayer.tsx         # Floating mini player
 │   ├── StartCard.tsx          # Tour start/resume card
-│   └── TourHeaderAlt.tsx      # Tour header with progress
+│   └── TourHeader.tsx         # Tour header with progress
 ├── hooks/                      # Custom React hooks
 │   ├── useDataLoader.ts       # Tour and language data loading
 │   ├── useAudioPlayer.ts      # Audio playback management

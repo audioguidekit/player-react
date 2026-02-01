@@ -12,7 +12,7 @@ import { TourDetail } from './screens/TourDetail';
 import { MainSheet } from './components/MainSheet';
 import { StartCard } from './components/StartCard';
 import { MiniPlayer } from './components/MiniPlayer';
-import { TourHeaderAlt } from './components/TourHeaderAlt';
+import { TourHeader } from './components/TourHeader';
 import { useTourData, useLanguages } from './hooks/useDataLoader';
 import { DEFAULT_TOUR_ID } from './src/config/tours';
 import { defaultLanguage } from './src/config/languages';

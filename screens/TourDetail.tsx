@@ -4,7 +4,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { TourData } from '../types';
 import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
-import { TourHeaderAlt } from '../components/TourHeaderAlt';
+import { TourHeader } from '../components/TourHeader';
 import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
 
 const Container = styled.div`
@@ -170,7 +170,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
   return (
     <Container>
 
-      <TourHeaderAlt
+      <TourHeader
         onBack={onBack}
         progressWidth={width}
         consumedMinutes={consumedMinutes}

@@ -189,7 +189,7 @@ export const minimalDarkTheme: ThemeConfig = {
       primary: '#D4D4D4',   // Soft white
       secondary: '#999999', // Light gray
       tertiary: '#666666',  // Dark gray
-      inverse: '#1E1E1E',   // Dark background color (for use on white buttons)
+      inverse: '#CCCCCC',   // Dark background color (for use on white buttons)
     },
     border: {
       light: '#333333',

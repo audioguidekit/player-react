@@ -391,15 +391,8 @@ const App: React.FC = () => {
     setActiveSheet('RATING');
   }, [setActiveSheet]);
 
-  // Download manager callback - memoized
-  const handleDownloadComplete = useCallback(() => {
-    handleStartTour();
-  }, [handleStartTour]);
-
-  // Download manager
-  const downloadManager = useDownloadManager(tour, {
-    onDownloadComplete: handleDownloadComplete
-  });
+  // Download manager - no auto-start on completion, let user decide when to start
+  const downloadManager = useDownloadManager(tour);
 
   // Memoize progress
   const tourProgress = useMemo(() => {

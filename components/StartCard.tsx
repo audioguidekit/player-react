@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLineUpIcon, ClockIcon, HeadphonesIcon, SparkleIcon, ArrowClockwiseIcon, CloudArrowDownIcon, CheckCircleIcon } from '@phosphor-icons/react';
+import { ArrowLineUpIcon, ClockIcon, HeadphonesIcon, SparkleIcon, ArrowClockwiseIcon, CloudArrowDownIcon, CloudSlashIcon } from '@phosphor-icons/react';
 import tw from 'twin.macro';
 import styled, { useTheme } from 'styled-components';
 import { TourData } from '../types';
@@ -319,7 +319,7 @@ export const StartCard = React.memo<StartCardProps>(({
         <>
           {isDownloaded ? (
             <OfflineStatus>
-              <CheckCircleIcon size={18} weight="fill" />
+              <CloudSlashIcon size={18} weight="bold" />
               {t.startCard.availableOffline}
             </OfflineStatus>
           ) : onDownload && (
@@ -334,7 +334,7 @@ export const StartCard = React.memo<StartCardProps>(({
       {/* Offline status for offline-only mode when downloaded */}
       {offlineMode === 'offline-only' && isDownloaded && !isTourCompleted && (
         <OfflineStatus>
-          <CheckCircleIcon size={18} weight="fill" />
+          <CloudSlashIcon size={18} weight="bold" />
           {t.startCard.availableOffline}
         </OfflineStatus>
       )}

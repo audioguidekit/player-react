@@ -102,7 +102,9 @@ const TitleContainer = styled.div`
 `;
 
 const TitleText = styled(motion.span)`
-  ${tw`text-base whitespace-nowrap inline-block leading-none pb-0.5`}
+  ${tw`whitespace-nowrap inline-block leading-none pb-0.5`}
+  font-size: ${({ theme }) => theme.miniPlayer.titleFontSize};
+  font-weight: ${({ theme }) => theme.miniPlayer.titleFontWeight};
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
@@ -121,7 +123,9 @@ const MinimizedTitleSection = styled(motion.div)`
 `;
 
 const MinimizedTitle = styled.span`
-  ${tw`text-base truncate`}
+  ${tw`truncate`}
+  font-size: ${({ theme }) => theme.miniPlayer.titleFontSize};
+  font-weight: ${({ theme }) => theme.miniPlayer.titleFontWeight};
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   color: ${({ theme }) => theme.miniPlayer.textColor};
 `;
@@ -161,7 +165,8 @@ const TranscriptionContent = styled.div`
 `;
 
 const TranscriptionText = styled.p`
-  ${tw`text-sm leading-relaxed`}
+  ${tw`leading-relaxed`}
+  font-size: ${({ theme }) => theme.miniPlayer.transcriptionFontSize};
   color: ${({ theme }) => theme.miniPlayer.textColor};
   margin: 0;
   white-space: pre-wrap;
@@ -232,6 +237,16 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
   // Marquee animation for title
   const titleRef = useRef<HTMLSpanElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Ref for transcription scroll container
+  const transcriptionRef = useRef<HTMLDivElement>(null);
+
+  // Scroll transcription to top when stop changes
+  useEffect(() => {
+    if (transcriptionRef.current) {
+      transcriptionRef.current.scrollTop = 0;
+    }
+  }, [currentStop?.id]);
 
   const controls = useAnimationControls();
   const [shouldAnimate, setShouldAnimate] = useState(false);
@@ -460,7 +475,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3, ease: 'easeInOut' }}
                       >
-                        <TranscriptionContent>
+                        <TranscriptionContent ref={transcriptionRef}>
                           {transcription ? (
                             <TranscriptionText>{transcription}</TranscriptionText>
                           ) : (

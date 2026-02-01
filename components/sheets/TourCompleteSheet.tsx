@@ -32,15 +32,21 @@ const Description = styled.p`
 `;
 
 const RateButton = styled.button`
-  ${tw`w-full font-bold py-4 px-6 rounded-full flex items-center justify-center gap-2 mb-3 active:scale-[0.98] transition-transform`}
+  ${tw`w-full py-4 px-6 rounded-full flex items-center justify-center gap-2 mb-3 active:scale-[0.98] transition-transform`}
   background-color: ${({ theme }) => theme.buttons.primary.backgroundColor};
   color: ${({ theme }) => theme.buttons.primary.textColor};
+  font-size: ${({ theme }) => theme.buttons.primary.fontSize};
+  font-weight: ${({ theme }) => theme.buttons.primary.fontWeight};
+  font-family: ${({ theme }) => theme.buttons.primary.fontFamily?.join(', ') || theme.typography?.fontFamily?.sans?.join(', ')};
 `;
 
 const SkipButton = styled.button`
-  ${tw`w-full font-bold py-4 px-6 rounded-full active:scale-[0.98] transition-all`}
+  ${tw`w-full py-4 px-6 rounded-full active:scale-[0.98] transition-all`}
   background-color: ${({ theme }) => theme.buttons.secondary.backgroundColor};
   color: ${({ theme }) => theme.buttons.secondary.textColor};
+  font-size: ${({ theme }) => theme.buttons.secondary.fontSize};
+  font-weight: ${({ theme }) => theme.buttons.secondary.fontWeight};
+  font-family: ${({ theme }) => theme.buttons.secondary.fontFamily?.join(', ') || theme.typography?.fontFamily?.sans?.join(', ')};
   border: 1px solid ${({ theme }) => theme.buttons.secondary.borderColor || 'transparent'};
 
   &:hover {

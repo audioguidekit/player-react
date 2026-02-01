@@ -16,7 +16,7 @@ const Container = styled.div`
   ${tw`relative p-6 mb-4 cursor-pointer transition-transform active:scale-[0.99] overflow-hidden`}
   background-color: ${({ theme }) => theme.cards.backgroundColor};
   border-radius: ${({ theme }) => theme.cards.borderRadius};
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: ${({ theme }) => theme.cards.shadow};
   border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
@@ -24,7 +24,7 @@ const SuccessContainer = styled(motion.div)`
   ${tw`relative p-10 mb-4 cursor-pointer transition-transform active:scale-[0.99] overflow-hidden`}
   background-color: ${({ theme }) => theme.cards.backgroundColor};
   border-radius: ${({ theme }) => theme.cards.borderRadius};
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: ${({ theme }) => theme.cards.shadow};
   border: 1px solid ${({ theme }) => theme.cards.borderColor};
 `;
 
@@ -39,7 +39,8 @@ const SuccessIconCircle = styled.div`
 `;
 
 const Title = styled.h3`
-  ${tw`text-xl font-bold`}
+  font-size: ${({ theme }) => theme.cards.titleFontSize};
+  font-weight: ${({ theme }) => theme.cards.titleFontWeight};
   color: ${({ theme }) => theme.cards.textColor};
 `;
 

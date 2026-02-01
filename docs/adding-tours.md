@@ -45,9 +45,10 @@ The `metadata.json` file contains properties shared across all language versions
 | `id` | string | ✓ | Unique tour identifier | `"paris-01"` |
 | `offlineMode` | string | | Offline behavior mode | `"optional"` (default) |
 | `transitionAudio` | string | | Audio played between stops | Full HTTPS URL |
-| `themeId` | string | | Theme for the tour | `"default"`, `"modern"`, `"calm"` |
+| `themeId` | string | | Theme for the tour | `"default-light"`, `"default-dark"` |
 | `transcriptAvailable` | boolean | | Show transcription toggle | `true` |
 | `collectFeedback` | boolean | | Show rating button | `true` |
+| `showLanguageLabel` | boolean | | Show language name next to flag | `true` (default) |
 | `image` | string | | Default tour cover image | Full HTTPS URL |
 
 ### Language Files - Translatable Content
@@ -96,7 +97,7 @@ Each language file contains the translated content and can override metadata pro
   "id": "barcelona",
   "language": "cs",
   "title": "Neomezená Barcelona",
-  "themeId": "calm",  // Override theme for Czech version
+  "themeId": "default-dark",  // Override theme for Czech version
   ...
 }
 ```
@@ -133,7 +134,7 @@ Each language file contains the translated content and can override metadata pro
 {
   "id": "london-01",
   "offlineMode": "optional",
-  "themeId": "modern",
+  "themeId": "default-light",
   "transcriptAvailable": true,
   "collectFeedback": true,
   "image": "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=1000&auto=format&fit=crop"
@@ -344,7 +345,7 @@ Each language file shares the same `id` (matching metadata.json) but has differe
 // metadata.json - shared properties
 {
   "id": "barcelona",
-  "themeId": "terminal",
+  "themeId": "default-dark",
   "collectFeedback": true,
   "image": "https://..."
 }
@@ -362,7 +363,7 @@ Each language file shares the same `id` (matching metadata.json) but has differe
   "id": "barcelona",
   "language": "cs",
   "title": "Neomezená Barcelona",
-  "themeId": "calm",  // Overrides metadata
+  "themeId": "default-dark",  // Overrides metadata
   ...
 }
 ```

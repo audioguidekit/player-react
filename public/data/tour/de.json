@@ -5,8 +5,6 @@
   "description": "Entdecken Sie die reiche Geschichte und Kultur Barcelonas von der Antike bis zur Moderne",
   "totalDuration": "23 Minuten",
   "totalStops": 10,
-  "offlineMode": "offline-only",
-  "themeId": "minimalDark",
   "stops": [
     {
       "id": "1",

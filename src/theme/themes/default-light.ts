@@ -1,14 +1,14 @@
 /**
- * Minimal Light theme configuration
- * A clean, high-contrast light theme inspired by Obsidian Minimal (Light).
- * Focuses on clarity and white space with a soft grayscale palette.
+ * Default Light theme configuration
+ * A clean, high-contrast light theme with clarity and white space.
+ * Focuses on legibility with a soft grayscale palette.
  */
 
 import { ThemeConfig } from '../types';
 
-export const minimalLightTheme: ThemeConfig = {
-  id: 'minimal-light',
-  name: 'Minimal Light',
+export const defaultLightTheme: ThemeConfig = {
+  id: 'default-light',
+  name: 'Default Light',
   description: 'Clean, distraction-free light aesthetic with high legibility and soft gray accents',
 
   header: {
@@ -16,10 +16,10 @@ export const minimalLightTheme: ThemeConfig = {
     iconColor: '#666666', // Muted gray icons
     textColor: '#1A1A1A', // Sharp dark text
     timeFontSize: '14px',
-    timeFontWeight: '500',
+    timeFontWeight: '400',
     progressBar: {
       backgroundColor: 'rgba(0, 0, 0, 0.05)', // Subtle track
-      highlightColor: '#000000', // Pure black for progress
+      highlightColor: '#459825', // Green for progress
     },
   },
 
@@ -47,9 +47,9 @@ export const minimalLightTheme: ThemeConfig = {
 
   stepIndicators: {
     active: {
-      outlineColor: '#000000', // Active step is pure black
-      numberColor: '#FFFFFF', // Number is white for contrast
-      backgroundColor: '#000000', // Active step is filled black
+      outlineColor: '#000000', // Outline for active step
+      numberColor: '#000000', // Active step number
+      backgroundColor: '#FEFEFE', // Active step background
     },
     inactive: {
       borderColor: '#CCCCCC', // Light gray ring
@@ -57,8 +57,8 @@ export const minimalLightTheme: ThemeConfig = {
       backgroundColor: 'transparent',
     },
     completed: {
-      backgroundColor: '#E5E5E5', // Neutral light gray for finished steps
-      checkmarkColor: '#1A1A1A',
+      backgroundColor: '#E8F5E1', // Light green background (matches feedback confirmation)
+      checkmarkColor: '#459825', // Green checkmark (matches success color)
     },
   },
 
@@ -116,10 +116,8 @@ export const minimalLightTheme: ThemeConfig = {
     backgroundColor: '#FFFFFF',
     textColor: '#1A1A1A',
     titleFontSize: '15px',
-    titleFontWeight: '500',
-    timeFontSize: '15px',
-    timeFontWeight: '500',
-    transcriptionFontSize: '14px',
+    titleFontWeight: '400',
+    transcriptionFontSize: '15px',
     progressBar: {
       backgroundColor: '#F0F0F0',
       highlightColor: '#000000', // Black progress line
@@ -145,10 +143,9 @@ export const minimalLightTheme: ThemeConfig = {
   },
 
   status: {
-    success: '#3D7D3F', // Forest green (easier to read on light)
+    success: '#459825', // Green
     error: '#D32F2F',   // Bold red
-    warning: '#795548', // Brownish/Amber
-    info: '#666666',    // Neutral gray
+    warning: '#EAAD56', // Orange/Yellow
   },
 
   loading: {
@@ -166,9 +163,6 @@ export const minimalLightTheme: ThemeConfig = {
     metaFontWeight: '400',
     metaColor: '#666666',
     descriptionFontSize: '16px',
-    sectionLabelFontSize: '13px',
-    sectionLabelFontWeight: '600',
-    sectionDescriptionFontSize: '13px',
     offlineMessage: {
       backgroundColor: 'rgba(0, 0, 0, 0.04)',
       borderColor: 'rgba(0, 0, 0, 0.1)',
@@ -188,8 +182,8 @@ export const minimalLightTheme: ThemeConfig = {
     text: {
       primary: '#1A1A1A',   // Near black
       secondary: '#666666', // Medium gray
-      tertiary: '#999999',  // Light gray
-      inverse: '#AAAAAA',   // White (for use on black buttons)
+      tertiary: '#777777',  // Medium-light gray (skip buttons, hints)
+      inverse: '#FFFFFF',   // White (for use on black buttons)
     },
     border: {
       light: '#F0F0F0',
@@ -198,8 +192,8 @@ export const minimalLightTheme: ThemeConfig = {
     },
     background: {
       primary: '#FFFFFF',   // Pure white
-      secondary: '#FAFAFA', // Off-white
-      tertiary: '#F0F0F0',  // Hover states
+      secondary: '#F0F0F0', // Light gray (icon circles, elevated surfaces)
+      tertiary: '#E8E8E8',  // Hover states
     },
   },
 };

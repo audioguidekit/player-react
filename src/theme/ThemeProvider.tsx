@@ -33,7 +33,7 @@ interface ThemeProviderProps {
  */
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
-  themeId = 'default',
+  themeId = 'default-light',
   theme: customTheme
 }) => {
   // Use custom theme if provided, otherwise get theme by ID

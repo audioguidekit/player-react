@@ -92,6 +92,9 @@ const App: React.FC = () => {
   const resumePositionRef = useRef<number>(0);
   const pendingSeekRef = useRef<number | null>(null);
 
+  // Ref to track isTransitioning for stable callback references (avoids stale closure)
+  const isTransitioningRef = useRef(false);
+
   // Callback for track change - memoized for referential stability
   // Must be declared after scrollToStopId state
   const handleTrackChange = useCallback((stopId: string) => {
@@ -122,6 +125,11 @@ const App: React.FC = () => {
     onTrackChange: handleTrackChange
   });
 
+  // Keep ref in sync with state (avoids stale closure in handleAudioEnded)
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning;
+  }, [isTransitioning]);
+
   // Derived State
   const currentStop = currentStopId && tour ? tour.stops.find(s => s.id === currentStopId) : undefined;
   // Get current audio stop (type-safe)
@@ -141,7 +149,7 @@ const App: React.FC = () => {
   // Eager asset preloading hook
   const { assetsReady } = useEagerAssetPreloader({ tour });
 
-  // Deep link hook
+  // Deep link hook - handles initial deep link on page load only
   useDeepLink({
     urlStopId,
     tour,
@@ -167,6 +175,22 @@ const App: React.FC = () => {
     resumeStopIdRef,
     resumePositionRef,
   });
+
+  // Sync URL with current stop - update URL when playing stop changes
+  useEffect(() => {
+    if (!tour) return;
+
+    const effectiveTourId = tourId || tour.id;
+
+    // When we have a current stop and it differs from URL, update URL
+    if (currentStopId && currentStopId !== urlStopId) {
+      navigate(`/tour/${effectiveTourId}/${currentStopId}`, { replace: true });
+    }
+    // When we don't have a current stop but URL has one, update URL (going back to tour view)
+    else if (!currentStopId && urlStopId && !hasStarted) {
+      navigate(`/tour/${effectiveTourId}`, { replace: true });
+    }
+  }, [currentStopId, urlStopId, tourId, tour, hasStarted, navigate]);
 
   // Show mini player only in tour detail (not on start screen)
   const shouldShowMiniPlayer = !!currentAudioStop && hasStarted;
@@ -197,7 +221,8 @@ const App: React.FC = () => {
   }, [currentStopId, progressTracking, isTransitioning, startCompletionAnimation]);
 
   const handleAudioEnded = useCallback(async () => {
-    if (isTransitioning) {
+    // Use ref to get current isTransitioning value (avoids stale closure)
+    if (isTransitioningRef.current) {
       // Transition audio just ended, play the next real track
       handleAdvanceToNextTrack();
     } else {
@@ -209,7 +234,7 @@ const App: React.FC = () => {
         handleAdvanceToNextTrack();
       }
     }
-  }, [isTransitioning, tour, handleTrackTransition, handleAdvanceToNextTrack]);
+  }, [tour, handleTrackTransition, handleAdvanceToNextTrack]);
 
   // Memoize onPlayBlocked to prevent effect re-runs
   const handlePlayBlocked = useCallback(() => {

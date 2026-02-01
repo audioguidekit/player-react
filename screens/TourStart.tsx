@@ -47,14 +47,15 @@ const TopButtonsContainer = styled.div`
 `;
 
 const ActionButton = styled.button`
-  ${tw`w-14 h-14 backdrop-blur-md rounded-full flex items-center justify-center transition-colors`}
+  ${tw`w-12 h-12 backdrop-blur-md rounded-full flex items-center justify-center transition-colors`}
   background-color: rgba(0, 0, 0, 0.4);
   color: #FFFFFF;
 `;
 
-const LanguageButton = styled.button`
-  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 px-3 transition-all active:scale-95`}
+const LanguageButton = styled.button<{ $iconOnly?: boolean }>`
+  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 transition-all active:scale-95`}
   height: 48px;
+  padding: ${({ $iconOnly }) => $iconOnly ? '0 12px' : '0 12px'};
   background-color: rgba(0, 0, 0, 0.4);
   color: #FFFFFF;
   margin-left: auto; /* Stay on right side even when rating button is hidden */
@@ -114,6 +115,9 @@ export const TourStart: React.FC<TourStartProps> = ({
 
   // Get the flag component dynamically
   const FlagIcon = flagComponents[selectedLanguage.countryCode] || GB;
+
+  // Check if language label should be shown (default: true)
+  const showLanguageLabel = tour.showLanguageLabel !== false;
 
   // Animation Transforms
 
@@ -181,16 +185,18 @@ export const TourStart: React.FC<TourStartProps> = ({
         <TopButtonsContainer>
           {tour.collectFeedback !== false && (
             <ActionButton onClick={onOpenRating}>
-              <ChatCircleDotsIcon size={24} weight="bold" />
+              <ChatCircleDotsIcon size={28} weight="regular" />
             </ActionButton>
           )}
           {languages.length > 1 && (
-            <LanguageButton onClick={onOpenLanguage}>
+            <LanguageButton onClick={onOpenLanguage} $iconOnly={!showLanguageLabel}>
               <LanguageFlag>
                 <FlagIcon />
               </LanguageFlag>
-              <LanguageName>{selectedLanguage.name}</LanguageName>
-              <ChevronIcon size={18} weight="bold" />
+              {showLanguageLabel && (
+                <LanguageName>{selectedLanguage.name}</LanguageName>
+              )}
+              <ChevronIcon size={16} weight="bold" />
             </LanguageButton>
           )}
         </TopButtonsContainer>

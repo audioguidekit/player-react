@@ -47,7 +47,17 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
     height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
   }
 
-  /* Audio playing loader animation - uses theme color */
+  /* Custom focus outline - uses theme border color instead of browser default blue */
+  *:focus {
+    outline: none;
+  }
+
+  *:focus-visible {
+    outline: 2px solid ${({ theme }) => theme?.colors?.border?.dark || '#CCCCCC'};
+    outline-offset: 2px;
+  }
+
+  /* Audio playing loader animation - uses duration badge text color */
   .audio-playing-loader {
     width: 3px;
     height: 16px;
@@ -55,7 +65,7 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
     display: inline-block;
     position: relative;
     background: currentColor;
-    color: ${({ theme }) => theme?.colors?.text?.inverse || '#FFFFFF'};
+    color: ${({ theme }) => theme?.cards?.image?.durationBadgeText || '#FFFFFF'};
     box-sizing: border-box;
     animation: animloader 0.3s 0.3s linear infinite alternate;
   }

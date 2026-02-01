@@ -4,32 +4,24 @@
  */
 
 import { ThemeConfig, ThemeId } from '../types';
-import { defaultTheme } from './default';
-import { modernTheme } from './modern';
-import { calmTheme } from './calm';
-import { terminalTheme } from './terminal';
-import { minimalDarkTheme } from './minimal-dark';
-import { minimalLightTheme } from './minimal-light';
+import { defaultLightTheme } from './default-light';
+import { defaultDarkTheme } from './default-dark';
 
 /**
  * Registry of all available themes
  * Key is the theme ID, value is the theme configuration
  */
 export const themes: Record<ThemeId, ThemeConfig> = {
-  default: defaultTheme,
-  modern: modernTheme,
-  calm: calmTheme,
-  terminal: terminalTheme,
-  minimalDark: minimalDarkTheme,
-  minimalLight: minimalLightTheme,
+  'default-light': defaultLightTheme,
+  'default-dark': defaultDarkTheme,
 };
 
 /**
  * Get a theme by its ID
- * Fallback to default theme if not found
+ * Fallback to default-light theme if not found
  */
 export const getTheme = (themeId: ThemeId): ThemeConfig => {
-  return themes[themeId] || themes.default;
+  return themes[themeId] || themes['default-light'];
 };
 
 /**

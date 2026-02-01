@@ -32,6 +32,8 @@ const Spinner = styled.div`
 `;
 
 const LoadingText = styled.p`
+  font-size: ${({ theme }) => theme.loading.messageFontSize};
+  font-weight: ${({ theme }) => theme.loading.messageFontWeight};
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 

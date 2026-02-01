@@ -46,7 +46,7 @@ Configure the default language in your tour's `metadata.json` file:
   "id": "barcelona",
   "defaultLanguage": "en",
   "offlineMode": "optional",
-  "themeId": "terminal"
+  "themeId": "default-light"
 }
 ```
 

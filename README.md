@@ -45,7 +45,7 @@ Audio Tour Player is a React-based mobile web application designed to simulate a
 ### Progressive Web App (PWA)
 - **Offline Support** - Full offline functionality with Service Worker caching
 - **Installable** - Add to home screen on mobile and desktop
-- **URL Routing** - Deep linking and shareable tour URLs
+- **URL Routing** - [Deep linking](#deep-linking) to specific stops with shareable URLs
 - **Persistent Storage** - IndexedDB for progress tracking and downloads
 - **Automatic Caching** - Intelligent caching strategies for optimal performance
 
@@ -208,6 +208,75 @@ npm run preview
 - **Change Language** - Tap the language icon to switch tour language
 - **Rate Tour** - Tap the star icon to provide feedback
 - **Background Playback** - Audio continues when device screen locks
+
+## Deep Linking
+
+The app supports deep linking to specific stops within a tour, allowing you to share direct links to any audio content.
+
+### URL Format
+
+```
+/tour/:tourId/:stopId
+```
+
+**Examples:**
+- `/tour/barcelona/3` - Links to stop with ID "3" in the Barcelona tour
+- `/tour/barcelona/welcome` - Links to stop with ID "welcome"
+
+### How It Works
+
+When a user opens a deep link:
+
+1. **Validation** - The app verifies the stop exists in the tour data
+2. **Type Check** - Only `audio` type stops can be deep linked (see limitation below)
+3. **Auto-Play** - The audio begins playing automatically
+4. **UI Expansion** - The player expands and the bottom sheet opens
+5. **Scroll Position** - The feed scrolls to show the linked stop
+6. **Progress Resume** - If the user has previously listened to this stop, playback resumes from their saved position
+
+### Limitations
+
+**Audio stops only:** Deep linking only works for stops with `type: "audio"`. Other stop types (text, image-text, video, headline, quote, rating, email, 3d-object) will be ignored and the app will load normally without navigating to a specific stop.
+
+This is intentional - audio stops are the primary content that users would want to share or bookmark.
+
+### Use Cases
+
+- **Sharing** - Share a specific part of a tour with someone (e.g., "Listen to this story about La Sagrada Família")
+- **QR Codes** - Place QR codes at physical locations that link directly to the relevant audio guide
+- **Bookmarking** - Users can bookmark specific stops to return to later
+- **Marketing** - Link to specific tour highlights in promotional materials
+
+### Finding Stop IDs
+
+Stop IDs are defined in the tour JSON files (`/public/data/tour/*.json`). Each stop has an `id` field:
+
+```json
+{
+  "stops": [
+    {
+      "id": "1",
+      "type": "audio",
+      "title": "Welcome to Barcelona"
+    },
+    {
+      "id": "2",
+      "type": "audio",
+      "title": "The Gothic Quarter"
+    }
+  ]
+}
+```
+
+The `id` field value is what you use in the URL: `/tour/barcelona/1` or `/tour/barcelona/2`.
+
+### Implementation Details
+
+Deep linking is handled by the `useDeepLink` hook (`hooks/useDeepLink.ts`). The route is defined in `src/routes/index.tsx`:
+
+```typescript
+<Route path="/tour/:tourId/:stopId" element={<App />} />
+```
 
 ## Architecture
 

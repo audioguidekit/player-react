@@ -22,7 +22,7 @@ interface StartCardProps {
 
 const Container = styled.div`
   ${tw`px-8 pt-10 flex flex-col items-center text-center w-full`}
-  padding-bottom: calc(1rem + ${({ theme }) => theme.platform.safeArea.bottom});
+  padding-bottom: calc(0.20rem + ${({ theme }) => theme.platform.safeArea.bottom});
 `;
 
 const IconContainer = styled.div<{ $showBorder?: boolean }>`
@@ -158,7 +158,7 @@ const OfflineStatus = styled.div`
   ${tw`flex items-center justify-center gap-2 mt-4 py-2`}
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   font-size: 0.875rem;
-  color: ${({ theme }) => theme.status.success};
+  color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
 export const StartCard = React.memo<StartCardProps>(({

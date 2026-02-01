@@ -15,6 +15,7 @@ export interface TourMetadata {
   transcriptAvailable?: boolean;
   collectFeedback?: boolean;
   image?: string;
+  showLanguageLabel?: boolean; // Show language name next to flag in selector (default: true)
 }
 
 export interface BaseStop {
@@ -98,6 +99,7 @@ export interface TourData {
   themeId?: string; // Optional theme ID for custom branding
   transcriptAvailable?: boolean;
   collectFeedback?: boolean; // Show rating button on main screen (default: true)
+  showLanguageLabel?: boolean; // Show language name next to flag in selector (default: true)
 }
 
 export interface Language {

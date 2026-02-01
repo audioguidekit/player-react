@@ -118,8 +118,17 @@ const Button = styled.button<{ $disabled?: boolean }>(({ $disabled, theme }) => 
 ]);
 
 const SkipButton = styled.button`
-  ${tw`w-full py-2 text-base font-medium transition-colors`}
-  color: ${({ theme }) => theme.colors.text.tertiary};
+  ${tw`w-full py-4 px-6 rounded-full active:scale-[0.98] transition-all`}
+  background-color: ${({ theme }) => theme.buttons.secondary.backgroundColor};
+  color: ${({ theme }) => theme.buttons.secondary.textColor};
+  font-size: ${({ theme }) => theme.buttons.secondary.fontSize};
+  font-weight: ${({ theme }) => theme.buttons.secondary.fontWeight};
+  font-family: ${({ theme }) => theme.buttons.secondary.fontFamily?.join(', ') || theme.typography?.fontFamily?.sans?.join(', ')};
+  border: 1px solid ${({ theme }) => theme.buttons.secondary.borderColor || 'transparent'};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.buttons.secondary.hoverBackground || theme.buttons.secondary.backgroundColor};
+  }
 `;
 
 const IconCircle = styled.div`

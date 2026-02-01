@@ -1,25 +1,25 @@
 /**
- * Minimal theme configuration
- * A distraction-free, high-contrast theme inspired by Obsidian Minimal.
+ * Default Dark theme configuration
+ * A distraction-free, high-contrast dark theme.
  * Focuses on content with a refined grayscale palette and system typography.
  */
 
 import { ThemeConfig } from '../types';
 
-export const minimalDarkTheme: ThemeConfig = {
-  id: 'minimal-dark',
-  name: 'Minimal Dark',
-  description: 'Clean, distraction-free aesthetic with refined grayscale and sans-serif typography',
+export const defaultDarkTheme: ThemeConfig = {
+  id: 'default-dark',
+  name: 'Default Dark',
+  description: 'Clean, distraction-free dark aesthetic with refined grayscale and sans-serif typography',
 
   header: {
     backgroundColor: '#1E1E1E', // Blends seamlessly with the main background
     iconColor: '#999999', // Subtle gray for icons so they don't distract
     textColor: '#D4D4D4', // Soft white for text
     timeFontSize: '14px',
-    timeFontWeight: '500',
+    timeFontWeight: '400',
     progressBar: {
       backgroundColor: 'rgba(255, 255, 255, 0.1)', // Very faint track
-      highlightColor: '#FFFFFF', // Pure white for progress
+      highlightColor: '#459825', // Green for progress
     },
   },
 
@@ -47,9 +47,9 @@ export const minimalDarkTheme: ThemeConfig = {
 
   stepIndicators: {
     active: {
-      outlineColor: '#FFFFFF', // Active step is pure white
-      numberColor: '#1E1E1E', // Number is dark for contrast
-      backgroundColor: '#FFFFFF', // Active step is filled white
+      outlineColor: '#FFFFFF', // Outline for active step
+      numberColor: '#FFFFFF', // Active step number 
+      backgroundColor: '#1C1C1C', // Active step background
     },
     inactive: {
       borderColor: '#444444', // Inactive is just a subtle ring
@@ -57,8 +57,8 @@ export const minimalDarkTheme: ThemeConfig = {
       backgroundColor: 'transparent', // See-through
     },
     completed: {
-      backgroundColor: '#666666', // Completed is a neutral gray
-      checkmarkColor: '#FFFFFF',
+      backgroundColor: '#1E3A1E', // Dark green background (matches light theme style)
+      checkmarkColor: '#459825', // Green checkmark (same as light theme)
     },
   },
 
@@ -116,10 +116,8 @@ export const minimalDarkTheme: ThemeConfig = {
     backgroundColor: '#1E1E1E',
     textColor: '#D4D4D4',
     titleFontSize: '15px',
-    titleFontWeight: '500',
-    timeFontSize: '15px',
-    timeFontWeight: '500',
-    transcriptionFontSize: '14px',
+    titleFontWeight: '400',
+    transcriptionFontSize: '15px',
     progressBar: {
       backgroundColor: '#333333',
       highlightColor: '#FFFFFF', // White progress line
@@ -145,10 +143,9 @@ export const minimalDarkTheme: ThemeConfig = {
   },
 
   status: {
-    success: '#8CB6C0', // Muted teal (calmer than bright green)
+    success: '#459825', // Green
     error: '#C08C8C',   // Muted red
-    warning: '#C0B38C', // Muted gold
-    info: '#999999',    // Gray
+    warning: '#DFBB50', // Gold
   },
 
   loading: {
@@ -166,9 +163,6 @@ export const minimalDarkTheme: ThemeConfig = {
     metaFontWeight: '400',
     metaColor: '#888888',
     descriptionFontSize: '16px',
-    sectionLabelFontSize: '13px',
-    sectionLabelFontWeight: '600',
-    sectionDescriptionFontSize: '13px',
     offlineMessage: {
       backgroundColor: 'rgba(255, 255, 255, 0.05)',
       borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -188,7 +182,7 @@ export const minimalDarkTheme: ThemeConfig = {
     text: {
       primary: '#D4D4D4',   // Soft white
       secondary: '#999999', // Light gray
-      tertiary: '#666666',  // Dark gray
+      tertiary: '#888888',  // Medium gray (skip buttons, hints)
       inverse: '#CCCCCC',   // Dark background color (for use on white buttons)
     },
     border: {
@@ -198,7 +192,7 @@ export const minimalDarkTheme: ThemeConfig = {
     },
     background: {
       primary: '#1E1E1E',   // Main
-      secondary: '#252525', // Slightly lighter (elevated surfaces)
+      secondary: '#333333', // Elevated surfaces (icon circles, etc.)
       tertiary: '#2A2A2A',  // Hover states
     },
   },

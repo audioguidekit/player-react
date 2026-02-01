@@ -13,11 +13,9 @@ The theming system allows you to:
 
 ### Available Themes
 
-The app includes four built-in themes:
-- **Default** - Clean and modern with neutral grays
-- **Modern** - Contemporary design with purple accents
-- **Calm** - Editorial style with warm neutrals and muted teal
-- **Terminal** - Dark hacker aesthetic with cyan accents and monospace typography
+The app includes two built-in themes:
+- **Default Light** - Clean, distraction-free light aesthetic with high legibility and soft gray accents
+- **Default Dark** - Clean, distraction-free dark aesthetic with refined grayscale and sans-serif typography
 
 ## Theme Structure
 
@@ -358,9 +356,7 @@ miniPlayer: {
   // Typography
   titleFontSize: '16px',                 // Track title size
   titleFontWeight: '500',                // Track title weight
-  timeFontSize: '16px',                  // Time display size ("1:23 / 3:45")
-  timeFontWeight: '600',                 // Time display weight
-  transcriptionFontSize: '14px',         // Transcription text size
+  transcriptionFontSize: '15px',         // Transcription text size
 
   // Progress bar
   progressBar: {
@@ -448,21 +444,24 @@ Controls the tour welcome/start screen.
 startCard: {
   titleFontSize: '30px',                // Main tour title
   titleFontWeight: '700',               // Main tour title weight
+  titleLineHeight: '1.2',               // Main tour title line height
   metaFontSize: '14px',                 // Duration, stops count
   metaFontWeight: '400',                // Duration, stops count weight
   metaColor: '#6B7280',                 // Duration, stops count color
   descriptionFontSize: '16px',          // Tour description
-  sectionLabelFontSize: '14px',         // "What's included" labels
-  sectionLabelFontWeight: '500',        // "What's included" weight
-  sectionDescriptionFontSize: '12px',   // Section content text
+  offlineMessage: {
+    backgroundColor: 'rgba(59, 130, 246, 0.08)', // Offline available message background
+    borderColor: 'rgba(59, 130, 246, 0.25)',     // Offline message border
+    textColor: '#3b82f6',                        // Offline message text color
+  },
 }
 ```
 
 **Visual Examples:**
-- `titleFontSize` + `titleFontWeight` - Large bold "Unlimited Barcelona"
+- `titleFontSize` + `titleFontWeight` + `titleLineHeight` - Large bold "Unlimited Barcelona"
 - `metaFontSize` + `metaFontWeight` + `metaColor` - Small "20 MINUT" duration
 - `descriptionFontSize` - Tour description paragraph
-- `sectionLabelFontSize` - "What's included" section headers
+- `offlineMessage.*` - "Available offline" indicator styling
 
 **Affects:**
 - `StartCard` component
@@ -500,7 +499,6 @@ status: {
   success: '#10B981',               // Success messages and icons
   error: '#EF4444',                 // Error messages and icons
   warning: '#F59E0B',               // Warning messages and icons
-  info: '#6366F1',                  // Info messages and icons
 }
 ```
 
@@ -508,7 +506,6 @@ status: {
 - `success` - Green checkmarks, success messages
 - `error` - Red error text, error icons
 - `warning` - Orange/yellow warning badges
-- `info` - Blue info badges
 
 **Affects:**
 - `ErrorScreen` - Error messages
@@ -674,6 +671,15 @@ export const oceanTheme: ThemeConfig = {
       fontSize: '16px',
       fontWeight: '500',
     },
+    download: {
+      backgroundColor: 'transparent',
+      textColor: '#0284C7',
+      borderColor: '#0284C7',
+      hoverBackground: 'rgba(2, 132, 199, 0.1)',
+      iconColor: '#0284C7',
+      fontSize: '18px',
+      fontWeight: '600',
+    },
     transcription: {
       backgroundColor: '#FFFFFF',
       iconColor: '#0284C7',
@@ -703,9 +709,7 @@ export const oceanTheme: ThemeConfig = {
     textColor: '#0C4A6E',
     titleFontSize: '16px',
     titleFontWeight: '500',
-    timeFontSize: '16px',
-    timeFontWeight: '600',
-    transcriptionFontSize: '14px',
+    transcriptionFontSize: '15px',
     progressBar: {
       backgroundColor: '#E0F2FE',
       highlightColor: '#0369A1',
@@ -736,7 +740,6 @@ export const oceanTheme: ThemeConfig = {
     success: '#0284C7',
     error: '#DC2626',
     warning: '#F59E0B',
-    info: '#0284C7',
   },
 
   // Loading
@@ -751,13 +754,16 @@ export const oceanTheme: ThemeConfig = {
   startCard: {
     titleFontSize: '30px',
     titleFontWeight: '700',
+    titleLineHeight: '1.2',
     metaFontSize: '14px',
     metaFontWeight: '400',
     metaColor: '#64748B',
     descriptionFontSize: '16px',
-    sectionLabelFontSize: '14px',
-    sectionLabelFontWeight: '500',
-    sectionDescriptionFontSize: '12px',
+    offlineMessage: {
+      backgroundColor: 'rgba(2, 132, 199, 0.08)',
+      borderColor: 'rgba(2, 132, 199, 0.25)',
+      textColor: '#0284C7',
+    },
   },
 
   // Inputs
@@ -798,15 +804,13 @@ Add your theme to the themes index:
 **File: `src/theme/themes/index.ts`**
 
 ```typescript
-import { defaultTheme } from './default';
-import { modernTheme } from './modern';
-import { calmTheme } from './calm';
+import { defaultLightTheme } from './default-light';
+import { defaultDarkTheme } from './default-dark';
 import { oceanTheme } from './ocean'; // Add import
 
 export const themes = {
-  default: defaultTheme,
-  modern: modernTheme,
-  calm: calmTheme,
+  'default-light': defaultLightTheme,
+  'default-dark': defaultDarkTheme,
   ocean: oceanTheme, // Add to export
 };
 
@@ -987,10 +991,10 @@ Font sizes and weights are **component-specific** for clarity and control:
 |-----------|----------------|------------------|----------------------|
 | **Header** | `timeFontSize` | `timeFontWeight` | Uses `typography.fontFamily.numbers` |
 | **Cards** | `titleFontSize`, `durationBadgeFontSize`, `numberFontSize` | `titleFontWeight`, `numberFontWeight` | Uses `typography.fontFamily.sans` |
-| **Buttons** | `primary.fontSize`, `secondary.fontSize` | `primary.fontWeight`, `secondary.fontWeight` | `primary.fontFamily`, `secondary.fontFamily` (optional) |
-| **Mini Player** | `titleFontSize`, `timeFontSize`, `transcriptionFontSize` | `titleFontWeight`, `timeFontWeight` | Uses `typography.fontFamily.sans` and `numbers` |
+| **Buttons** | `primary.fontSize`, `secondary.fontSize`, `download.fontSize` | `primary.fontWeight`, `secondary.fontWeight`, `download.fontWeight` | `primary.fontFamily`, `secondary.fontFamily`, `download.fontFamily` (optional) |
+| **Mini Player** | `titleFontSize`, `transcriptionFontSize` | `titleFontWeight` | Uses `typography.fontFamily.sans` |
 | **Sheets** | `titleFontSize` | `titleFontWeight` | Uses `typography.fontFamily.sans` |
-| **Start Card** | `titleFontSize`, `metaFontSize`, `descriptionFontSize`, `sectionLabelFontSize`, `sectionDescriptionFontSize` | `titleFontWeight`, `metaFontWeight`, `sectionLabelFontWeight` | Uses `typography.fontFamily.sans` |
+| **Start Card** | `titleFontSize`, `metaFontSize`, `descriptionFontSize` | `titleFontWeight`, `metaFontWeight` | Uses `typography.fontFamily.sans` |
 | **Loading** | `messageFontSize` | `messageFontWeight` | Uses `typography.fontFamily.sans` |
 
 **Why Component-Specific?**
@@ -1271,7 +1275,6 @@ export const terminalTheme: ThemeConfig = {
     success: '#3FB950',  // Terminal green
     error: '#F85149',    // Bright red
     warning: '#D29922',  // Amber
-    info: '#00D9FF',     // Cyan
   },
 
   colors: {

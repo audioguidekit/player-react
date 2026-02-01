@@ -127,8 +127,6 @@ export interface ThemeConfig {
     textColor: string;
     titleFontSize: string; // Track title
     titleFontWeight: string;
-    timeFontSize: string; // Time display
-    timeFontWeight: string;
     transcriptionFontSize: string; // Transcription text
     progressBar: {
       backgroundColor: string;
@@ -160,7 +158,6 @@ export interface ThemeConfig {
     success: string;
     error: string;
     warning: string;
-    info: string;
   };
 
   // Loading States
@@ -180,9 +177,6 @@ export interface ThemeConfig {
     metaFontWeight: string;
     metaColor: string; // Meta items color (duration, stops)
     descriptionFontSize: string; // Tour description
-    sectionLabelFontSize: string; // "What's included", "What to expect"
-    sectionLabelFontWeight: string;
-    sectionDescriptionFontSize: string; // Section content text
     // Offline message box (shown for offline-only tours)
     offlineMessage: {
       backgroundColor: string;

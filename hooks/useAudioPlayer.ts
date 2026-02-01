@@ -207,7 +207,12 @@ export const useAudioPlayer = ({
             const currentTime = audioRef.current.currentTime;
             audioRef.current.load();
             audioRef.current.currentTime = currentTime;
-            audioRef.current.play().catch((e) => {
+            audioRef.current.play().then(() => {
+              // CRITICAL FOR iOS: Explicitly declare playbackState when play succeeds
+              if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+              }
+            }).catch((e) => {
               debugWarn('Failed to resume after stall recovery:', e);
               onPlayBlockedRef.current?.(e);
             });
@@ -273,13 +278,23 @@ export const useAudioPlayer = ({
     if (isPlayingRef.current) {
       const attemptPlay = () => {
         if (audio.readyState >= 2) {
-          audio.play().catch((error) => {
+          audio.play().then(() => {
+            // CRITICAL FOR iOS: Explicitly declare playbackState when play succeeds
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.playbackState = 'playing';
+            }
+          }).catch((error) => {
             console.error('❌ Auto-play failed:', error);
             onPlayBlockedRef.current?.(error);
           });
         } else {
           const handleCanPlay = () => {
-            audio.play().catch((error) => {
+            audio.play().then(() => {
+              // CRITICAL FOR iOS: Explicitly declare playbackState when play succeeds
+              if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+              }
+            }).catch((error) => {
               console.error('❌ Auto-play failed after canplay:', error);
               onPlayBlockedRef.current?.(error);
             });
@@ -311,14 +326,24 @@ export const useAudioPlayer = ({
       }
       debugLog('▶️ Attempting to play...');
       if (audio.readyState >= 2) {
-        audio.play().catch((error) => {
+        audio.play().then(() => {
+          // CRITICAL FOR iOS: Explicitly declare playbackState when play succeeds
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+          }
+        }).catch((error) => {
           console.error('❌ Play failed:', error);
           onPlayBlocked?.(error);
         });
       } else {
         audio.load();
         const handleCanPlay = () => {
-          audio.play().catch((error) => {
+          audio.play().then(() => {
+            // CRITICAL FOR iOS: Explicitly declare playbackState when play succeeds
+            if ('mediaSession' in navigator) {
+              navigator.mediaSession.playbackState = 'playing';
+            }
+          }).catch((error) => {
             console.error('❌ Play failed after canplay:', error);
             onPlayBlocked?.(error);
           });
@@ -328,6 +353,10 @@ export const useAudioPlayer = ({
     } else {
       debugLog('⏸️ Pausing audio');
       audio.pause();
+      // CRITICAL FOR iOS: Explicitly declare playbackState when paused
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     }
   }, [isPlaying, audioUrl, onPlayBlocked]);
 

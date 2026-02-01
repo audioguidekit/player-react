@@ -132,13 +132,27 @@ export const useMediaSession = ({
     if (!('mediaSession' in navigator)) return;
 
     const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
-      ['play', () => {
+      ['play', async () => {
         setIsPlayingRef.current(true);
-        audioElRef.current?.play().catch(console.error);
+        const audio = audioElRef.current;
+        if (audio) {
+          try {
+            await audio.play();
+            // CRITICAL: Explicitly set playbackState after play() - iOS requirement
+            navigator.mediaSession.playbackState = 'playing';
+          } catch (err) {
+            console.error('[MediaSession] Play failed:', err);
+          }
+        }
       }],
       ['pause', () => {
         setIsPlayingRef.current(false);
-        audioElRef.current?.pause();
+        const audio = audioElRef.current;
+        if (audio) {
+          audio.pause();
+          // CRITICAL: Explicitly set playbackState after pause() - iOS requirement
+          navigator.mediaSession.playbackState = 'paused';
+        }
       }],
       ['nexttrack', () => {
         if (canGoNextRef.current) handleNextStopRef.current();

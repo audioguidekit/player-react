@@ -107,7 +107,7 @@ export const useMediaSession = ({
     audio.addEventListener('playing', setPlaying);
     audio.addEventListener('pause', setPaused);
     audio.addEventListener('ended', setPaused);
-    audio.addEventListener('waiting', setPaused); // Optional: show pause/loading spinner while buffering
+    // NOTE: Removed 'waiting' listener - buffering shouldn't show as paused in Media Session
 
     // Immediate check on mount/update
     if (!audio.paused) {
@@ -121,7 +121,6 @@ export const useMediaSession = ({
       audio.removeEventListener('playing', setPlaying);
       audio.removeEventListener('pause', setPaused);
       audio.removeEventListener('ended', setPaused);
-      audio.removeEventListener('waiting', setPaused);
     };
   }, [audioPlayer.audioElement]); // Re-bind only if the actual DOM node changes
 

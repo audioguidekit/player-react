@@ -137,12 +137,41 @@ export const useMediaSession = ({
     console.log('[MediaSession] Metadata updated:', currentAudioStop.title);
   }, [tour, currentAudioStop, isTransitioning]);
 
-  // Media Session playback state - keep in sync with isPlaying
-  // IMPORTANT: Never set to 'none' as this can cause iOS to drop the session
+  // Media Session playback state - sync with actual audio element events
+  // CRITICAL: iOS requires playbackState to match actual audio state, not React state.
+  // Setting playbackState based on React state causes timing issues where iOS ignores
+  // the state change because audio hasn't actually started playing yet.
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
-    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-  }, [isPlaying]);
+
+    const audio = audioPlayer.audioElement;
+    if (!audio) return;
+
+    const handlePlay = () => {
+      navigator.mediaSession.playbackState = 'playing';
+      console.log('[MediaSession] playbackState set to playing (from audio event)');
+    };
+
+    const handlePause = () => {
+      navigator.mediaSession.playbackState = 'paused';
+      console.log('[MediaSession] playbackState set to paused (from audio event)');
+    };
+
+    // Sync immediately with current audio element state
+    if (!audio.paused) {
+      navigator.mediaSession.playbackState = 'playing';
+    } else {
+      navigator.mediaSession.playbackState = 'paused';
+    }
+
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, [audioPlayer.audioElement]);
 
   // Visibility change handler - refresh metadata when app becomes visible
   // This ensures Control Center has fresh data when user returns to app

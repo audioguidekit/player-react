@@ -88,9 +88,31 @@ export const useMediaSession = ({
   }, [tour, currentAudioStop, isTransitioning]);
 
   // --- 2. PLAYBACK STATE SYNC ---
-  // NOTE: Removed all explicit playbackState settings.
-  // iOS Safari should automatically sync playbackState based on audio element events.
-  // Explicitly setting playbackState may interfere with iOS's automatic handling.
+  // Set playbackState ONLY on the 'playing' event (when audio actually outputs sound).
+  // This is more reliable than 'play' event for iOS.
+  useEffect(() => {
+    if (!('mediaSession' in navigator)) return;
+    const audio = audioPlayer.audioElement;
+    if (!audio) return;
+
+    const handlePlaying = () => {
+      console.log('[MediaSession] Audio now playing - setting playbackState');
+      navigator.mediaSession.playbackState = 'playing';
+    };
+
+    const handlePause = () => {
+      console.log('[MediaSession] Audio paused - setting playbackState');
+      navigator.mediaSession.playbackState = 'paused';
+    };
+
+    audio.addEventListener('playing', handlePlaying);
+    audio.addEventListener('pause', handlePause);
+
+    return () => {
+      audio.removeEventListener('playing', handlePlaying);
+      audio.removeEventListener('pause', handlePause);
+    };
+  }, [audioPlayer.audioElement]);
 
   // --- 3. ACTION HANDLERS ---
   // We initialize this ONCE on mount. Because we use Refs inside,

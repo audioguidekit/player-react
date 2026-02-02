@@ -1,8 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useCallback } from 'react';
+import { useMediaSession as useMediaSessionLib, useMediaMeta } from 'use-media-session';
 import { TourData, AudioStop } from '../types';
-
-// REMOVED module-level flag (mediaSessionInitialized).
-// It causes bugs on component remount/navigation.
 
 type AudioPlayer = {
   audioElement: HTMLAudioElement | null;
@@ -39,7 +37,6 @@ export const useMediaSession = ({
   currentAudioStop,
   isPlaying,
   isTransitioning,
-  isSwitchingTracks,
   canGoNext,
   canGoPrev,
   handleNextStop,
@@ -47,146 +44,80 @@ export const useMediaSession = ({
   setIsPlaying,
   audioPlayer,
 }: UseMediaSessionProps) => {
-  // --- STATE REFS ---
-  // We use refs to hold the LATEST values. This allows the Action Handlers
-  // to be defined ONCE (on mount) but always access current data/functions.
+  // --- 1. MEDIA METADATA (using library hook) ---
+  // Build metadata object - only set real values when we have a valid audio stop
+  const artworkType = getArtworkType(currentAudioStop?.image);
+  const artwork = currentAudioStop?.image
+    ? [{ src: currentAudioStop.image, sizes: '512x512', type: artworkType || 'image/jpeg' }]
+    : [];
 
-  const audioElRef = useRef<HTMLAudioElement | null>(null);
-  const setIsPlayingRef = useRef(setIsPlaying);
-  const canGoNextRef = useRef(canGoNext);
-  const canGoPrevRef = useRef(canGoPrev);
-  const handleNextStopRef = useRef(handleNextStop);
-  const handlePrevStopRef = useRef(handlePrevStop);
+  // Always pass an object to useMediaMeta (library doesn't handle undefined)
+  // Use empty strings when no audio stop is available
+  const metadata = {
+    title: (!isTransitioning && currentAudioStop) ? currentAudioStop.title : '',
+    artist: (!isTransitioning && currentAudioStop) ? (tour?.title || '') : '',
+    album: 'AudioGuideKit',
+    artwork: (!isTransitioning && currentAudioStop) ? artwork : [],
+  };
 
-  // Sync Refs with props/state
-  useEffect(() => {
-    audioElRef.current = audioPlayer.audioElement;
-    setIsPlayingRef.current = setIsPlaying;
-    canGoNextRef.current = canGoNext;
-    canGoPrevRef.current = canGoPrev;
-    handleNextStopRef.current = handleNextStop;
-    handlePrevStopRef.current = handlePrevStop;
-  }, [audioPlayer.audioElement, setIsPlaying, canGoNext, canGoPrev, handleNextStop, handlePrevStop]);
+  useMediaMeta(metadata);
 
-  // --- 1. METADATA UPDATES ---
+  // --- 2. ACTION CALLBACKS (memoized) ---
+  const onPlay = useCallback(() => {
+    if (audioPlayer.audioElement) {
+      audioPlayer.audioElement.play().catch(console.error);
+      setIsPlaying(true);
+    }
+  }, [audioPlayer.audioElement, setIsPlaying]);
+
+  const onPause = useCallback(() => {
+    if (audioPlayer.audioElement) {
+      audioPlayer.audioElement.pause();
+      setIsPlaying(false);
+    }
+  }, [audioPlayer.audioElement, setIsPlaying]);
+
+  const onPreviousTrack = useCallback(() => {
+    if (canGoPrev) handlePrevStop();
+  }, [canGoPrev, handlePrevStop]);
+
+  const onNextTrack = useCallback(() => {
+    if (canGoNext) handleNextStop();
+  }, [canGoNext, handleNextStop]);
+
+  const onSeekBackward = useCallback(() => {
+    if (audioPlayer.audioElement) {
+      audioPlayer.audioElement.currentTime = Math.max(0, audioPlayer.audioElement.currentTime - 10);
+    }
+  }, [audioPlayer.audioElement]);
+
+  const onSeekForward = useCallback(() => {
+    if (audioPlayer.audioElement) {
+      const duration = audioPlayer.audioElement.duration || 0;
+      audioPlayer.audioElement.currentTime = Math.min(duration, audioPlayer.audioElement.currentTime + 10);
+    }
+  }, [audioPlayer.audioElement]);
+
+  // --- 3. MEDIA SESSION ACTIONS (using library hook) ---
+  useMediaSessionLib({
+    playbackState: isPlaying ? 'playing' : 'paused',
+    onPlay,
+    onPause,
+    onPreviousTrack: canGoPrev ? onPreviousTrack : undefined,
+    onNextTrack: canGoNext ? onNextTrack : undefined,
+    onSeekBackward,
+    onSeekForward,
+  });
+
+  // --- 4. POSITION STATE (manual - library doesn't handle this) ---
   useEffect(() => {
     if (!('mediaSession' in navigator)) return;
-    if (!tour || !currentAudioStop) return;
-    if (isTransitioning) return;
+    if (!('setPositionState' in navigator.mediaSession)) return;
 
-    const artworkType = getArtworkType(currentAudioStop.image);
-    const artworkArray = currentAudioStop.image
-      ? [{ src: currentAudioStop.image, sizes: '512x512', type: artworkType || 'image/png' }]
-      : [];
-
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: currentAudioStop.title,
-      artist: tour.title,
-      album: 'AudioGuideKit',
-      artwork: artworkArray,
-    });
-  }, [tour, currentAudioStop, isTransitioning]);
-
-  // --- 2. PLAYBACK STATE SYNC ---
-  // Set playbackState ONLY on the 'playing' event (when audio actually outputs sound).
-  // This is more reliable than 'play' event for iOS.
-  useEffect(() => {
-    if (!('mediaSession' in navigator)) return;
     const audio = audioPlayer.audioElement;
     if (!audio) return;
 
-    const handlePlaying = () => {
-      navigator.mediaSession.playbackState = 'playing';
-      console.log('[MediaSession] Audio now playing - playbackState is now:', navigator.mediaSession.playbackState);
-    };
-
-    const handlePause = () => {
-      navigator.mediaSession.playbackState = 'paused';
-      console.log('[MediaSession] Audio paused - playbackState is now:', navigator.mediaSession.playbackState);
-    };
-
-    audio.addEventListener('playing', handlePlaying);
-    audio.addEventListener('pause', handlePause);
-
-    return () => {
-      audio.removeEventListener('playing', handlePlaying);
-      audio.removeEventListener('pause', handlePause);
-    };
-  }, [audioPlayer.audioElement]);
-
-  // --- 3. ACTION HANDLERS ---
-  // We initialize this ONCE on mount. Because we use Refs inside,
-  // we never need to remove/re-add listeners, which keeps iOS happy.
-  useEffect(() => {
-    if (!('mediaSession' in navigator)) return;
-
-    const actionHandlers: [MediaSessionAction, MediaSessionActionHandler][] = [
-      ['play', async () => {
-        setIsPlayingRef.current(true);
-        const audio = audioElRef.current;
-        if (audio) {
-          try {
-            await audio.play();
-            // Let browser handle playbackState automatically
-          } catch (err) {
-            console.error('[MediaSession] Play failed:', err);
-          }
-        }
-      }],
-      ['pause', () => {
-        setIsPlayingRef.current(false);
-        const audio = audioElRef.current;
-        if (audio) {
-          audio.pause();
-          // Let browser handle playbackState automatically
-        }
-      }],
-      ['nexttrack', () => {
-        if (canGoNextRef.current) handleNextStopRef.current();
-      }],
-      ['previoustrack', () => {
-        if (canGoPrevRef.current) handlePrevStopRef.current();
-      }],
-      ['seekforward', (details) => {
-        const audio = audioElRef.current;
-        if (!audio) return;
-        const seekOffset = details?.seekOffset ?? 10;
-        audio.currentTime = Math.min(audio.currentTime + seekOffset, audio.duration);
-      }],
-      ['seekbackward', (details) => {
-        const audio = audioElRef.current;
-        if (!audio) return;
-        const seekOffset = details?.seekOffset ?? 10;
-        audio.currentTime = Math.max(audio.currentTime - seekOffset, 0);
-      }],
-      ['seekto', (details) => {
-        const audio = audioElRef.current;
-        if (!audio || details?.seekTime === undefined) return;
-        audio.currentTime = details.seekTime;
-      }]
-    ];
-
-    actionHandlers.forEach(([action, handler]) => {
-      try {
-        navigator.mediaSession.setActionHandler(action, handler);
-      } catch (e) {
-        console.warn(`MediaSession action ${action} not supported`);
-      }
-    });
-
-    // We do NOT clean up action handlers (return logic).
-    // Clearing them on unmount can confuse the browser if the user navigates quickly.
-    // Since we use refs, leaving them active is safe.
-  }, []); // Empty dependency array = Runs once on mount
-
-  // --- 4. POSITION STATE ---
-  useEffect(() => {
-    if (!('mediaSession' in navigator)) return;
-
     const updatePosition = () => {
-      const audio = audioPlayer.audioElement;
-      if (!audio) return;
-
       const duration = audio.duration;
       const currentTime = audio.currentTime;
 
@@ -197,16 +128,21 @@ export const useMediaSession = ({
             playbackRate: audio.playbackRate,
             position: currentTime,
           });
-          // Let browser handle playbackState automatically - removed self-healing
         } catch (e) {
           // Ignore errors (often happens if duration is not yet available)
         }
       }
     };
 
-    // Update more frequently when playing for smoother UI sync
+    // Update position state every second
     const intervalId = setInterval(updatePosition, 1000);
 
-    return () => clearInterval(intervalId);
-  }, [audioPlayer.audioElement]); // Re-create interval if audio element changes
+    // Also update on time update events
+    audio.addEventListener('timeupdate', updatePosition);
+
+    return () => {
+      clearInterval(intervalId);
+      audio.removeEventListener('timeupdate', updatePosition);
+    };
+  }, [audioPlayer.audioElement]);
 };

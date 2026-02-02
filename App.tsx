@@ -351,96 +351,7 @@ const App: React.FC = () => {
                          tour.stops.find(s => s.type === 'audio')?.id;
 
       if (stopToStart) {
-        const stopData = tour.stops.find(s => s.id === stopToStart);
-
-        // CRITICAL FOR iOS: Everything must happen SYNCHRONOUSLY in the click handler
-        if (stopData?.type === 'audio') {
-          const audioUrl = stopData.audioFile;
-
-          // 1. Set metadata FIRST
-          if ('mediaSession' in navigator) {
-            const getArtworkType = (src: string | undefined): string | undefined => {
-              if (!src) return undefined;
-              const lower = src.toLowerCase();
-              if (lower.endsWith('.png')) return 'image/png';
-              if (lower.endsWith('.webp')) return 'image/webp';
-              if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-              return undefined;
-            };
-
-            const artworkType = getArtworkType(stopData.image);
-            const artworkArray = stopData.image
-              ? [{ src: stopData.image, sizes: '512x512', type: artworkType || 'image/png' }]
-              : [];
-
-            navigator.mediaSession.metadata = new MediaMetadata({
-              title: stopData.title,
-              artist: tour.title,
-              album: 'AudioGuideKit',
-              artwork: artworkArray,
-            });
-
-            console.log('[iOS DEBUG] 1. Metadata set:', stopData.title, '| metadata.title:', navigator.mediaSession.metadata?.title);
-          }
-
-          // 2. Set audio source (only if not already set) and play DIRECTLY in click handler
-          if (audioPlayer.audioElement && audioUrl) {
-            const audio = audioPlayer.audioElement;
-
-            // Check if audio is already loaded at this URL (from preload)
-            try {
-              const normalizedUrl = new URL(audioUrl, window.location.href).href;
-              const isAlreadyLoaded = audio.src === normalizedUrl && audio.readyState >= 2;
-
-              if (isAlreadyLoaded) {
-                console.log('[iOS DEBUG] 2. Audio already preloaded, readyState:', audio.readyState);
-              } else {
-                console.log('[iOS DEBUG] 2. Setting audio src:', audioUrl);
-                audio.src = audioUrl;
-              }
-            } catch {
-              console.log('[iOS DEBUG] 2. Setting audio src:', audioUrl);
-              audio.src = audioUrl;
-            }
-
-            // iOS: Set up action handlers in user gesture context
-            // This might be required for Media Session to work properly
-            console.log('[iOS DEBUG] 3. Setting up action handlers in click context');
-            try {
-              navigator.mediaSession.setActionHandler('play', () => {
-                console.log('[MediaSession Action] play');
-                audio.play();
-                setIsPlaying(true);
-              });
-              navigator.mediaSession.setActionHandler('pause', () => {
-                console.log('[MediaSession Action] pause');
-                audio.pause();
-                setIsPlaying(false);
-              });
-            } catch (e) {
-              console.warn('[iOS DEBUG] Failed to set action handlers:', e);
-            }
-
-            // ATTEMPT 13: Synchronous pause/play cycle to "register" Media Session
-            // The key insight: manual pause→play works, but initial play doesn't.
-            // iOS might need to see a pause event before play to properly initialize.
-            console.log('[iOS DEBUG] 4. Doing pause/play cycle to register Media Session');
-
-            // Step 1: Pause first (even if not playing) - this triggers 'pause' event
-            audio.pause();
-            console.log('[iOS DEBUG] 4a. Called pause() - paused:', audio.paused);
-
-            // Step 2: Immediately play - this triggers 'playing' event after pause
-            console.log('[iOS DEBUG] 4b. Calling play(), readyState:', audio.readyState);
-            audio.play().then(() => {
-              console.log('[iOS DEBUG] 5. play() succeeded after pause/play cycle');
-            }).catch(err => {
-              console.error('[iOS DEBUG] play() failed:', err);
-            });
-          }
-        }
-
-        // 3. Update React state (for UI sync)
+        // Update React state - useMediaSession hook will handle Media Session metadata/actions
         setCurrentStopId(stopToStart);
         setIsPlaying(true);
         setIsMiniPlayerExpanded(true);
@@ -452,7 +363,7 @@ const App: React.FC = () => {
         }
       }
     }
-  }, [tour, currentStopId, setCurrentStopId, setIsPlaying, setIsMiniPlayerExpanded, setHasStarted, setAllowAutoPlay, audioPlayer.audioElement]);
+  }, [tour, currentStopId, setCurrentStopId, setIsPlaying, setIsMiniPlayerExpanded, setHasStarted, setAllowAutoPlay]);
 
   const handleBackToStart = useCallback(() => {
     setHasStarted(false);
@@ -474,32 +385,7 @@ const App: React.FC = () => {
 
     const firstAudioStop = tour.stops.find(s => s.type === 'audio');
     if (firstAudioStop) {
-      // CRITICAL FOR iOS: Set Media Session metadata SYNCHRONOUSLY before play
-      if ('mediaSession' in navigator) {
-        const getArtworkType = (src: string | undefined): string | undefined => {
-          if (!src) return undefined;
-          const lower = src.toLowerCase();
-          if (lower.endsWith('.png')) return 'image/png';
-          if (lower.endsWith('.webp')) return 'image/webp';
-          if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-          return undefined;
-        };
-
-        const artworkType = getArtworkType(firstAudioStop.image);
-        const artworkArray = firstAudioStop.image
-          ? [{ src: firstAudioStop.image, sizes: '512x512', type: artworkType || 'image/png' }]
-          : [];
-
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: firstAudioStop.title,
-          artist: tour.title,
-          album: 'AudioGuideKit',
-          artwork: artworkArray,
-        });
-
-        console.log('[RESET] Media Session metadata set synchronously:', firstAudioStop.title);
-      }
-
+      // Update React state - useMediaSession hook will handle Media Session metadata/actions
       setCurrentStopId(firstAudioStop.id);
       setIsPlaying(true);
       setHasStarted(true);
@@ -562,71 +448,14 @@ const App: React.FC = () => {
     audioPlayer.skipForward(15);
   }, [audioPlayer]);
 
-  // CRITICAL FOR iOS: Wrap stop click handlers to set metadata synchronously
-  // This ensures Media Session is initialized before the first play on stop clicks
-  const handleStopClickWithMetadata = useCallback((stopId: string) => {
-    // Only set metadata if switching to a different stop
-    if (stopId !== currentStopId) {
-      const stopData = tour?.stops.find(s => s.id === stopId);
-      if ('mediaSession' in navigator && stopData?.type === 'audio') {
-        const getArtworkType = (src: string | undefined): string | undefined => {
-          if (!src) return undefined;
-          const lower = src.toLowerCase();
-          if (lower.endsWith('.png')) return 'image/png';
-          if (lower.endsWith('.webp')) return 'image/webp';
-          if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-          return undefined;
-        };
-
-        const artworkType = getArtworkType(stopData.image);
-        const artworkArray = stopData.image
-          ? [{ src: stopData.image, sizes: '512x512', type: artworkType || 'image/png' }]
-          : [];
-
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: stopData.title,
-          artist: tour.title,
-          album: 'AudioGuideKit',
-          artwork: artworkArray,
-        });
-
-        console.log('[STOP_CLICK] Media Session metadata set synchronously:', stopData.title);
-      }
-    }
+  // Stop click handlers - useMediaSession hook handles Media Session metadata/actions
+  const handleStopClickWrapper = useCallback((stopId: string) => {
     handleStopClick(stopId);
-  }, [tour, currentStopId, handleStopClick]);
+  }, [handleStopClick]);
 
-  const handleStopPlayPauseWithMetadata = useCallback((stopId: string) => {
-    // Only set metadata if switching to a different stop
-    if (stopId !== currentStopId) {
-      const stopData = tour?.stops.find(s => s.id === stopId);
-      if ('mediaSession' in navigator && stopData?.type === 'audio') {
-        const getArtworkType = (src: string | undefined): string | undefined => {
-          if (!src) return undefined;
-          const lower = src.toLowerCase();
-          if (lower.endsWith('.png')) return 'image/png';
-          if (lower.endsWith('.webp')) return 'image/webp';
-          if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
-          return undefined;
-        };
-
-        const artworkType = getArtworkType(stopData.image);
-        const artworkArray = stopData.image
-          ? [{ src: stopData.image, sizes: '512x512', type: artworkType || 'image/png' }]
-          : [];
-
-        navigator.mediaSession.metadata = new MediaMetadata({
-          title: stopData.title,
-          artist: tour.title,
-          album: 'AudioGuideKit',
-          artwork: artworkArray,
-        });
-
-        console.log('[STOP_PLAY_PAUSE] Media Session metadata set synchronously:', stopData.title);
-      }
-    }
+  const handleStopPlayPauseWrapper = useCallback((stopId: string) => {
     handleStopPlayPause(stopId);
-  }, [tour, currentStopId, handleStopPlayPause]);
+  }, [handleStopPlayPause]);
 
   const handleRateTour = useCallback(() => {
     setActiveSheet('RATING');
@@ -768,9 +597,9 @@ const App: React.FC = () => {
                   tour={tour}
                   currentStopId={currentStopId}
                   isPlaying={isPlaying}
-                  onStopClick={handleStopClickWithMetadata}
+                  onStopClick={handleStopClickWrapper}
                   onTogglePlay={handlePlayPause}
-                  onStopPlayPause={handleStopPlayPauseWithMetadata}
+                  onStopPlayPause={handleStopPlayPauseWrapper}
                   onBack={handleBackToStart}
                   tourProgress={tourProgress}
                   consumedMinutes={consumedMinutes}

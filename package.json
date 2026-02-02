@@ -22,7 +22,8 @@
     "react-dom": "^19.2.0",
     "react-router-dom": "^6.30.2",
     "styled-components": "^6.1.19",
-    "twin.macro": "^3.4.1"
+    "twin.macro": "^3.4.1",
+    "use-media-session": "^0.0.3"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",

@@ -403,10 +403,40 @@ const App: React.FC = () => {
               audio.src = audioUrl;
             }
 
-            // iOS TEST: Don't call play() directly - let React effect handle it
-            // The audio is already preloaded (readyState >= 2), so iOS might not need user gesture
-            // This matches the flow when user manually clicks pause/play (which works)
-            console.log('[iOS DEBUG] 3. NOT calling play() directly - letting React effect handle it, readyState:', audio.readyState);
+            // iOS: Set up action handlers in user gesture context
+            // This might be required for Media Session to work properly
+            console.log('[iOS DEBUG] 3. Setting up action handlers in click context');
+            try {
+              navigator.mediaSession.setActionHandler('play', () => {
+                console.log('[MediaSession Action] play');
+                audio.play();
+                setIsPlaying(true);
+              });
+              navigator.mediaSession.setActionHandler('pause', () => {
+                console.log('[MediaSession Action] pause');
+                audio.pause();
+                setIsPlaying(false);
+              });
+            } catch (e) {
+              console.warn('[iOS DEBUG] Failed to set action handlers:', e);
+            }
+
+            // ATTEMPT 13: Synchronous pause/play cycle to "register" Media Session
+            // The key insight: manual pause→play works, but initial play doesn't.
+            // iOS might need to see a pause event before play to properly initialize.
+            console.log('[iOS DEBUG] 4. Doing pause/play cycle to register Media Session');
+
+            // Step 1: Pause first (even if not playing) - this triggers 'pause' event
+            audio.pause();
+            console.log('[iOS DEBUG] 4a. Called pause() - paused:', audio.paused);
+
+            // Step 2: Immediately play - this triggers 'playing' event after pause
+            console.log('[iOS DEBUG] 4b. Calling play(), readyState:', audio.readyState);
+            audio.play().then(() => {
+              console.log('[iOS DEBUG] 5. play() succeeded after pause/play cycle');
+            }).catch(err => {
+              console.error('[iOS DEBUG] play() failed:', err);
+            });
           }
         }
 

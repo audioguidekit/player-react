@@ -10,19 +10,11 @@ declare const self: ServiceWorkerGlobalScope;
 
 // Development mode detection - Vite will tree-shake this in production
 const DEV_MODE = import.meta.env.DEV;
-const SW_VERSION = '1.1.0-HYBRID-AUDIO';
-
-// Storage origin for caching external media assets (configured via .env)
-const STORAGE_ORIGIN = import.meta.env.VITE_STORAGE_ORIGIN || '';
+const SW_VERSION = '1.3.0-STORAGE-AGNOSTIC';
 
 if (DEV_MODE) {
   console.log(`[SW ${SW_VERSION}] Service Worker initializing...`);
-  console.log(`[SW ${SW_VERSION}] ⚡ This is the NEW service worker with navigation handler and CDN warmup!`);
-  if (!STORAGE_ORIGIN) {
-    console.warn(`[SW ${SW_VERSION}] ⚠️ VITE_STORAGE_ORIGIN not configured - external media caching disabled`);
-  } else {
-    console.log(`[SW ${SW_VERSION}] 📦 Storage origin: ${STORAGE_ORIGIN}`);
-  }
+  console.log(`[SW ${SW_VERSION}] ⚡ Storage-agnostic version - works with any CDN/storage provider`);
 }
 
 // Critical CDN dependencies that MUST be cached for offline use
@@ -47,11 +39,9 @@ async function warmupCache() {
         await cache.put(url, response);
         if (DEV_MODE) console.log(`[SW ${SW_VERSION}] ✅ Cached ${url}`);
       } else {
-        // Always log errors
         console.error(`[SW ${SW_VERSION}] ❌ Failed to fetch ${url}: ${response.status}`);
       }
     } catch (error) {
-      // Always log errors
       console.error(`[SW ${SW_VERSION}] ❌ Error fetching ${url}:`, error);
     }
   });
@@ -74,8 +64,6 @@ self.addEventListener('install', (event) => {
   if (DEV_MODE) {
     console.log(`[SW ${SW_VERSION}] INSTALL event - precaching assets`);
   }
-
-  // Pre-fetch CDN dependencies during install
   event.waitUntil(warmupCache());
 });
 
@@ -97,19 +85,49 @@ if (DEV_MODE) {
 precacheAndRoute(manifest);
 
 // CRITICAL: Register navigation route to serve index.html for all navigation requests
-// This is what makes the app work when launched from home screen offline
 const navigationHandler = createHandlerBoundToURL('/index.html');
 const navigationRoute = new NavigationRoute(navigationHandler, {
-  denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/], // Exclude special paths and file requests
+  denylist: [/^\/_/, /\/[^/?]+\.[^/]+$/],
 });
 registerRoute(navigationRoute);
 if (DEV_MODE) {
   console.log(`[SW ${SW_VERSION}] ✅ Registered navigation route handler`);
 }
 
-// App Shell - Cache First
+// Helper: Check if URL is from same origin (app files)
+const isSameOrigin = (url: URL) => url.origin === self.location.origin;
+
+// Helper: Check if URL is an audio file
+const isAudioFile = (url: URL) =>
+  url.pathname.endsWith('.mp3') ||
+  url.pathname.endsWith('.wav') ||
+  url.pathname.endsWith('.m4a') ||
+  url.pathname.endsWith('.ogg') ||
+  url.pathname.endsWith('.aac');
+
+// Helper: Check if URL is an image file
+const isImageFile = (url: URL) =>
+  url.pathname.endsWith('.jpg') ||
+  url.pathname.endsWith('.jpeg') ||
+  url.pathname.endsWith('.png') ||
+  url.pathname.endsWith('.webp') ||
+  url.pathname.endsWith('.gif') ||
+  url.pathname.endsWith('.svg');
+
+// Helper: Check if URL is a video file
+const isVideoFile = (url: URL) =>
+  url.pathname.endsWith('.mp4') ||
+  url.pathname.endsWith('.webm') ||
+  url.pathname.endsWith('.mov');
+
+// Helper: Check if URL is a 3D model file
+const is3DModelFile = (url: URL) =>
+  url.pathname.endsWith('.glb') ||
+  url.pathname.endsWith('.gltf');
+
+// App Shell - Cache First (same-origin only)
 registerRoute(
-  ({ url }) => url.origin === self.location.origin,
+  ({ url }) => isSameOrigin(url),
   new CacheFirst({
     cacheName: 'app-shell',
     plugins: [
@@ -183,24 +201,23 @@ registerRoute(
   })
 );
 
-// Supabase Audio Files - Hybrid Strategy
+// ============================================================================
+// TOUR ASSETS - Storage Agnostic (works with ANY CDN/storage provider)
+// These routes match by file extension, not by origin, so they work with:
+// Cloudflare R2, AWS S3, Supabase Storage, Google Cloud Storage, Azure Blob,
+// self-hosted servers, or any other storage provider.
+// ============================================================================
+
+// Audio Files - Hybrid Strategy (any external origin)
 // Online: Network request (preserves Safari Range Request support for seeking)
-// Offline: Serve from cache (audio plays, seeking within cached content)
+// Offline: Serve from cache (audio plays from downloaded content)
 registerRoute(
-  ({ url }) => {
-    return (
-      url.origin === STORAGE_ORIGIN &&
-      url.pathname.includes('/storage/v1/object/public/') &&
-      (url.pathname.endsWith('.mp3') ||
-        url.pathname.endsWith('.wav') ||
-        url.pathname.endsWith('.m4a'))
-    );
-  },
+  ({ url }) => !isSameOrigin(url) && isAudioFile(url),
   async ({ request, url }) => {
     const cacheName = 'tour-assets';
 
     if (DEV_MODE) {
-      console.log(`[SW ${SW_VERSION}] 🎵 Audio request: ${url.pathname}, online: ${navigator.onLine}`);
+      console.log(`[SW ${SW_VERSION}] 🎵 Audio request: ${url.href}, online: ${navigator.onLine}`);
     }
 
     // OFFLINE: Serve from cache
@@ -215,8 +232,7 @@ registerRoute(
         return cachedResponse;
       }
 
-      // Not cached - return error
-      console.warn(`[SW ${SW_VERSION}] ⚠️ Audio not cached for offline: ${url.pathname}`);
+      console.warn(`[SW ${SW_VERSION}] ⚠️ Audio not cached for offline: ${url.href}`);
       return new Response('Audio not available offline. Please download the tour first.', {
         status: 503,
         statusText: 'Service Unavailable',
@@ -228,7 +244,7 @@ registerRoute(
     try {
       return await fetch(request);
     } catch (error) {
-      // Network failed unexpectedly - try cache as fallback
+      // Network failed - try cache as fallback
       if (DEV_MODE) {
         console.log(`[SW ${SW_VERSION}] ⚠️ Network failed, trying cache fallback`);
       }
@@ -245,79 +261,107 @@ registerRoute(
   }
 );
 
-// Supabase Images - Cache First
+// Image Files - Cache First with tour-assets fallback (any external origin)
+// First checks tour-assets cache (from download manager), then uses CacheFirst strategy
 registerRoute(
-  ({ url }) => {
-    return (
-      url.origin === STORAGE_ORIGIN &&
-      url.pathname.includes('/storage/v1/object/public/') &&
-      (url.pathname.endsWith('.jpg') ||
-        url.pathname.endsWith('.jpeg') ||
-        url.pathname.endsWith('.png') ||
-        url.pathname.endsWith('.webp'))
-    );
-  },
-  new CacheFirst({
-    cacheName: 'tour-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 200,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
+  ({ url }) => !isSameOrigin(url) && isImageFile(url),
+  async ({ request, url }) => {
+    const tourAssetsCache = await caches.open('tour-assets');
+
+    // First check if it's in tour-assets (downloaded via download manager)
+    const cachedResponse = await tourAssetsCache.match(request, { ignoreVary: true });
+    if (cachedResponse) {
+      if (DEV_MODE) {
+        console.log(`[SW ${SW_VERSION}] 🖼️ Serving image from tour-assets cache: ${url.pathname}`);
+      }
+      return cachedResponse;
+    }
+
+    // Not in tour-assets, try network with caching
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        // Cache in tour-images for opportunistic caching
+        const imageCache = await caches.open('tour-images');
+        imageCache.put(request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      // Network failed, check tour-images cache
+      const imageCache = await caches.open('tour-images');
+      const fallbackResponse = await imageCache.match(request, { ignoreVary: true });
+      if (fallbackResponse) {
+        return fallbackResponse;
+      }
+      throw error;
+    }
+  }
 );
 
-// Supabase Videos - Cache First
+// Video Files - Cache First (any external origin)
 registerRoute(
-  ({ url }) => {
-    return (
-      url.origin === STORAGE_ORIGIN &&
-      url.pathname.includes('/storage/v1/object/public/') &&
-      (url.pathname.endsWith('.mp4') || url.pathname.endsWith('.webm'))
-    );
-  },
-  new CacheFirst({
-    cacheName: 'tour-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
+  ({ url }) => !isSameOrigin(url) && isVideoFile(url),
+  async ({ request, url }) => {
+    const cacheName = 'tour-assets';
+    const cache = await caches.open(cacheName);
+
+    // Check cache first
+    const cachedResponse = await cache.match(request, { ignoreVary: true });
+    if (cachedResponse) {
+      if (DEV_MODE) {
+        console.log(`[SW ${SW_VERSION}] 🎬 Serving video from cache: ${url.pathname}`);
+      }
+      return cachedResponse;
+    }
+
+    // Not cached, fetch from network
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      console.warn(`[SW ${SW_VERSION}] ⚠️ Video not available: ${url.href}`);
+      throw error;
+    }
+  }
 );
 
-// Supabase 3D Models - Cache First
+// 3D Model Files - Cache First (any external origin)
 registerRoute(
-  ({ url }) => {
-    return (
-      url.origin === STORAGE_ORIGIN &&
-      url.pathname.includes('/storage/v1/object/public/') &&
-      (url.pathname.endsWith('.glb') || url.pathname.endsWith('.gltf'))
-    );
-  },
-  new CacheFirst({
-    cacheName: 'tour-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
-      }),
-    ],
-  })
+  ({ url }) => !isSameOrigin(url) && is3DModelFile(url),
+  async ({ request, url }) => {
+    const cacheName = 'tour-assets';
+    const cache = await caches.open(cacheName);
+
+    // Check cache first
+    const cachedResponse = await cache.match(request, { ignoreVary: true });
+    if (cachedResponse) {
+      if (DEV_MODE) {
+        console.log(`[SW ${SW_VERSION}] 🎨 Serving 3D model from cache: ${url.pathname}`);
+      }
+      return cachedResponse;
+    }
+
+    // Not cached, fetch from network
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        cache.put(request, response.clone());
+      }
+      return response;
+    } catch (error) {
+      console.warn(`[SW ${SW_VERSION}] ⚠️ 3D model not available: ${url.href}`);
+      throw error;
+    }
+  }
 );
 
-// CRITICAL: Explicit navigation handler for iOS standalone mode
+// ============================================================================
+// Navigation Handler for iOS Standalone Mode
+// ============================================================================
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const isNavigationRequest = event.request.mode === 'navigate';
@@ -327,36 +371,33 @@ self.addEventListener('fetch', (event) => {
       mode: event.request.mode,
       destination: event.request.destination,
       isNavigation: isNavigationRequest,
-      origin: url.origin,
     });
   }
 
   // Explicitly handle navigation requests by serving index.html from cache
   if (isNavigationRequest) {
     if (DEV_MODE) {
-      console.log(`[SW ${SW_VERSION}] 🎯 Navigation request detected - serving index.html from cache`);
+      console.log(`[SW ${SW_VERSION}] 🎯 Navigation request - serving index.html`);
     }
 
     event.respondWith(
       (async () => {
         try {
-          // Try to get from network first (when online)
+          // Try network first when online
           if (navigator.onLine) {
             try {
               const networkResponse = await fetch(event.request);
               if (networkResponse.ok) {
                 return networkResponse;
               }
-            } catch (e) {
+            } catch {
               // Network failed, fall through to cache
             }
           }
 
-          // Serve from cache (offline or network failed)
+          // Serve from cache
           const cache = await caches.open('workbox-precache-v2-' + self.location.origin + '/');
           const keys = await cache.keys();
-
-          // Find the cached index.html (it has a revision query param)
           const indexEntry = keys.find(req => req.url.includes('index.html'));
 
           if (indexEntry) {
@@ -369,14 +410,12 @@ self.addEventListener('fetch', (event) => {
             }
           }
 
-          // Always log errors
           console.error(`[SW ${SW_VERSION}] ❌ index.html not found in cache!`);
           return new Response('Offline - index.html not cached', {
             status: 503,
             headers: { 'Content-Type': 'text/plain' }
           });
         } catch (error) {
-          // Always log errors
           console.error(`[SW ${SW_VERSION}] ❌ Error handling navigation:`, error);
           return new Response('Service Worker Error: ' + (error as Error).message, {
             status: 500,
@@ -401,7 +440,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames
           .filter((cacheName) => {
-            // Delete old caches that don't match current cache names
             const shouldDelete = !cacheName.match(
               /^(app-shell|external-dependencies|tour-images|google-fonts-stylesheets|google-fonts-webfonts|tour-assets|workbox-precache)/
             );

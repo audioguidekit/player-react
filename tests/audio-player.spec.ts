@@ -47,15 +47,4 @@ test.describe('Mini Player', () => {
   });
 });
 
-test.describe('Media Session API', () => {
-  test('should have Media Session API available', async ({ page }) => {
-    await page.goto('/');
 
-    const mediaSessionAvailable = await page.evaluate(() => {
-      return 'mediaSession' in navigator;
-    });
-
-    // Media Session API should be available in modern browsers
-    expect(mediaSessionAvailable).toBe(true);
-  });
-});

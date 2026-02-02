@@ -265,7 +265,7 @@ const App: React.FC = () => {
     onPlayBlocked: handlePlayBlocked,
   });
 
-  // CRITICAL: Sync native audio events to React state AND MediaSession
+  // CRITICAL: Sync native audio events to React state
   // This matches the working demo's JSX: <audio onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
   // Track if audio was playing before pause to distinguish real pauses from load() pauses
   const wasPlayingBeforePauseRef = useRef(false);

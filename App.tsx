@@ -403,11 +403,28 @@ const App: React.FC = () => {
               audio.src = audioUrl;
             }
 
-            // NOTE: NOT setting playbackState here - let the 'playing' event handler in useMediaSession do it
-            // Setting it twice might confuse iOS
+            // iOS WORKAROUND: Do a quick pause/play cycle to "wake up" Media Session
+            // The user reported that after manually pausing/playing, the Control Center works correctly
             console.log('[iOS DEBUG] 3. Calling play() directly in click handler, readyState:', audio.readyState);
             audio.play().then(() => {
-              console.log('[iOS DEBUG] 4. play() succeeded, playbackState should be set by event handler');
+              console.log('[iOS DEBUG] 4. play() succeeded');
+
+              // iOS workaround: Quick pause/play to activate Media Session
+              // This mimics what happens when user manually pauses and plays
+              setTimeout(() => {
+                if (!audio.paused) {
+                  console.log('[iOS DEBUG] 5. Doing quick pause/play cycle to activate Media Session');
+                  const currentTime = audio.currentTime;
+                  audio.pause();
+                  // Tiny delay before resuming
+                  setTimeout(() => {
+                    audio.currentTime = currentTime; // Restore position
+                    audio.play().then(() => {
+                      console.log('[iOS DEBUG] 6. Media Session should now be active');
+                    }).catch(() => {});
+                  }, 50);
+                }
+              }, 100);
             }).catch(err => {
               console.error('[iOS DEBUG] play() failed:', err);
             });

@@ -403,28 +403,18 @@ const App: React.FC = () => {
               audio.src = audioUrl;
             }
 
-            // iOS WORKAROUND: Do a quick pause/play cycle to "wake up" Media Session
-            // The user reported that after manually pausing/playing, the Control Center works correctly
-            console.log('[iOS DEBUG] 3. Calling play() directly in click handler, readyState:', audio.readyState);
+            // iOS WORKAROUND: The difference between Start tour and manual pause/play is:
+            // - Start tour: audio.play() called directly in click handler
+            // - Manual play: audio.play() called from React effect
+            //
+            // Strategy: Unlock audio with direct play(), then let React effect take over
+            console.log('[iOS DEBUG] 3. Unlocking audio with direct play(), readyState:', audio.readyState);
             audio.play().then(() => {
-              console.log('[iOS DEBUG] 4. play() succeeded');
-
-              // iOS workaround: Quick pause/play to activate Media Session
-              // This mimics what happens when user manually pauses and plays
-              setTimeout(() => {
-                if (!audio.paused) {
-                  console.log('[iOS DEBUG] 5. Doing quick pause/play cycle to activate Media Session');
-                  const currentTime = audio.currentTime;
-                  audio.pause();
-                  // Tiny delay before resuming
-                  setTimeout(() => {
-                    audio.currentTime = currentTime; // Restore position
-                    audio.play().then(() => {
-                      console.log('[iOS DEBUG] 6. Media Session should now be active');
-                    }).catch(() => {});
-                  }, 50);
-                }
-              }, 100);
+              console.log('[iOS DEBUG] 4. Audio unlocked, now pausing to let React effect take over');
+              // Immediately pause - React state is about to be set to isPlaying=true
+              // which will trigger the effect to call play() - this is the flow that works
+              audio.pause();
+              console.log('[iOS DEBUG] 5. Paused, React effect should now call play()');
             }).catch(err => {
               console.error('[iOS DEBUG] play() failed:', err);
             });

@@ -44,3 +44,6 @@ _private/
 /blob-report/
 /playwright/.cache/
 .playwright-mcp/
+
+# Vercel
+.vercel/

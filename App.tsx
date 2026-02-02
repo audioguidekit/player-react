@@ -403,13 +403,11 @@ const App: React.FC = () => {
               audio.src = audioUrl;
             }
 
-            // CRITICAL: Set playbackState BEFORE calling play() - iOS may need this
-            navigator.mediaSession.playbackState = 'playing';
-            console.log('[iOS DEBUG] 3. playbackState set to playing BEFORE play(), actual value:', navigator.mediaSession.playbackState);
-
-            console.log('[iOS DEBUG] 4. Calling play() directly in click handler, readyState:', audio.readyState);
+            // NOTE: NOT setting playbackState here - let the 'playing' event handler in useMediaSession do it
+            // Setting it twice might confuse iOS
+            console.log('[iOS DEBUG] 3. Calling play() directly in click handler, readyState:', audio.readyState);
             audio.play().then(() => {
-              console.log('[iOS DEBUG] 5. play() succeeded');
+              console.log('[iOS DEBUG] 4. play() succeeded, playbackState should be set by event handler');
             }).catch(err => {
               console.error('[iOS DEBUG] play() failed:', err);
             });

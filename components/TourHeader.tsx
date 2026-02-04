@@ -16,6 +16,7 @@ interface TourHeaderProps {
 
 const Container = styled(motion.div)`
   ${tw`sticky top-0 z-30 px-6 py-2 backdrop-blur-md`}
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
   background-color: ${({ theme }) => theme.header.backgroundColor};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
 `;

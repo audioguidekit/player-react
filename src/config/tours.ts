@@ -5,6 +5,6 @@
 
 /**
  * Default tour ID to load when no specific tour is requested
- * This should match an ID in the tour metadata (public/data/tour/metadata.json)
+ * This should match an ID in the tour metadata (src/data/tour/metadata.json)
  */
 export const DEFAULT_TOUR_ID = 'barcelona';

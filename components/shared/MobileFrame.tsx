@@ -14,7 +14,7 @@ const OuterContainer = styled.div`
 
 const InnerFrame = styled.div`
   ${tw`w-full max-w-[400px] h-full md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex flex-col`}
-  padding-bottom: ${({ theme }) => theme.platform.safeArea.bottom};
+  /* Safe area handled by child components (MiniPlayer, MainSheet) */
 `;
 
 /**

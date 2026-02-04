@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { waitForAppLoad, discoverTourLanguages, hasMultipleLanguages } from './helpers';
+import { waitForAppLoad, discoverTourLanguages, hasMultipleLanguages, clearAppState, getStoredLanguage } from './helpers';
 
 test.describe('Language System', () => {
   test('should load app with tour content', async ({ page }) => {
@@ -96,5 +96,114 @@ test.describe('Multi-language Tours', () => {
     // All tour files should have the same tour ID
     const uniqueIds = [...new Set(tourIds)];
     expect(uniqueIds.length).toBe(1);
+  });
+});
+
+test.describe('URL Language Parameter (?lang=)', () => {
+  test.beforeEach(async ({ page }) => {
+    // Clear localStorage before each test to ensure clean state
+    await page.goto('/');
+    await clearAppState(page);
+  });
+
+  test('should load tour in specified language via ?lang= parameter', async ({ page, request }) => {
+    const languages = await discoverTourLanguages(request);
+
+    if (languages.length < 2) {
+      test.skip();
+      return;
+    }
+
+    // Get tour data for the second language to verify content
+    const targetLang = languages.find(l => l !== 'en') || languages[1];
+    const response = await request.get(`/data/tour/${targetLang}.json`);
+    const tourData = await response.json();
+    const expectedTitle = tourData.title;
+
+    // Navigate with ?lang= parameter
+    await page.goto(`/tour/barcelona?lang=${targetLang}`);
+    await waitForAppLoad(page);
+
+    // Verify the tour title matches the expected language
+    const title = page.locator('h1').first();
+    await expect(title).toContainText(expectedTitle, { timeout: 10000 });
+  });
+
+  test('should save URL language parameter to localStorage', async ({ page, request }) => {
+    const languages = await discoverTourLanguages(request);
+
+    if (languages.length < 2) {
+      test.skip();
+      return;
+    }
+
+    const targetLang = languages.find(l => l !== 'en') || languages[1];
+
+    // Navigate with ?lang= parameter
+    await page.goto(`/tour/barcelona?lang=${targetLang}`);
+    await waitForAppLoad(page);
+
+    // Wait for language to be saved
+    await page.waitForTimeout(1000);
+
+    // Verify language is saved to localStorage
+    const storedLang = await getStoredLanguage(page);
+    expect(storedLang).toBe(targetLang);
+  });
+
+  test('should ignore invalid language codes and fall back gracefully', async ({ page }) => {
+    // Navigate with invalid language code
+    await page.goto('/tour/barcelona?lang=invalid_lang');
+    await waitForAppLoad(page);
+
+    // App should still load without errors
+    const title = page.locator('h1').first();
+    await expect(title).toBeVisible({ timeout: 10000 });
+
+    // Should fall back to a valid language (not 'invalid_lang')
+    const storedLang = await getStoredLanguage(page);
+    expect(storedLang).not.toBe('invalid_lang');
+  });
+
+  test('should work with ?lang= parameter on stop deep links', async ({ page, request }) => {
+    const languages = await discoverTourLanguages(request);
+
+    if (languages.length < 2) {
+      test.skip();
+      return;
+    }
+
+    const targetLang = languages.find(l => l !== 'en') || languages[1];
+
+    // Navigate to a stop with ?lang= parameter
+    await page.goto(`/tour/barcelona/1?lang=${targetLang}`);
+    await waitForAppLoad(page);
+
+    // Verify language is saved
+    await page.waitForTimeout(1000);
+    const storedLang = await getStoredLanguage(page);
+    expect(storedLang).toBe(targetLang);
+  });
+
+  test('should handle case-insensitive language codes', async ({ page, request }) => {
+    const languages = await discoverTourLanguages(request);
+
+    if (languages.length < 2) {
+      test.skip();
+      return;
+    }
+
+    const targetLang = languages.find(l => l !== 'en') || languages[1];
+
+    // Navigate with uppercase language code
+    await page.goto(`/tour/barcelona?lang=${targetLang.toUpperCase()}`);
+    await waitForAppLoad(page);
+
+    // Wait for language to be saved
+    await page.waitForTimeout(1000);
+
+    // Verify language is saved (should be lowercase)
+    const storedLang = await getStoredLanguage(page);
+    expect(storedLang).toBe(targetLang.toLowerCase());
   });
 });

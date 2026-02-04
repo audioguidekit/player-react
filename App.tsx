@@ -751,7 +751,7 @@ const App: React.FC = () => {
             hasShownCompletionSheet={hasShownCompletionSheet}
             onTourComplete={handleTourComplete}
           />
-          <div className="relative w-full h-full overflow-hidden flex flex-col font-sans text-base" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 0px)' }}>
+          <div className="relative w-full h-full overflow-hidden flex flex-col font-sans text-base">
             {/* Main Content Area */}
             <div className="flex-1 relative overflow-hidden">
               <TourStart

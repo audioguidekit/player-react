@@ -71,16 +71,16 @@ player/
 │   ├── services/      # Data loading, IndexedDB, storage
 │   ├── theme/         # Theme system
 │   └── translations/  # UI translations
-├── public/data/tour/  # Tour JSON files
+├── src/data/tour/  # Tour JSON files
 └── docs/              # Documentation
 ```
 
 ## Tour Data
 
-Tours are JSON files in `/public/data/tour/`:
+Tours are JSON files in `/src/data/tour/`:
 
 ```
-public/data/tour/
+src/data/tour/
 ├── metadata.json    # Shared config (theme, offline mode)
 ├── en.json          # English content
 ├── de.json          # German content

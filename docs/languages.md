@@ -16,10 +16,11 @@ The language system allows you to:
 
 The app provides a seamless multilingual experience:
 
-1. **First-time visitors:** App detects device language (e.g., Czech phone → Czech tour)
-2. **Returning visitors:** App remembers their language choice
-3. **Manual selection:** Users can change language anytime via language picker
-4. **Intelligent fallback:** If device language unavailable, defaults to configurable default language
+1. **URL parameter:** Venue owners can pre-select language via `?lang=` parameter
+2. **First-time visitors:** App detects device language (e.g., Czech phone → Czech tour)
+3. **Returning visitors:** App remembers their language choice
+4. **Manual selection:** Users can change language anytime via language picker
+5. **Intelligent fallback:** If device language unavailable, defaults to configurable default language
 
 **Example User Flow:**
 ```
@@ -32,6 +33,15 @@ User refreshes page → App remembers English choice
 User clears localStorage → App detects Czech again
 ```
 
+**Venue QR Code Flow:**
+```
+German visitor scans QR code with ?lang=de → App opens in German
+  ↓
+Language saved to preferences for the session
+  ↓
+Visitor continues browsing → Stays in German
+```
+
 ## Configuring Languages
 
 Languages are **automatically derived from your tour files**. The app discovers which languages are available by scanning tour JSON files at build time, and only exposes UI translations for those languages.
@@ -40,7 +50,7 @@ Languages are **automatically derived from your tour files**. The app discovers 
 
 Configure the default language in your tour's `metadata.json` file:
 
-**File: `/public/data/tour/metadata.json`**
+**File: `/src/data/tour/metadata.json`**
 ```json
 {
   "id": "barcelona",
@@ -97,7 +107,7 @@ Tours are automatically discovered at build time using Vite's `import.meta.glob`
 Tour files can be organized flexibly. The `language` field inside each JSON determines the language:
 
 ```
-/public/data/tour/
+/src/data/tour/
 ├── en.json          # Has "language": "en"
 ├── cs.json          # Has "language": "cs"
 ├── de.json          # Has "language": "de"
@@ -106,7 +116,7 @@ Tour files can be organized flexibly. The `language` field inside each JSON dete
 
 Future structure for multiple tours:
 ```
-/public/data/tour/
+/src/data/tour/
 ├── barcelona/
 │   ├── en.json      # "id": "barcelona", "language": "en"
 │   ├── cs.json      # "id": "barcelona", "language": "cs"
@@ -141,7 +151,7 @@ The `countryCode` is used for SVG flag icons from the `country-flag-icons` packa
 
 Create one JSON file per language using the language code as the filename:
 
-**File: `/public/data/tour/en.json`**
+**File: `/src/data/tour/en.json`**
 ```json
 {
   "id": "barcelona",
@@ -165,7 +175,7 @@ Create one JSON file per language using the language code as the filename:
 }
 ```
 
-**File: `/public/data/tour/cs.json`**
+**File: `/src/data/tour/cs.json`**
 ```json
 {
   "id": "barcelona",
@@ -285,37 +295,57 @@ The app automatically remembers the user's language preference across sessions u
 
 On first visit, the app intelligently selects a language using this priority:
 
-1. **Saved User Preference** (highest priority)
+1. **URL Parameter** (highest priority)
+   - If `?lang=` parameter is present, use that language
+   - Example: `yoursite.com/tour/barcelona?lang=de` → German
+   - Useful for venue QR codes with pre-selected language
+   - Saved to preferences for the session
+   - Console logs: `[LANGUAGE] Using URL parameter: de`
+
+2. **Saved User Preference**
    - If user previously selected a language, use that
    - Stored in `localStorage` under key `app-preferences`
    - Respects explicit user choice
 
-2. **Browser/Device Language** (auto-detection)
+3. **Browser/Device Language** (auto-detection)
    - Detects from `navigator.language` (e.g., "cs-CZ", "en-US", "de-DE")
    - Extracts language code (e.g., "cs-CZ" → "cs")
    - Matches against available languages
    - Console logs: `[LANGUAGE] Detected browser language: cs-CZ, using: cs`
 
-3. **English Fallback**
+4. **English Fallback**
    - If browser language not available in app
 
-4. **First Available Language**
+5. **First Available Language**
    - Ultimate fallback
 
 #### Storage Implementation
 
-**Location:** `App.tsx` (lines 65-104)
+**Location:** `hooks/useLanguageSelection.ts`
 
 ```typescript
-// On app mount - check saved preference first
-const preferences = storageService.getPreferences();
-const savedLanguageCode = preferences.selectedLanguage;
+// Priority order: URL param → saved preference → browser language → fallback
 
-if (savedLanguageCode) {
-  languageToUse = languages.find(l => l.code === savedLanguageCode);
+// 1. Check URL parameter (?lang=de)
+const urlLangCode = searchParams.get('lang');
+if (urlLangCode) {
+  languageToUse = languages.find(l => l.code === urlLangCode.toLowerCase());
+  if (languageToUse) {
+    // Save to preferences for the session
+    storageService.setPreferences({ selectedLanguage: languageToUse.code });
+  }
 }
 
-// If no saved preference, detect browser language
+// 2. Check saved preference
+if (!languageToUse) {
+  const preferences = storageService.getPreferences();
+  const savedLanguageCode = preferences.selectedLanguage;
+  if (savedLanguageCode) {
+    languageToUse = languages.find(l => l.code === savedLanguageCode);
+  }
+}
+
+// 3. Detect browser language
 if (!languageToUse) {
   const browserLanguage = navigator.language || navigator.languages?.[0];
   const browserLangCode = browserLanguage.split('-')[0].toLowerCase();
@@ -529,7 +559,7 @@ For each language, verify:
 
 ### Quick Checklist
 
-1. [ ] Create `/public/data/tour/{code}.json` with tour content
+1. [ ] Create `/src/data/tour/{code}.json` with tour content
 2. [ ] Use same tour ID as other languages
 3. [ ] Use same stop IDs as other languages
 4. [ ] Translate all text content
@@ -603,7 +633,7 @@ bun run dev
 **Problem:** Selecting language shows error
 
 **Solutions:**
-1. Verify `{code}.json` file exists in `/public/data/tour/`
+1. Verify `{code}.json` file exists in `/src/data/tour/`
 2. Check tour file has both `id` and `language` fields
 3. Validate JSON syntax
 4. Check browser console for errors
@@ -758,13 +788,13 @@ If you have existing tour files, migrate them:
 
 ### Before (old system)
 ```
-/public/data/tour/
+/src/data/tour/
 └── tour.json
 ```
 
 ### After (new system)
 ```
-/public/data/tour/
+/src/data/tour/
 ├── en.json
 ├── cs.json
 └── de.json
@@ -797,6 +827,13 @@ If you have existing tour files, migrate them:
    - Remove tour ID-based loading if not needed
 
 ## Implemented Features
+
+✅ **URL Language Parameter** (Implemented)
+- Pre-select language via `?lang=` URL parameter
+- Example: `yoursite.com/tour/barcelona?lang=de`
+- Perfect for venue QR codes with language-specific entry points
+- Case-insensitive (`?lang=DE` works same as `?lang=de`)
+- Works on both tour and stop URLs
 
 ✅ **Automatic Language Detection** (Implemented)
 - Detects browser/device language on first visit

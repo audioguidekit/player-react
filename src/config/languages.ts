@@ -1,7 +1,7 @@
 /**
  * UI Language Configuration
  *
- * Languages are automatically derived from the tours in the public/data/tour/ folder.
+ * Languages are automatically derived from the tours in the src/data/tour/ folder.
  * Only UI translations for languages that exist in tours will be exposed.
  *
  * To configure:

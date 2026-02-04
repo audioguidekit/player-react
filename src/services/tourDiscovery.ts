@@ -12,9 +12,10 @@
 import { TourData, TourMetadata, Language } from '../../types';
 
 // Import all tour JSON files at build time (language-specific files)
+// Uses /src/data/tour/ path - files must be in src directory for Vite to import them
 // Excludes metadata.json and any original/backup files
 const tourModules = import.meta.glob<TourData>(
-  '/public/data/tour/**/*.json',
+  '/src/data/tour/**/*.json',
   {
     eager: true,
     import: 'default',
@@ -23,7 +24,7 @@ const tourModules = import.meta.glob<TourData>(
 
 // Import metadata files separately
 const metadataModules = import.meta.glob<TourMetadata>(
-  '/public/data/tour/**/metadata.json',
+  '/src/data/tour/**/metadata.json',
   {
     eager: true,
     import: 'default',

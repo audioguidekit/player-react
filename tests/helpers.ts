@@ -127,3 +127,29 @@ export async function hasMultipleLanguages(request: APIRequestContext): Promise<
   const languages = await discoverTourLanguages(request);
   return languages.length > 1;
 }
+
+/**
+ * Clears app state (localStorage) to ensure clean test state
+ */
+export async function clearAppState(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    localStorage.clear();
+  });
+}
+
+/**
+ * Gets the current language from localStorage
+ */
+export async function getStoredLanguage(page: Page): Promise<string | null> {
+  return await page.evaluate(() => {
+    const prefs = localStorage.getItem('app-preferences');
+    if (prefs) {
+      try {
+        return JSON.parse(prefs).selectedLanguage || null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+}

@@ -12,15 +12,27 @@ Tours are automatically discovered - no manifest needed.
 
 ## Tour File Structure
 
-Tours are stored in `/public/data/tour/` with this structure:
+Tours must exist in **two locations** for different purposes:
 
 ```
-/public/data/tour/
-├── metadata.json    # Shared properties for all languages
-├── en.json          # English version
-├── cs.json          # Czech version
-└── de.json          # German version
+/src/data/tour/          # For build-time discovery (import.meta.glob)
+├── metadata.json
+├── en.json
+├── cs.json
+└── de.json
+
+/src/data/tour/       # For runtime HTTP access (tests, service worker)
+├── metadata.json
+├── en.json
+├── cs.json
+└── de.json
 ```
+
+**Why two locations?**
+- `src/data/tour/` - Vite's `import.meta.glob` requires files in the src directory for build-time bundling
+- `src/data/tour/` - Files served at `/data/tour/*.json` for runtime access (tests, offline caching)
+
+**Keep both directories in sync** when adding or modifying tours.
 
 ### metadata.json - Shared Properties
 
@@ -128,7 +140,11 @@ Each language file contains the translated content and can override metadata pro
 
 ## Complete Example: Adding "London Tour"
 
-### 1. Create `/public/data/tour/metadata.json`
+### 1. Create tour files in both locations
+
+Create identical files in `/src/data/tour/` and `/src/data/tour/`:
+
+**metadata.json:**
 
 ```json
 {
@@ -141,7 +157,7 @@ Each language file contains the translated content and can override metadata pro
 }
 ```
 
-### 2. Create `/public/data/tour/en.json`
+### 2. Create language file (e.g., `en.json`) in both locations:
 
 ```json
 {
@@ -332,7 +348,7 @@ AudioGuideKit has a built-in multi-language system. Tours are automatically load
 
 **Example:**
 ```
-/public/data/tour/
+/src/data/tour/
 ├── metadata.json   # Shared: id, theme, offlineMode, etc.
 ├── en.json         # English version
 ├── cs.json         # Czech version

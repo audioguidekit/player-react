@@ -11,6 +11,8 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
   @supports (-webkit-touch-callout: none) {
     html {
       height: -webkit-fill-available;
+      /* Fix for iOS PWA standalone mode - prevents bottom black bar */
+      min-height: calc(100% + env(safe-area-inset-top));
     }
 
     body {

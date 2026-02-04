@@ -2,6 +2,11 @@ import { createGlobalStyle } from 'styled-components';
 import { ExtendedTheme } from './ThemeProvider';
 
 export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   html {
     width: 100%;
     height: 100%;
@@ -11,8 +16,6 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
   @supports (-webkit-touch-callout: none) {
     html {
       height: -webkit-fill-available;
-      /* Fix for iOS PWA standalone mode - prevents bottom black bar */
-      min-height: calc(100% + env(safe-area-inset-top));
     }
 
     body {
@@ -27,12 +30,17 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
   body {
     margin: 0;
     padding: 0;
+    /* iOS PWA safe area - pad content below status bar */
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
     width: 100%;
     font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'} !important;
     background-color: ${({ theme }) => theme?.colors?.background?.primary || '#FFFFFF'};
     color: ${({ theme }) => theme?.colors?.text?.primary || '#111827'};
     overscroll-behavior: none;
-    height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
+    /* Use dvh for dynamic viewport height on iOS */
+    height: 100dvh;
+    height: ${({ theme }) => theme?.platform?.viewport?.height || '100dvh'};
   }
 
   /* Apply heading font from theme to all heading elements */
@@ -46,7 +54,8 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
 
   #root {
     width: 100%;
-    height: ${({ theme }) => theme?.platform?.viewport?.height || '100vh'};
+    height: 100dvh;
+    height: ${({ theme }) => theme?.platform?.viewport?.height || '100dvh'};
   }
 
   /* Custom focus outline - uses theme border color instead of browser default blue */

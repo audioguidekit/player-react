@@ -15,11 +15,7 @@ interface TourHeaderProps {
 }
 
 const Container = styled(motion.div)`
-  ${tw`sticky z-30 px-6 py-2 backdrop-blur-md`}
-  /* iOS PWA safe area: position header BELOW the notch/status bar */
-  /* iOS 11.0-11.2 used constant(), iOS 11.2+ uses env() */
-  top: constant(safe-area-inset-top, 0px);
-  top: env(safe-area-inset-top, 0px);
+  ${tw`sticky top-0 z-30 px-6 py-2 backdrop-blur-md`}
   background-color: ${({ theme }) => theme.header.backgroundColor};
   border-bottom: 1px solid ${({ theme }) => theme.colors.border.light};
 `;

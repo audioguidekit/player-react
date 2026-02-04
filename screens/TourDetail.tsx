@@ -11,20 +11,6 @@ import { HeadphonesIcon } from '@phosphor-icons/react';
 const Container = styled.div`
   ${tw`flex flex-col h-full relative w-full pb-12`}
   background-color: ${({ theme }) => theme.mainContent.backgroundColor};
-
-  /* iOS PWA safe area backdrop - covers the notch/status bar area */
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    /* iOS 11.0-11.2 used constant(), iOS 11.2+ uses env() */
-    height: constant(safe-area-inset-top, 0px);
-    height: env(safe-area-inset-top, 0px);
-    background-color: ${({ theme }) => theme.mainContent.backgroundColor};
-    z-index: 29; /* Just below TourHeader's z-30 */
-  }
 `;
 
 const ScrollableList = styled(motion.div)`

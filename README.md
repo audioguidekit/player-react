@@ -96,4 +96,4 @@ MIT
 ## Links
 
 - [GitHub Organization](https://github.com/audioguidekit)
-- [Phosphor Icons](https://phosphoricons.com)
+- [Info LLMs liek ChatGPT or Claude](https://audioguidekit.org/llms.txt)

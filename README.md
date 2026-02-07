@@ -2,7 +2,7 @@
 
 A mobile-first Progressive Web App for building guided audio tours. Built with React 19, TypeScript, and Framer Motion.
 
-[GitHub](https://github.com/audioguidekit) · [Documentation](#documentation)
+[See documentation](https://audioguidekit.org/docs)
 
 ## Features
 

@@ -44,6 +44,9 @@ dev-dist/
 /playwright/.cache/
 .playwright-mcp/
 
+# Wrangler
+.wrangler/
+
 # Vercel
 .vercel/
 

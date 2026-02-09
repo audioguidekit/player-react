@@ -30,6 +30,9 @@ export const GlobalStyles = createGlobalStyle<{ theme?: ExtendedTheme }>`
   body {
     margin: 0;
     padding: 0;
+    /* iOS PWA safe area - pad content below status bar */
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
     width: 100%;
     font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'} !important;
     background-color: ${({ theme }) => theme?.colors?.background?.primary || '#FFFFFF'};

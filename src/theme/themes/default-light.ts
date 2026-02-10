@@ -182,6 +182,28 @@ export const defaultLightTheme: ThemeConfig = {
     placeholderColor: '#999999',
   },
 
+  richText: {
+    blockquoteBorderColor: '#CCCCCC',
+    blockquoteBackgroundColor: 'rgba(0, 0, 0, 0.02)',
+    linkColor: '#1A73E8',
+  },
+
+  imageCaption: {
+    textColor: '#666666',
+    creditColor: '#999999',
+  },
+
+  hotspot: {
+    pinColor: '#000000',
+    pinPulseColor: 'rgba(0, 0, 0, 0.2)',
+  },
+
+  tooltip: {
+    backgroundColor: '#FFFFFF',
+    textColor: '#1A1A1A',
+    borderColor: '#E5E5E5',
+  },
+
   colors: {
     text: {
       primary: '#1A1A1A',   // Near black

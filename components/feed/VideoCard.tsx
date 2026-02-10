@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { VideoStop } from '../../types';
+import { RichText } from '../RichText';
 
 interface VideoCardProps {
   item: VideoStop;
@@ -42,7 +43,9 @@ export const VideoCard = memo<VideoCardProps>(({ item }) => {
       </VideoContainer>
       {item.caption && (
         <CaptionContainer>
-          <Caption>{item.caption}</Caption>
+          <Caption>
+            <RichText content={item.caption} />
+          </Caption>
         </CaptionContainer>
       )}
     </Container>

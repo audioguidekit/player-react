@@ -220,7 +220,7 @@ export const AudioStopCardCompact: React.FC<AudioStopCardCompactProps> = ({
               />
             </NumberContainer>
           )}
-          <ThumbnailImage src={item.image} alt={item.title} />
+          <ThumbnailImage src={item.image} alt={item.imageAlt || item.title} />
           <Title style={{ flex: 1 }}>{item.title}</Title>
           {shouldShowDuration && <ListItemDuration>{item.duration}</ListItemDuration>}
         </ThumbnailListContainer>
@@ -283,7 +283,7 @@ export const AudioStopCardCompact: React.FC<AudioStopCardCompactProps> = ({
     <OuterContainer id={id}>
       <CardContainer onClick={onClick} className="group">
         <ImageContainer>
-          <Image src={item.image} alt={item.title} />
+          <Image src={item.image} alt={item.imageAlt || item.title} />
           {shouldShowDuration && (
             <DurationBadge>
               <AnimatePresence mode="wait">

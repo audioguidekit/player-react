@@ -8,6 +8,7 @@ import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
 import { SkipButton } from './player/SkipButton';
 import { PlayPauseButton } from './player/PlayPauseButton';
+import { RichText } from './RichText';
 import { ProgressRing } from './player/ProgressRing';
 import { iconVariants, iconTransition } from '../src/animations/variants';
 
@@ -518,7 +519,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                         >
                           <TranscriptionContent ref={transcriptionRef}>
                             {transcription ? (
-                              <TranscriptionText>{transcription}</TranscriptionText>
+                              <TranscriptionText><RichText content={transcription} /></TranscriptionText>
                             ) : (
                               <EmptyStateText>No transcription available for this stop</EmptyStateText>
                             )}

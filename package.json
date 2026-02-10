@@ -16,6 +16,7 @@
     "@google/model-viewer": "^4.1.0",
     "@phosphor-icons/react": "^2.1.10",
     "country-flag-icons": "^1.6.4",
+    "dompurify": "^3.3.1",
     "framer-motion": "^12.23.24",
     "idb": "^8.0.3",
     "react": "^19.2.0",
@@ -24,11 +25,13 @@
     "styled-components": "^6.1.19",
     "three": "^0.182.0",
     "twin.macro": "^3.4.1",
-    "use-media-session": "^0.0.3"
+    "use-media-session": "^0.0.3",
+    "yet-another-react-lightbox-lite": "^1.10.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.0",
     "@react-grab/claude-code": "^0.0.98",
+    "@types/dompurify": "^3.2.0",
     "@types/node": "^22.14.0",
     "@types/styled-components": "^5.1.36",
     "@vitejs/plugin-react": "^5.0.0",

@@ -86,6 +86,16 @@ export const useDownloadManager = (
         case '3d-object':
           if (stop.modelUrl) urls.add(stop.modelUrl);
           break;
+        case 'image-gallery':
+          stop.images.forEach((img) => { if (img.url) urls.add(img.url); });
+          break;
+        case 'image-comparison':
+          if (stop.before) urls.add(stop.before);
+          if (stop.after) urls.add(stop.after);
+          break;
+        case 'hotspot-image':
+          if (stop.image) urls.add(stop.image);
+          break;
       }
     });
 

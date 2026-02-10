@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { ThreeDObjectStop } from '../../types';
+import { RichText } from '../RichText';
 
 // Lazy load model-viewer only when needed (saves ~150-200KB from initial bundle)
 const loadModelViewer = () => import('@google/model-viewer');
@@ -109,7 +110,9 @@ export const ThreeDObjectCard = React.memo<ThreeDObjectCardProps>(({ item }) => 
       </ViewerContainer>
       {item.caption && (
         <CaptionContainer>
-          <Caption>{item.caption}</Caption>
+          <Caption>
+            <RichText content={item.caption} />
+          </Caption>
         </CaptionContainer>
       )}
     </Container>

@@ -1,4 +1,4 @@
-export type StopType = 'audio' | 'text' | 'image-text' | '3d-object' | 'video' | 'headline' | 'rating' | 'email' | 'quote';
+export type StopType = 'audio' | 'text' | 'image-text' | '3d-object' | 'video' | 'headline' | 'rating' | 'email' | 'quote' | 'image-gallery' | 'image-comparison' | 'hotspot-image' | 'embed';
 
 export type OfflineMode = 'online-only' | 'optional' | 'offline-only';
 
@@ -34,19 +34,27 @@ export interface AudioStop extends BaseStop {
   isCompleted: boolean;
   isPlaying?: boolean;
   image: string;
+  imageAlt?: string;
+  imageCaption?: string;
+  imageCredit?: string;
   audioFile?: string;
   transcription?: string;
 }
 
 export interface TextStop extends BaseStop {
   type: 'text';
-  content: string;
+  title?: string;
+  content?: string;
 }
 
 export interface ImageTextStop extends BaseStop {
   type: 'image-text';
+  title?: string;
   image: string;
-  content: string;
+  imageAlt?: string;
+  imageCaption?: string;
+  imageCredit?: string;
+  content?: string;
 }
 
 export interface ThreeDObjectStop extends BaseStop {
@@ -87,7 +95,52 @@ export interface QuoteStop extends BaseStop {
   year?: string;
 }
 
-export type Stop = AudioStop | TextStop | ImageTextStop | ThreeDObjectStop | VideoStop | HeadlineStop | RatingStop | EmailStop | QuoteStop;
+export interface GalleryImage {
+  url: string;
+  alt?: string;
+  caption?: string;
+  credit?: string;
+}
+
+export interface ImageGalleryStop extends BaseStop {
+  type: 'image-gallery';
+  images: GalleryImage[];
+  caption?: string;
+}
+
+export interface ImageComparisonStop extends BaseStop {
+  type: 'image-comparison';
+  before: string;
+  after: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+  caption?: string;
+}
+
+export interface Hotspot {
+  x: number;
+  y: number;
+  title: string;
+  description?: string;
+}
+
+export interface HotspotImageStop extends BaseStop {
+  type: 'hotspot-image';
+  image: string;
+  imageAlt?: string;
+  hotspots: Hotspot[];
+  caption?: string;
+}
+
+export interface EmbedStop extends BaseStop {
+  type: 'embed';
+  embedUrl: string;
+  embedType?: 'youtube' | 'spotify' | 'video' | 'generic';
+  aspectRatio?: string;
+  caption?: string;
+}
+
+export type Stop = AudioStop | TextStop | ImageTextStop | ThreeDObjectStop | VideoStop | HeadlineStop | RatingStop | EmailStop | QuoteStop | ImageGalleryStop | ImageComparisonStop | HotspotImageStop | EmbedStop;
 
 export interface TourData {
   id: string;

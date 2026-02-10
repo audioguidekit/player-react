@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { PlayIcon, PauseIcon } from '@phosphor-icons/react';
 import { AudioStop } from '../../types';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +6,8 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { AnimatedCheckmark } from '../AnimatedCheckmark';
 import { iconVariants, iconTransition } from '../../src/animations/variants';
+import { RichText } from '../RichText';
+import { ImageLightbox } from '../ImageLightbox';
 
 interface AudioStopCardProps {
   item: AudioStop;
@@ -93,6 +95,20 @@ const Duration = styled.p`
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 
+const CaptionArea = styled.div`
+  ${tw`px-5 pt-2`}
+`;
+
+const Caption = styled.p`
+  ${tw`text-sm leading-relaxed`}
+  color: ${({ theme }) => theme.imageCaption.textColor};
+`;
+
+const Credit = styled.p`
+  ${tw`text-xs italic mt-0.5`}
+  color: ${({ theme }) => theme.imageCaption.creditColor};
+`;
+
 export const AudioStopCard = memo<AudioStopCardProps>(({
   item,
   index = 0,
@@ -102,16 +118,31 @@ export const AudioStopCard = memo<AudioStopCardProps>(({
   onClick,
   onPlayPause
 }) => {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
   return (
     <OuterContainer>
       <CardContainer onClick={onClick} className="group">
-        <ImageContainer>
-          <Image src={item.image} alt={item.title} />
+        <ImageContainer
+          onClick={(e) => {
+            e.stopPropagation();
+            setLightboxOpen(true);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          <Image src={item.image} alt={item.imageAlt || item.title} />
           <AnimatedCheckmark
             isVisible={isCompleted}
             uniqueKey={item.id}
           />
         </ImageContainer>
+
+        {(item.imageCaption || item.imageCredit) && (
+          <CaptionArea>
+            {item.imageCaption && <Caption><RichText content={item.imageCaption} /></Caption>}
+            {item.imageCredit && <Credit><RichText content={item.imageCredit} /></Credit>}
+          </CaptionArea>
+        )}
 
         {onPlayPause && (
           <PlayButton
@@ -161,6 +192,14 @@ export const AudioStopCard = memo<AudioStopCardProps>(({
           </InfoContent>
         </InfoContainer>
       </CardContainer>
+      <ImageLightbox
+        isOpen={lightboxOpen}
+        src={item.image}
+        alt={item.imageAlt || item.title}
+        caption={item.imageCaption}
+        credit={item.imageCredit}
+        onClose={() => setLightboxOpen(false)}
+      />
     </OuterContainer>
   );
 });

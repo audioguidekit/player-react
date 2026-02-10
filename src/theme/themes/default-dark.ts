@@ -182,6 +182,28 @@ export const defaultDarkTheme: ThemeConfig = {
     placeholderColor: '#555555',
   },
 
+  richText: {
+    blockquoteBorderColor: '#555555',
+    blockquoteBackgroundColor: 'rgba(255, 255, 255, 0.03)',
+    linkColor: '#6CB4EE',
+  },
+
+  imageCaption: {
+    textColor: '#AAAAAA',
+    creditColor: '#777777',
+  },
+
+  hotspot: {
+    pinColor: '#FFFFFF',
+    pinPulseColor: 'rgba(255, 255, 255, 0.3)',
+  },
+
+  tooltip: {
+    backgroundColor: '#333333',
+    textColor: '#D4D4D4',
+    borderColor: '#555555',
+  },
+
   colors: {
     text: {
       primary: '#D4D4D4',   // Soft white

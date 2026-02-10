@@ -5,6 +5,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { EmailStop } from '../../types';
 import { useTranslation } from '../../src/translations';
+import { RichText } from '../RichText';
 
 interface EmailCardProps {
   item: EmailStop;
@@ -130,12 +131,12 @@ export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
     <Container>
       <FlexContent>
         <IconCircle>
-          <Mail size={32} strokeWidth={1.5} />
+          <EnvelopeSimpleIcon size={32} weight="light" />
         </IconCircle>
         <TextSection>
           <Title>{item.title || t.rating.stayInLoop}</Title>
           <Description>
-            {item.description || t.rating.emailInfo}
+            {item.description ? <RichText content={item.description} /> : t.rating.emailInfo}
           </Description>
         </TextSection>
         <FormContainer>

@@ -4,6 +4,7 @@ import { motion, AnimatePresence, type PanInfo } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { AudioStop } from '../types';
+import { RichText } from '../components/RichText';
 import { PlayPauseButton } from '../components/player/PlayPauseButton';
 import { ProgressRing } from '../components/player/ProgressRing';
 import { ForwardIcon } from '../components/icons/ForwardIcon';
@@ -380,7 +381,9 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
                 ref={transcriptionRef}
                 onPointerDownCapture={(e) => e.stopPropagation()}
               >
-                <TranscriptionText>{transcription}</TranscriptionText>
+                <TranscriptionText>
+                  <RichText content={transcription!} />
+                </TranscriptionText>
               </TranscriptionScroll>
             </TranscriptionPanel>
           )}

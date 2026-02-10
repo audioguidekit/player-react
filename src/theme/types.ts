@@ -198,6 +198,32 @@ export interface ThemeConfig {
     placeholderColor: string;
   };
 
+  // Rich Text
+  richText: {
+    blockquoteBorderColor: string;
+    blockquoteBackgroundColor: string;
+    linkColor: string;
+  };
+
+  // Image Caption / Credit
+  imageCaption: {
+    textColor: string;
+    creditColor: string;
+  };
+
+  // Hotspot Pins
+  hotspot: {
+    pinColor: string;
+    pinPulseColor: string;
+  };
+
+  // Tooltips
+  tooltip: {
+    backgroundColor: string;
+    textColor: string;
+    borderColor: string;
+  };
+
   // Semantic Colors (for text, borders, etc.)
   colors: {
     text: {

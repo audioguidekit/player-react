@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from 'react';
 import { Stop } from '../../types';
-import { AudioStopCard } from './AudioStopCard';
 import { TextCard } from './TextCard';
 import { ImageTextCard } from './ImageTextCard';
 
@@ -15,44 +14,22 @@ const ImageComparisonCard = lazy(() => import('./ImageComparisonCard').then(m =>
 const HotspotImageCard = lazy(() => import('./HotspotImageCard').then(m => ({ default: m.HotspotImageCard })));
 const EmbedCard = lazy(() => import('./EmbedCard').then(m => ({ default: m.EmbedCard })));
 
-interface FeedItemRendererProps {
+interface StopCardRendererProps {
   item: Stop;
   index?: number;
-  isActive?: boolean;
-  isPlaying?: boolean;
-  isCompleted?: boolean;
-  onClick?: () => void;
-  onPlayPause?: () => void;
   onOpenRatingSheet?: () => void;
   compactLayout?: boolean;
   showNumber?: boolean;
 }
 
-export const FeedItemRenderer: React.FC<FeedItemRendererProps> = ({
+export const StopCardRenderer: React.FC<StopCardRendererProps> = ({
   item,
   index = 0,
-  isActive = false,
-  isPlaying = false,
-  isCompleted = false,
-  onClick,
-  onPlayPause,
   onOpenRatingSheet,
   compactLayout = false,
   showNumber
 }) => {
   switch (item.type) {
-    case 'audio':
-      return (
-        <AudioStopCard
-          item={item}
-          index={index}
-          isActive={isActive}
-          isPlaying={isPlaying}
-          isCompleted={isCompleted}
-          onClick={onClick}
-          onPlayPause={onPlayPause}
-        />
-      );
     case 'text':
       return <TextCard item={item} index={index} showNumber={showNumber} />;
     case 'image-text':

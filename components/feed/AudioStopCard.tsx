@@ -1,15 +1,10 @@
-import React, { memo, useState, lazy, Suspense } from 'react';
-import { PlayIcon } from '@phosphor-icons/react/dist/csr/Play';
-import { PauseIcon } from '@phosphor-icons/react/dist/csr/Pause';
-import { AudioStop } from '../../types';
-import { motion, AnimatePresence } from 'framer-motion';
+import React from 'react';
 import tw from 'twin.macro';
 import styled from 'styled-components';
+import { AudioStop } from '../../types';
 import { AnimatedCheckmark } from '../AnimatedCheckmark';
-import { iconVariants, iconTransition } from '../../src/animations/variants';
 import { RichText } from '../RichText';
-
-const ImageLightbox = lazy(() => import('../ImageLightbox').then(m => ({ default: m.ImageLightbox })));
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AudioStopCardProps {
   item: AudioStop;
@@ -18,89 +13,61 @@ interface AudioStopCardProps {
   isPlaying?: boolean;
   isCompleted?: boolean;
   onClick?: () => void;
-  onPlayPause?: () => void;
+  id?: string;
+  showImage?: boolean | 'thumbnail';
+  showDuration?: boolean;
+  showNumber?: boolean;
 }
 
 const OuterContainer = styled.div`
-  ${tw`w-full mb-6 last:mb-0 px-1`}
+  ${tw`w-full mb-4 last:mb-0`}
 `;
 
 const CardContainer = styled.div`
-  ${tw`relative cursor-pointer transition-transform active:scale-[0.99]`}
-  background-color: ${({ theme }) => theme.cards.backgroundColor};
+  ${tw`relative cursor-pointer overflow-hidden`}
   border-radius: ${({ theme }) => theme.cards.borderRadius};
+  background-color: ${({ theme }) => theme.cards.backgroundColor};
   box-shadow: ${({ theme }) => theme.cards.shadow};
   border: 1px solid ${({ theme }) => theme.cards.borderColor};
+  transition: transform 0.15s ease-out;
+  transform-origin: center;
+
+  &:active {
+    transform: scale(0.98);
+  }
 `;
 
 const ImageContainer = styled.div`
   ${tw`h-40 w-full relative overflow-hidden`}
   background-color: ${({ theme }) => theme.cards.image.placeholderColor};
-  border-top-left-radius: ${({ theme }) => theme.cards.borderRadius};
-  border-top-right-radius: ${({ theme }) => theme.cards.borderRadius};
 `;
 
 const Image = styled.img`
   ${tw`w-full h-full object-cover`}
 `;
 
-const PlayButton = styled.button<{ $isPlaying: boolean }>(({ $isPlaying, theme }) => [
-  tw`absolute top-[136px] right-6 w-12 h-12 rounded-full flex items-center justify-center transition-colors shadow-lg z-10 overflow-hidden`,
-  $isPlaying && {
-    backgroundColor: theme.miniPlayer.controls.playButtonBackground,
-    color: theme.miniPlayer.controls.playButtonIcon,
-  },
-  !$isPlaying && {
-    backgroundColor: theme.cards.backgroundColor,
-    color: theme.colors.text.primary,
-    border: `1px solid ${theme.cards.borderColor}`,
-  },
-]);
-
-const IconContainer = styled(motion.div)`
-  ${tw`absolute inset-0 flex items-center justify-center`}
+const DurationBadge = styled.div`
+  ${tw`absolute top-3 right-3 backdrop-blur-sm px-3 py-1 rounded-full flex items-center`}
+  background-color: ${({ theme }) => theme.cards.image.durationBadgeBackground};
 `;
 
-const PlayIconContainer = styled(motion.div)`
-  ${tw`absolute inset-0 flex items-center justify-center pl-1`}
+const LoaderContainer = styled(motion.div)`
+  ${tw`flex items-center justify-center overflow-hidden`}
 `;
 
-const InfoContainer = styled.div`
-  ${tw`p-5 pt-7`}
-`;
-
-const InfoContent = styled.div`
-  ${tw`flex items-start gap-4`}
-`;
-
-const NumberCircle = styled.div`
-  ${tw`w-9 h-9 rounded-full flex items-center justify-center shrink-0`}
-  background-color: ${({ theme }) => theme.colors.background.secondary};
-`;
-
-const NumberText = styled.span`
-  ${tw`text-sm font-bold`}
-  color: ${({ theme }) => theme.colors.text.secondary};
-`;
-
-const TextContent = styled.div`
-  ${tw`flex-1`}
-`;
-
-const Title = styled.h3`
-  ${tw`mb-1 leading-tight`}
-  font-size: ${({ theme }) => theme.cards.stopTitleFontSize || theme.cards.titleFontSize};
-  font-weight: ${({ theme }) => theme.cards.stopTitleFontWeight || theme.cards.titleFontWeight};
-  color: ${({ theme }) => theme.cards.textColor};
-`;
-
-const Duration = styled.p`
-  ${tw`text-base font-medium`}
-  color: ${({ theme }) => theme.colors.text.secondary};
+const DurationText = styled.span`
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
+  font-size: ${({ theme }) => theme.cards.durationBadgeFontSize};
+  font-weight: 400;
+  color: ${({ theme }) => theme.cards.image.durationBadgeText};
 `;
 
 const ContentArea = styled.div`
-  ${tw`px-5 pb-5`}
+  ${tw`px-4 pb-4`}
 `;
 
 const ContentText = styled.p`
@@ -108,102 +75,286 @@ const ContentText = styled.p`
   color: ${({ theme }) => theme.cards.textColor};
 `;
 
-const CaptionArea = styled.div`
-  ${tw`px-5 pt-2`}
+const BottomSection = styled.div`
+  ${tw`p-4 flex items-center gap-3`}
 `;
 
-const Caption = styled.p`
-  ${tw`text-sm leading-relaxed`}
-  color: ${({ theme }) => theme.imageCaption.textColor};
+const NumberContainer = styled.div`
+  ${tw`relative flex items-center justify-center shrink-0`}
+  width: 28px;
+  height: 28px;
 `;
 
-const Credit = styled.p`
-  ${tw`text-xs italic mt-0.5`}
-  color: ${({ theme }) => theme.imageCaption.creditColor};
+const SpinnerRing = styled.svg`
+  ${tw`absolute inset-0 z-10`}
+  transform-origin: center;
+
+  circle {
+    stroke: ${({ theme }) => theme.stepIndicators.active.outlineColor};
+  }
 `;
 
-export const AudioStopCard = memo<AudioStopCardProps>(({
+const NumberCircle = styled.div<{ $isPlaying: boolean }>(({ $isPlaying, theme }) => [
+  tw`absolute rounded-full flex items-center justify-center`,
+  {
+    backgroundColor: $isPlaying
+      ? theme.stepIndicators.active.backgroundColor
+      : theme.stepIndicators.inactive.backgroundColor,
+  },
+  $isPlaying ? tw`inset-[1.5px]` : [
+    tw`inset-0`,
+    {
+      border: `1px solid ${theme.stepIndicators.inactive.borderColor}`,
+    },
+  ],
+]);
+
+const NumberText = styled.span<{ $isPlaying: boolean }>`
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
+  font-size: ${({ theme }) => theme.cards.numberFontSize};
+  font-weight: ${({ theme }) => theme.cards.numberFontWeight};
+  color: ${({ $isPlaying, theme }) =>
+    $isPlaying
+      ? theme.stepIndicators.active.numberColor
+      : theme.stepIndicators.inactive.numberColor
+  };
+`;
+
+const Title = styled.h3`
+  ${tw`leading-tight flex-1`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
+  font-size: ${({ theme }) => theme.cards.stopTitleFontSize || theme.cards.titleFontSize};
+  font-weight: ${({ theme }) => theme.cards.stopTitleFontWeight || theme.cards.titleFontWeight};
+  color: ${({ theme }) => theme.cards.textColor};
+`;
+
+// List item layout components (when showImage is false)
+const ListItemContainer = styled.div`
+  ${tw`flex items-center gap-3 py-3 cursor-pointer`}
+  border-bottom: 1px solid ${({ theme }) => theme.cards.borderColor};
+`;
+
+const ListItemDuration = styled.span`
+  ${tw`shrink-0`}
+  font-family: ${({ theme }) =>
+    theme?.typography?.fontFamily?.numbers
+      ? theme.typography.fontFamily.numbers.join(', ')
+      : theme?.typography?.fontFamily?.sans?.join(', ') || 'Inter, sans-serif'
+  };
+  font-size: ${({ theme }) => theme.cards.durationBadgeFontSize};
+  color: ${({ theme }) => theme.colors.text.secondary};
+`;
+
+// Thumbnail list layout components (when showImage is 'thumbnail')
+const ThumbnailOuterContainer = styled.div`
+  ${tw`w-full`}
+`;
+
+const ThumbnailListContainer = styled.div`
+  ${tw`flex items-center gap-3 py-3 cursor-pointer`}
+  border-bottom: 1px solid ${({ theme }) => theme.cards.borderColor};
+`;
+
+const ThumbnailImage = styled.img`
+  ${tw`shrink-0 object-cover`}
+  width: ${({ theme }) => theme.cards.thumbnail.size};
+  height: ${({ theme }) => theme.cards.thumbnail.size};
+  border-radius: ${({ theme }) => theme.cards.thumbnail.borderRadius};
+  background-color: ${({ theme }) => theme.cards.image.placeholderColor};
+`;
+
+// Remove React.memo - let parent (TourDetail) control re-renders
+// This ensures the component always gets fresh isPlaying prop
+export const AudioStopCard: React.FC<AudioStopCardProps> = ({
   item,
   index = 0,
   isActive = false,
   isPlaying = false,
   isCompleted = false,
   onClick,
-  onPlayPause
+  id,
+  showImage,
+  showDuration,
+  showNumber
 }) => {
-  const [lightboxOpen, setLightboxOpen] = useState(false);
+  // Use !== false pattern for defaults (same as showLanguageLabel in TourStart.tsx)
+  const shouldShowImage = showImage !== false;
+  const isThumbnail = showImage === 'thumbnail';
+  const shouldShowDuration = showDuration !== false;
+  const shouldShowNumber = showNumber !== false;
 
+  // Thumbnail list layout
+  if (isThumbnail) {
+    return (
+      <ThumbnailOuterContainer id={id}>
+        <ThumbnailListContainer onClick={onClick}>
+          {shouldShowNumber && (
+            <NumberContainer>
+              <AnimatePresence>
+                {isPlaying && !isCompleted && (
+                  <SpinnerRing
+                    as={motion.svg}
+                    key={`spinner-${item.id}`}
+                    viewBox="0 0 28 28"
+                    className="audio-spinner-ring"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <circle
+                      cx="14"
+                      cy="14"
+                      r="12.5"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeDasharray="20 58.5"
+                      strokeLinecap="round"
+                      transform="rotate(-90 14 14)"
+                    />
+                  </SpinnerRing>
+                )}
+              </AnimatePresence>
+              <NumberCircle $isPlaying={isPlaying}>
+                <NumberText $isPlaying={isPlaying}>{index + 1}</NumberText>
+              </NumberCircle>
+              <AnimatedCheckmark
+                isVisible={isCompleted}
+                size={8}
+                uniqueKey={item.id}
+                className="absolute inset-0"
+              />
+            </NumberContainer>
+          )}
+          <ThumbnailImage src={item.image} alt={item.imageAlt || item.title} />
+          <Title style={{ flex: 1 }}>{item.title}</Title>
+          {shouldShowDuration && <ListItemDuration>{item.duration}</ListItemDuration>}
+        </ThumbnailListContainer>
+      </ThumbnailOuterContainer>
+    );
+  }
+
+  // List item layout when image is hidden
+  if (!shouldShowImage) {
+    return (
+      <OuterContainer id={id}>
+        <ListItemContainer onClick={onClick}>
+          {shouldShowNumber && (
+            <NumberContainer>
+              <AnimatePresence>
+                {isPlaying && !isCompleted && (
+                  <SpinnerRing
+                    as={motion.svg}
+                    key={`spinner-${item.id}`}
+                    viewBox="0 0 28 28"
+                    className="audio-spinner-ring"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <circle
+                      cx="14"
+                      cy="14"
+                      r="12.5"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeDasharray="20 58.5"
+                      strokeLinecap="round"
+                      transform="rotate(-90 14 14)"
+                    />
+                  </SpinnerRing>
+                )}
+              </AnimatePresence>
+              <NumberCircle $isPlaying={isPlaying}>
+                <NumberText $isPlaying={isPlaying}>{index + 1}</NumberText>
+              </NumberCircle>
+              <AnimatedCheckmark
+                isVisible={isCompleted}
+                size={8}
+                uniqueKey={item.id}
+                className="absolute inset-0"
+              />
+            </NumberContainer>
+          )}
+          <Title style={{ flex: 1 }}>{item.title}</Title>
+          {shouldShowDuration && <ListItemDuration>{item.duration}</ListItemDuration>}
+        </ListItemContainer>
+      </OuterContainer>
+    );
+  }
+
+  // Full card layout (existing code with conditional elements)
   return (
-    <OuterContainer>
+    <OuterContainer id={id}>
       <CardContainer onClick={onClick} className="group">
-        <ImageContainer
-          onClick={(e) => {
-            e.stopPropagation();
-            setLightboxOpen(true);
-          }}
-          style={{ cursor: 'pointer' }}
-        >
+        <ImageContainer>
           <Image src={item.image} alt={item.imageAlt || item.title} />
-          <AnimatedCheckmark
-            isVisible={isCompleted}
-            uniqueKey={item.id}
-          />
+          {shouldShowDuration && (
+            <DurationBadge>
+              <AnimatePresence mode="wait">
+                {isPlaying && (
+                  <LoaderContainer
+                    key={`loader-${item.id}`}
+                    initial={{ width: 0, opacity: 0, marginRight: 0 }}
+                    animate={{ width: 24, opacity: 1, marginRight: 8 }}
+                    exit={{ width: 0, opacity: 0, marginRight: 0 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <span className="audio-playing-loader" />
+                  </LoaderContainer>
+                )}
+              </AnimatePresence>
+              <DurationText>{item.duration}</DurationText>
+            </DurationBadge>
+          )}
         </ImageContainer>
 
-        {(item.imageCaption || item.imageCredit) && (
-          <CaptionArea>
-            {item.imageCaption && <Caption><RichText content={item.imageCaption} /></Caption>}
-            {item.imageCredit && <Credit><RichText content={item.imageCredit} /></Credit>}
-          </CaptionArea>
-        )}
-
-        {onPlayPause && (
-          <PlayButton
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlayPause();
-            }}
-            $isPlaying={isActive && isPlaying}
-          >
-            <AnimatePresence mode="popLayout" initial={false}>
-              {isActive && isPlaying ? (
-                <IconContainer
-                  key="pause"
-                  variants={iconVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={iconTransition}
-                >
-                  <PauseIcon size={20} weight="fill" />
-                </IconContainer>
-              ) : (
-                <PlayIconContainer
-                  key="play"
-                  variants={iconVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  transition={iconTransition}
-                >
-                  <PlayIcon size={20} weight="fill" />
-                </PlayIconContainer>
-              )}
-            </AnimatePresence>
-          </PlayButton>
-        )}
-
-        <InfoContainer>
-          <InfoContent>
-            <NumberCircle>
-              <NumberText>{index + 1}</NumberText>
-            </NumberCircle>
-            <TextContent>
-              <Title>{item.title}</Title>
-              <Duration>{item.duration}</Duration>
-            </TextContent>
-          </InfoContent>
-        </InfoContainer>
+        <BottomSection>
+          {shouldShowNumber && (
+            <NumberContainer>
+              <AnimatePresence>
+                {isPlaying && !isCompleted && (
+                  <SpinnerRing
+                    as={motion.svg}
+                    key={`spinner-${item.id}`}
+                    viewBox="0 0 28 28"
+                    className="audio-spinner-ring"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                  >
+                    <circle
+                      cx="14"
+                      cy="14"
+                      r="12.5"
+                      fill="none"
+                      strokeWidth="3"
+                      strokeDasharray="20 58.5"
+                      strokeLinecap="round"
+                      transform="rotate(-90 14 14)"
+                    />
+                  </SpinnerRing>
+                )}
+              </AnimatePresence>
+              <NumberCircle $isPlaying={isPlaying}>
+                <NumberText $isPlaying={isPlaying}>{index + 1}</NumberText>
+              </NumberCircle>
+              <AnimatedCheckmark
+                isVisible={isCompleted}
+                size={8}
+                uniqueKey={item.id}
+                className="absolute inset-0"
+              />
+            </NumberContainer>
+          )}
+          <Title>{item.title}</Title>
+        </BottomSection>
 
         {item.content && (
           <ContentArea>
@@ -211,18 +362,6 @@ export const AudioStopCard = memo<AudioStopCardProps>(({
           </ContentArea>
         )}
       </CardContainer>
-      {lightboxOpen && (
-        <Suspense fallback={null}>
-          <ImageLightbox
-            isOpen={lightboxOpen}
-            src={item.image}
-            alt={item.imageAlt || item.title}
-            caption={item.imageCaption}
-            credit={item.imageCredit}
-            onClose={() => setLightboxOpen(false)}
-          />
-        </Suspense>
-      )}
     </OuterContainer>
   );
-});
+};

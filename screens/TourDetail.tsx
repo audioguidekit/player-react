@@ -3,9 +3,9 @@ import { motion, useSpring, useTransform, animate } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { TourData } from '../types';
-import { FeedItemRenderer } from '../components/feed/FeedItemRenderer';
+import { StopCardRenderer } from '../components/feed/StopCardRenderer';
 import { TourHeader } from '../components/TourHeader';
-import { AudioStopCardCompact } from '../components/feed/AudioStopCardCompact';
+import { AudioStopCard } from '../components/feed/AudioStopCard';
 import { HeadphonesIcon } from '@phosphor-icons/react/dist/csr/Headphones';
 
 const Container = styled.div`
@@ -210,7 +210,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
             const stopIsPlaying = stop.id === currentStopId && isPlaying;
             return (
               <StopItemWrapper key={stop.id}>
-                <AudioStopCardCompact
+                <AudioStopCard
                   id={`stop-${stop.id}`}
                   item={stop}
                   index={index}
@@ -226,10 +226,10 @@ export const TourDetail = React.memo<TourDetailProps>(({
             );
           }
 
-          // Render other content types with FeedItemRenderer
+          // Render other content types with StopCardRenderer
           return (
             <StopItemWrapper key={stop.id}>
-              <FeedItemRenderer item={stop} index={index} showNumber={tour.showStopNumber} onOpenRatingSheet={onOpenRatingSheet} compactLayout={tour.showStopImage !== true} />
+              <StopCardRenderer item={stop} index={index} showNumber={tour.showStopNumber} onOpenRatingSheet={onOpenRatingSheet} compactLayout={tour.showStopImage !== true} />
             </StopItemWrapper>
           );
         })}

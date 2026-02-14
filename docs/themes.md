@@ -141,7 +141,7 @@ cards: {
 - `numberFontSize` + `numberFontWeight` - The "1", "2", "3" step numbers
 
 **Affects:**
-- `AudioStopCardCompact` - Audio playback cards
+- `AudioStopCard` - Audio playback cards
 - `EmailCard` - Email collection cards
 - `RatingCard` - Feedback rating cards
 - `StartCard` - Tour start/welcome card

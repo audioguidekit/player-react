@@ -56,6 +56,7 @@ export const MainSheet: React.FC<MainSheetProps> = ({
   const controls = useAnimation();
   const internalY = useMotionValue(0);
   const y = sheetY || internalY;
+  const isPWA = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
   
   const contentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,7 +73,7 @@ export const MainSheet: React.FC<MainSheetProps> = ({
   // Add a small buffer to ensure content is not cut off at the bottom
   // Use window.innerHeight as fallback if containerHeight is not measured yet
   const effectiveContainerHeight = containerHeight > 0 ? containerHeight : (typeof window !== 'undefined' ? window.innerHeight : 800);
-  const calculatedCollapsedY = effectiveContainerHeight - startContentHeight - 30; // Added a 30px buffer
+  const calculatedCollapsedY = effectiveContainerHeight - startContentHeight - (isPWA ? 8 : 30); // 8px in PWA (no browser chrome), 30px in browser
   // Ensure COLLAPSED_Y is always reasonable (not negative, not too high)
   const COLLAPSED_Y = Math.max(100, Math.min(calculatedCollapsedY, effectiveContainerHeight - 100));
 

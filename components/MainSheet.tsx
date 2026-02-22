@@ -22,12 +22,12 @@ const Backdrop = styled.div`
   background-color: ${({ theme }) => theme.sheets.backdropColor || 'rgba(0, 0, 0, 0.2)'};
 `;
 
-const SheetContainer = styled(motion.div)<{ $isExpanded: boolean }>`
+const SheetContainer = styled(motion.div)`
   ${tw`absolute inset-x-0 bottom-0 overflow-hidden z-20 flex flex-col pointer-events-auto`}
   background-color: ${({ theme }) => theme.sheets.backgroundColor};
   box-shadow: ${({ theme }) => theme.sheets.shadow || '0 -4px 20px rgba(0, 0, 0, 0.15)'};
-  padding-bottom: max(${({ theme }) => theme.platform.safeArea.bottom}, 0px);
-  top: ${({ $isExpanded, theme }) => $isExpanded ? `calc(-1 * ${theme.platform.safeArea.top})` : '0'};
+  padding-bottom: 0;
+  top: 0;
 `;
 
 const ContentArea = styled.div`
@@ -184,7 +184,6 @@ export const MainSheet: React.FC<MainSheetProps> = ({
           borderTopLeftRadius: topRadius,
           borderTopRightRadius: topRadius,
         }}
-        $isExpanded={isExpanded}
       >
         {/* Content Area */}
         <ContentArea>

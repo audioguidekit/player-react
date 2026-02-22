@@ -28,7 +28,7 @@ interface StartCardProps {
 
 const Container = styled.div`
   ${tw`px-8 pt-10 flex flex-col items-center text-center w-full`}
-  padding-bottom: calc(0.20rem + ${({ theme }) => theme.platform.safeArea.bottom});
+  padding-bottom: 0.20rem;
 `;
 
 const IconContainer = styled.div<{ $showBorder?: boolean }>`

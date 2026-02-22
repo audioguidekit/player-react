@@ -63,7 +63,7 @@ const Container = styled(motion.div)`
   ${tw`absolute bottom-0 left-0 right-0 z-[70] overflow-hidden rounded-t-[2.5rem]`}
   background-color: ${({ theme }) => theme.miniPlayer.backgroundColor};
   box-shadow: ${({ theme }) => theme.miniPlayer.shadow || '0 -10px 40px rgba(0, 0, 0, 0.15)'};
-  padding-bottom: calc(200px + ${({ theme }) => theme.platform.safeArea.bottom});
+  padding-bottom: 200px;
   margin-bottom: -200px;
 `;
 

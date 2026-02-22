@@ -58,7 +58,8 @@ const ContentWrapper = styled.div`
 `;
 
 const Header = styled.div`
-  ${tw`flex items-center justify-between px-6 pt-2 pb-1 shrink-0`}
+  ${tw`flex items-center justify-between px-6 pb-1 shrink-0`}
+  padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
 `;
 
 const HeaderButton = styled.button`

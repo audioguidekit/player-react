@@ -21,6 +21,7 @@ export interface TourMetadata {
   showStopNumber?: boolean;    // Show number indicator (default: true)
   fullscreenPlayer?: boolean;  // Show fullscreen player on stop click (default: false)
   showProgressBar?: boolean;   // Show progress bar in tour header (default: true)
+  statusBarColor?: string;     // Solid background color for the iOS status bar area (e.g. '#1a2634')
 }
 
 export interface BaseStop {
@@ -164,6 +165,7 @@ export interface TourData {
   showStopNumber?: boolean;    // Show number indicator (default: true)
   fullscreenPlayer?: boolean;  // Show fullscreen player on stop click (default: false)
   showProgressBar?: boolean;   // Show progress bar in tour header (default: true)
+  statusBarColor?: string;     // Solid background color for the iOS status bar area (e.g. '#1a2634')
 }
 
 export interface Language {

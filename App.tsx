@@ -37,6 +37,7 @@ import { useDeepLink } from './hooks/useDeepLink';
 import { useAutoResume } from './hooks/useAutoResume';
 import { TourProgressTracker } from './components/TourProgressTracker';
 import { ThemeColorSync } from './components/ThemeColorSync';
+import { StatusBarController } from './components/StatusBarController';
 import { useMediaSession, useMediaMeta } from 'use-media-session';
 
 // Helper to get artwork MIME type
@@ -84,6 +85,7 @@ const App: React.FC = () => {
       setTourId(tour.id);
     }
   }, [tour?.id, setTourId]);
+
 
   // Language selection hook
   useLanguageSelection({ languages, selectedLanguage, setSelectedLanguage });
@@ -745,7 +747,7 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeId={themeId}>
-      <ThemeColorSync />
+      <StatusBarController statusBarColor={tour?.statusBarColor} hasStarted={hasStarted} />
       <GlobalStyles />
       <TranslationProvider language={uiLanguage}>
         <MobileFrame>

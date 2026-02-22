@@ -44,11 +44,11 @@ export const myTheme: ThemeConfig = {
 
 ### 1. Header Section
 
-Controls the top navigation bar with remaining time and progress.
+Controls the top navigation bar with remaining time and progress. Only shown on the **TourDetail** screen.
 
 **What You See:**
 - Top bar background color
-- Home/settings icons
+- Back button icon
 - Remaining time display (e.g., "18:32")
 - Progress bar showing completion
 
@@ -56,8 +56,8 @@ Controls the top navigation bar with remaining time and progress.
 
 ```typescript
 header: {
-  backgroundColor: '#FFFFFF',     // Top bar background
-  iconColor: '#6366F1',           // Home button, settings icon color
+  backgroundColor: '#FFFFFF',     // Top bar background — also fills the iOS status bar area above it
+  iconColor: '#6366F1',           // Back button icon color
   textColor: '#111827',           // Remaining time text
   timeFontSize: '14px',           // Remaining time font size
   timeFontWeight: '600',          // Remaining time font weight
@@ -69,11 +69,40 @@ header: {
 ```
 
 **Visual Examples:**
-- `backgroundColor` - The entire top bar color
-- `iconColor` - Colors the home icon (←) and settings gear
+- `backgroundColor` - The entire top bar color; also fills the iOS safe-area gap above the bar so they merge seamlessly
+- `iconColor` - Colors the back (←) icon
 - `textColor` + `timeFontSize` + `timeFontWeight` - The "18:32" countdown
 - `progressBar.backgroundColor` - Gray track behind progress
 - `progressBar.highlightColor` - Colored fill showing completion (0-100%)
+
+---
+
+### Status Bar Background
+
+The narrow safe-area region at the very top of the screen (behind the iOS clock, battery and signal icons) is automatically filled by the app. The color applied depends on **which screen is currently showing**:
+
+| Screen | Color source |
+|--------|-------------|
+| **TourStart** | `statusBarColor` property in `metadata.json` |
+| **TourDetail** | `header.backgroundColor` from the active theme |
+
+**Controlling the TourStart status bar**
+
+Add `statusBarColor` to your tour's `metadata.json`:
+
+```json
+{
+  "statusBarColor": "#1a2634"
+}
+```
+
+Pick a color that matches the top edge of your cover image — this makes the status bar feel like a natural extension of the photo. If omitted, the theme's `header.backgroundColor` is used on both screens.
+
+**TourDetail blends automatically**
+
+On TourDetail, the `TourHeader` sits directly below the safe-area gap. The gap is filled with the same `header.backgroundColor` from the theme, so the header bar and the status bar area appear as one continuous surface. No extra configuration needed — just set the right `header.backgroundColor` in your theme.
+
+> **Also sets `theme-color`:** Both values also update the `<meta name="theme-color">` tag, which tints the iOS browser chrome and influences status-bar icon contrast (dark/light).
 
 ---
 
@@ -1122,7 +1151,7 @@ Themes don't control:
 ### Platform Limitations
 
 **Safe Areas:**
-The `platform.safeArea` section exists in `GlobalStyles.tsx` but isn't part of the theme system. It's automatically detected for device notches.
+iOS/Android safe-area insets are handled automatically by `GlobalStyles.tsx` (`env(safe-area-inset-top/bottom)`). The status bar background color is **not** part of the theme file — it is controlled by the `header.backgroundColor` theme property (TourDetail) and the `statusBarColor` metadata property (TourStart). See the [Status Bar Background](#status-bar-background) section above.
 
 ---
 

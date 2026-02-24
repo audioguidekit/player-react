@@ -19,7 +19,7 @@ export const useThemeColor = () => {
     }
 
     // Update the theme color to match the header background
-    // (may be overridden by tour statusBarColor set in App.tsx)
+    // (may be overridden by tour backgroundColor set in App.tsx)
     metaThemeColor.setAttribute('content', currentTheme.header.backgroundColor);
 
     // Cleanup function to reset to default if needed

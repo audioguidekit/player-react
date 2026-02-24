@@ -747,7 +747,7 @@ const App: React.FC = () => {
 
   return (
     <ThemeProvider themeId={themeId}>
-      <StatusBarController statusBarColor={tour?.statusBarColor} hasStarted={hasStarted} />
+      <StatusBarController backgroundColor={tour?.backgroundColor} hasStarted={hasStarted} />
       <GlobalStyles />
       <TranslationProvider language={uiLanguage}>
         <MobileFrame>

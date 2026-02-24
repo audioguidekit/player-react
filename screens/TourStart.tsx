@@ -121,7 +121,7 @@ export const TourStart: React.FC<TourStartProps> = ({
   isVisible = true
 }) => {
   // Check if the media is a video
-  const isVideo = tour.image.match(/\.(mp4|webm|ogg)$/i);
+  const isVideo = tour.image?.match(/\.(mp4|webm|ogg)$/i);
 
   // Get the flag component dynamically
   const FlagIcon = flagComponents[selectedLanguage.countryCode] || GB;
@@ -166,10 +166,10 @@ export const TourStart: React.FC<TourStartProps> = ({
   const blurFilter = useMotionTemplate`blur(${blurAmount}px)`;
 
   return (
-    <Container>
+    <Container style={tour.backgroundColor ? { backgroundColor: tour.backgroundColor } : undefined}>
       {/* Background Image Area */}
       <MediaContainer style={{ scale, y, filter: blurFilter }}>
-        {isVideo ? (
+        {tour.image && (isVideo ? (
           <Video
             src={tour.image}
             autoPlay
@@ -182,7 +182,7 @@ export const TourStart: React.FC<TourStartProps> = ({
             src={tour.image}
             alt={tour.title}
           />
-        )}
+        ))}
 
         {/* Existing Gradients for text readability (always present) */}
         <TopGradient />

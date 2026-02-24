@@ -52,8 +52,8 @@ export const defaultDarkTheme: ThemeConfig = {
 
   stepIndicators: {
     active: {
-      outlineColor: '#FFFFFF', // Outline for active step
-      numberColor: '#FFFFFF', // Active step number 
+      outlineColor: '#459825', // Outline for active step
+      numberColor: '#FFFFFF', // Active step number
       backgroundColor: '#1C1C1C', // Active step background
     },
     inactive: {
@@ -126,7 +126,7 @@ export const defaultDarkTheme: ThemeConfig = {
     shadow: '0 -10px 40px rgba(0, 0, 0, 0.15)',
     progressBar: {
       backgroundColor: '#333333',
-      highlightColor: '#FFFFFF', // White progress line
+      highlightColor: '#459825',
     },
     controls: {
       playButtonBackground: 'transparent', // Minimal styling (no circle background)

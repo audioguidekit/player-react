@@ -83,20 +83,20 @@ The narrow safe-area region at the very top of the screen (behind the iOS clock,
 
 | Screen | Color source |
 |--------|-------------|
-| **TourStart** | `statusBarColor` property in `metadata.json` |
+| **TourStart** | `backgroundColor` property in `metadata.json` |
 | **TourDetail** | `header.backgroundColor` from the active theme |
 
 **Controlling the TourStart status bar**
 
-Add `statusBarColor` to your tour's `metadata.json`:
+Add `backgroundColor` to your tour's `metadata.json`:
 
 ```json
 {
-  "statusBarColor": "#1a2634"
+  "backgroundColor": "#1a2634"
 }
 ```
 
-Pick a color that matches the top edge of your cover image — this makes the status bar feel like a natural extension of the photo. If omitted, the theme's `header.backgroundColor` is used on both screens.
+Pick a color that matches the top edge of your cover image — this makes the status bar feel like a natural extension of the photo. It is also used as the TourStart background when no `image` is defined. If omitted, the theme's `header.backgroundColor` is used on both screens.
 
 **TourDetail blends automatically**
 
@@ -1151,7 +1151,7 @@ Themes don't control:
 ### Platform Limitations
 
 **Safe Areas:**
-iOS/Android safe-area insets are handled automatically by `GlobalStyles.tsx` (`env(safe-area-inset-top/bottom)`). The status bar background color is **not** part of the theme file — it is controlled by the `header.backgroundColor` theme property (TourDetail) and the `statusBarColor` metadata property (TourStart). See the [Status Bar Background](#status-bar-background) section above.
+iOS/Android safe-area insets are handled automatically by `GlobalStyles.tsx` (`env(safe-area-inset-top/bottom)`). The status bar background color is **not** part of the theme file — it is controlled by the `header.backgroundColor` theme property (TourDetail) and the `backgroundColor` metadata property (TourStart). See the [Status Bar Background](#status-bar-background) section above.
 
 ---
 

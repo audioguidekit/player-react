@@ -10,7 +10,8 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug"
+    "test:debug": "playwright test --debug",
+    "studio": "bun scripts/screenshot-studio/index.ts"
   },
   "dependencies": {
     "@google/model-viewer": "^4.1.0",
@@ -28,6 +29,7 @@
     "use-media-session": "^0.0.3"
   },
   "devDependencies": {
+    "@inquirer/prompts": "^8.3.0",
     "@playwright/test": "^1.58.0",
     "@react-grab/claude-code": "^0.0.98",
     "@types/dompurify": "^3.2.0",

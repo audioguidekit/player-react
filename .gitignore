@@ -52,3 +52,9 @@ dev-dist/
 
 # Create package (separate repo)
 create-audioguidekit-player/
+# Scripts directory (local tooling, not part of the repo)
+scripts/
+scripts/screenshot-studio/.last-config.json
+
+# Screenshots (local output, not part of the repo)
+screenshots/

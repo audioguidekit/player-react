@@ -7,7 +7,7 @@
   "transcriptAvailable": true,
   "collectFeedback": true,
   "showLanguageLabel": false,
-  "showStopImage": "thumbnail",
+  "showStopImage": false,
   "showStopDuration": true,
   "showStopNumber": true,
   "fullscreenPlayer": true,

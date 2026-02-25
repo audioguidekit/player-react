@@ -31,9 +31,10 @@ The `metadata.json` file contains properties shared across all language versions
 ```json
 {
   "id": "your-tour-id",
+  "defaultLanguage": "en",
   "offlineMode": "optional",
   "transitionAudio": "https://your-storage.com/audio/transition.m4a",
-  "themeId": "default",
+  "themeId": "default-light",
   "transcriptAvailable": true,
   "collectFeedback": true,
   "image": "https://images.unsplash.com/photo-xxxxx"
@@ -45,13 +46,17 @@ The `metadata.json` file contains properties shared across all language versions
 | Field | Type | Required | Description | Example |
 |-------|------|----------|-------------|---------|
 | `id` | string | ✓ | Unique tour identifier | `"paris-01"` |
+| `defaultLanguage` | string | | Default language code if user preference is unavailable | `"en"` |
 | `offlineMode` | string | | Offline behavior mode | `"optional"` (default) |
 | `transitionAudio` | string | | Audio played between stops | Full HTTPS URL |
 | `themeId` | string | | Theme for the tour | `"default-light"`, `"default-dark"` |
+| `backgroundColor` | string | | Background color shown behind the player | `"#1A2634"` |
 | `transcriptAvailable` | boolean | | Show transcription toggle | `true` |
 | `collectFeedback` | boolean | | Show rating button | `true` |
+| `fullscreenPlayer` | boolean | | Enable fullscreen overlay player | `true` |
+| `showProgressBar` | boolean | | Show playback progress bar | `true` (default) |
 | `showLanguageLabel` | boolean | | Show language name next to flag | `true` (default) |
-| `showStopImage` | boolean | | Show stop images in cards | `true` (default) |
+| `showStopImage` | `boolean \| "thumbnail"` | | Show stop images in cards; `"thumbnail"` shows a small thumbnail instead of full card image | `true` (default) |
 | `showStopDuration` | boolean | | Show duration on stop cards | `true` (default) |
 | `showStopNumber` | boolean | | Show number indicator on stops | `true` (default) |
 | `image` | string | | Default tour cover image | Full HTTPS URL |
@@ -62,7 +67,7 @@ You can customize how stop cards appear in the tour detail view using three sett
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `showStopImage` | `true` | Show stop image in cards |
+| `showStopImage` | `true` | Show stop image in cards; accepts `true`, `false`, or `"thumbnail"` |
 | `showStopDuration` | `true` | Show duration badge/text |
 | `showStopNumber` | `true` | Show number indicator (1, 2, 3...) |
 
@@ -72,7 +77,9 @@ When `showStopImage` is `true`, stops display as **cards** with images:
 - Duration badge appears on the image (top-right)
 - Number circle appears below the image (left of title)
 
-When `showStopImage` is `false`, stops display as **list items**:
+When `showStopImage` is `"thumbnail"`, stops display as **compact list items** with a small thumbnail on the right.
+
+When `showStopImage` is `false`, stops display as **list items** with no image:
 - Compact rows with dividers between items
 - Duration appears right-aligned
 - Number circle appears left of title
@@ -84,6 +91,7 @@ When `showStopImage` is `false`, stops display as **list items**:
 | `true` | `true` | `true` | Full card (default) |
 | `true` | `true` | `false` | Card without number circle |
 | `true` | `false` | `true` | Card without duration badge |
+| `"thumbnail"` | `true` | `true` | Compact row with thumbnail |
 | `false` | `true` | `true` | List: `[1] Title ......... 5:30` |
 | `false` | `true` | `false` | List: `Title ......... 5:30` |
 | `false` | `false` | `true` | List: `[1] Title` |

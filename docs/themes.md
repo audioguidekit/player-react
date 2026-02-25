@@ -17,6 +17,26 @@ The app includes two built-in themes:
 - **Default Light** - Clean, distraction-free light aesthetic with high legibility and soft gray accents
 - **Default Dark** - Clean, distraction-free dark aesthetic with refined grayscale and sans-serif typography
 
+## Tour-Level Layout Options (metadata.json)
+
+Themes control colors, fonts, and visual styling — but several **layout and UI visibility options** are configured per-tour in `metadata.json`, not in the theme file. These settings let you adjust the app's structure without touching the theme.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `showStopImage` | `boolean \| "thumbnail"` | Controls stop card layout: `true` = full image card, `"thumbnail"` = compact row with small thumbnail, `false` = text-only list |
+| `showStopDuration` | `boolean` | Show/hide the duration badge on stop cards |
+| `showStopNumber` | `boolean` | Show/hide the numbered circle indicator on stop cards |
+| `showProgressBar` | `boolean` | Show/hide the playback progress bar |
+| `showLanguageLabel` | `boolean` | Show/hide the language name next to the flag in the language selector |
+| `fullscreenPlayer` | `boolean` | Enable the fullscreen overlay player (slides up over the stop list) |
+| `backgroundColor` | `string` | Background color of the TourStart screen and its status bar area (see [Status Bar Background](#status-bar-background)) |
+
+These settings work alongside your theme — for example, you can set the card colors in the theme while controlling whether cards show images or render as a list via `showStopImage` in metadata.
+
+> See **[adding-tours.md](./adding-tours.md#stop-card-display-options)** for full documentation and layout examples.
+
+---
+
 ## Theme Structure
 
 Themes are TypeScript configuration objects located in `src/theme/themes/`. Each theme follows the `ThemeConfig` interface defined in `src/theme/types.ts`.
@@ -859,7 +879,7 @@ If using custom fonts, add them to `index.html`:
 ### Step 4: Test Your Theme
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Switch to your new theme in the app settings.
@@ -1437,7 +1457,7 @@ const fg = '#111827';
 ### Build Testing
 
 ```bash
-npm run build
+bun run build
 ```
 
 Ensure no TypeScript errors from theme configuration.
@@ -1453,7 +1473,7 @@ Ensure no TypeScript errors from theme configuration.
 **Solutions:**
 1. Check theme is exported in `src/theme/themes/index.ts`
 2. Verify theme follows `ThemeConfig` interface
-3. Restart dev server: `npm run dev`
+3. Restart dev server: `bun run dev`
 4. Clear browser cache
 
 ### TypeScript Errors

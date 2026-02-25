@@ -13,8 +13,9 @@ const Container = styled.div`
   background-color: ${({ theme }) => theme.mainContent.backgroundColor};
 `;
 
-const ScrollableList = styled(motion.div)`
-  ${tw`flex-1 overflow-y-auto overflow-x-hidden px-4 pt-6 pb-32`}
+const ScrollableList = styled(motion.div)<{ $compact?: boolean }>`
+  ${tw`flex-1 overflow-y-auto overflow-x-hidden px-4 pb-32`}
+  padding-top: ${({ $compact }) => $compact ? '0px' : '1.5rem'};
 `;
 
 // Content visibility optimization for long lists - defers rendering of off-screen items
@@ -201,6 +202,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
         {...scrollableListAnimation}
         transition={scrollableListTransition}
         className="no-scrollbar"
+        $compact={tour.showStopImage === false}
       >
         {tour.stops
           .filter(stop => !(stop.type === 'rating' && tour.collectFeedback === false))

@@ -241,7 +241,7 @@ export const AudioStopCard: React.FC<AudioStopCardProps> = ({
   // List item layout when image is hidden
   if (!shouldShowImage) {
     return (
-      <OuterContainer id={id}>
+      <div id={id}>
         <ListItemContainer onClick={onClick}>
           {shouldShowNumber && (
             <NumberContainer>
@@ -284,7 +284,7 @@ export const AudioStopCard: React.FC<AudioStopCardProps> = ({
           <Title style={{ flex: 1 }}>{item.title}</Title>
           {shouldShowDuration && <ListItemDuration>{item.duration}</ListItemDuration>}
         </ListItemContainer>
-      </OuterContainer>
+      </div>
     );
   }
 

@@ -5,6 +5,7 @@ interface UseTourNavigationOptions {
     tour: TourData | null;
     onTrackChange?: (stopId: string) => void;
     allowAutoPlay?: boolean;
+    isStopCompleted?: (stopId: string) => boolean;
 }
 
 interface UseTourNavigationReturn {
@@ -39,6 +40,7 @@ export const useTourNavigation = ({
     tour,
     onTrackChange,
     allowAutoPlay = true,
+    isStopCompleted,
 }: UseTourNavigationOptions): UseTourNavigationReturn => {
     const [currentStopId, setCurrentStopId] = useState<string | null>(null);
     const [isPlayingInternal, setIsPlayingInternal] = useState(false);
@@ -162,7 +164,9 @@ export const useTourNavigation = ({
         }
 
         const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
-        const nextAudioStop = tour.stops.slice(currentIndex + 1).find(s => s.type === 'audio');
+        const nextAudioStop = tour.stops.slice(currentIndex + 1).find(
+            s => s.type === 'audio' && !(isStopCompleted?.(s.id))
+        );
 
         setIsAudioCompleting(false);
         setIsTransitioning(false);
@@ -191,7 +195,7 @@ export const useTourNavigation = ({
             setIsAudioCompleting(false);
             setIsPlaying(false);
         }
-    }, [currentStopId, tour, onTrackChange]);
+    }, [currentStopId, tour, onTrackChange, isStopCompleted]);
 
     const handleTrackTransition = useCallback(() => {
         if (!currentStopId || !tour) return;

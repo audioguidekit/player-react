@@ -144,7 +144,8 @@ const App: React.FC = () => {
   } = useTourNavigation({
     tour,
     allowAutoPlay,
-    onTrackChange: handleTrackChange
+    onTrackChange: handleTrackChange,
+    isStopCompleted: progressTracking.isStopCompleted
   });
 
   // DEBUG: Wrap setIsPlaying to log all calls with stack trace

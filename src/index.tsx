@@ -1,12 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AppRoutes } from './src/routes';
-import { swManager } from './src/utils/swManager';
-import { ErrorBoundary } from './components/ErrorBoundary';
-import { ViewportManager } from './components/ViewportManager';
-import { RatingProvider } from './context/RatingContext';
-import './src/index.css';
+import { AppRoutes } from './routes';
+import { swManager } from './utils/swManager';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ViewportManager } from '../components/ViewportManager';
+import { RatingProvider } from '../context/RatingContext';
+import './index.css';
 
 // Service worker is now registered in index.html for better reliability
 // swManager is still used for update handling within the app

@@ -1,15 +1,7 @@
 # Documentation
 
-This directory contains all project documentation.
-
-## Guides
-
-- **[adding-tours.md](./adding-tours.md)** - Guide for adding new tours
-- **[languages.md](./languages.md)** - Multi-language tour system
-- **[themes.md](./themes.md)** - Custom theming system
-- **[testing.md](./testing.md)** - Playwright testing guide
-
-## Quick Links
-
-- **Getting Started**: See root [README.md](../README.md)
-- **Environment Setup**: Copy `.env.example` to `.env` and configure
+- **[adding-tours.md](./adding-tours.md)** — Tour config, metadata fields, stop types
+- **[languages.md](./languages.md)** — Multi-language tour system
+- **[themes.md](./themes.md)** — ThemeConfig reference
+- **[testing.md](./testing.md)** — Playwright testing
+- **[pwa-icons.md](./pwa-icons.md)** — PWA icon files and regeneration

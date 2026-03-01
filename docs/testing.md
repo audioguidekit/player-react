@@ -1,161 +1,61 @@
-# Testing Guide
+# Testing
 
-This project uses [Playwright](https://playwright.dev/) for end-to-end testing. Tests run against the actual app in a real browser, simulating user interactions.
+End-to-end tests use [Playwright](https://playwright.dev/) against the live dev server.
 
-## Quick Start
+## Commands
 
-```bash
-# Run all tests
-bun run test
-
-# Run tests with browser visible
-bun run test:headed
-
-# Open interactive UI mode
-bun run test:ui
-
-# Debug a specific test
-bun run test:debug
-```
-
-## Test Commands
-
-| Command | Description | When to use |
-|---------|-------------|-------------|
-| `bun run test` | Run all tests headless (no browser window) | Default - fastest, use for CI and regular runs |
-| `bun run test:headed` | Run with browser window visible | Debugging - see what's happening |
-| `bun run test:ui` | Open Playwright's interactive UI | Debugging - step through tests, time-travel |
-| `bun run test:debug` | Run with Playwright Inspector | Debugging - inspect selectors, pause execution |
-
-### Running Specific Tests
+| Command | Description |
+|---------|-------------|
+| `bun run test` | Run all tests headless |
+| `bun run test:headed` | Run with browser visible |
+| `bun run test:ui` | Interactive UI mode (time-travel debugging) |
+| `bun run test:debug` | Playwright Inspector |
 
 ```bash
-# Run a single test file
+# Run a single file
 bun run test tests/app.spec.ts
 
-# Run tests matching a name pattern
+# Filter by name
 bun run test -g "should load"
 
-# Run only on specific device
+# Single device
 bun run test --project=chromium
 bun run test --project="Mobile Chrome"
 bun run test --project="Mobile Safari"
 ```
 
-## Test Structure
-
-Tests are located in `/tests/` directory:
+## Test files
 
 ```
 tests/
-├── helpers.ts              # Test utilities (tour/language discovery)
-├── app.spec.ts             # Core app functionality
-├── tour-flow.spec.ts       # Tour navigation and flow
-├── audio-player.spec.ts    # Audio playback features
-├── language.spec.ts        # Multi-language system
-├── pwa.spec.ts             # PWA and offline features
-└── stop-card-display.spec.ts # Stop card display options
+├── helpers.ts                    # getTourId, discoverTourLanguages, waitForAppLoad
+├── app.spec.ts                   # Core app load, routing, responsive viewports
+├── tour-flow.spec.ts             # Tour navigation and stop feed
+├── audio-player.spec.ts          # Audio/Media API availability
+├── language.spec.ts              # Multi-language system
+├── pwa.spec.ts                   # PWA manifest, service worker, IndexedDB
+├── stop-card-display.spec.ts     # All 8 showStopImage/Duration/Number combinations
+├── button-origin.spec.ts         # Button transform-origin consistency
+├── lightbox-backdrop-blur.spec.ts # Image lightbox backdrop blur
+└── lightbox-zoom.spec.ts         # Image lightbox double-tap zoom
 ```
 
-> **Note:** Tests are generic and don't hardcode tour names or languages. They dynamically discover available tours and languages at runtime, making them work with any tour content.
-
-## Test Files Explained
-
-### `app.spec.ts` - Core App Tests
-
-Tests fundamental app behavior and responsiveness.
-
-| Test | What it verifies |
-|------|------------------|
-| `should load the app without errors` | App loads without console errors |
-| `should display tour start screen` | Initial screen renders correctly |
-| `should navigate to tour detail view` | URL routing works for `/tour/:id` |
-| `should handle direct URL to stop` | Deep linking to `/tour/:id/stop/:stopId` works |
-| `should render correctly on mobile viewport` | 375x667 (iPhone SE) renders properly |
-| `should render correctly on tablet viewport` | 768x1024 (iPad) renders properly |
-
-### `tour-flow.spec.ts` - Tour Flow Tests
-
-Tests the user journey through a tour.
-
-| Test | What it verifies |
-|------|------------------|
-| `should display tour information` | Tour content loads and displays |
-| `should have clickable elements for starting tour` | Interactive elements are present |
-| `should load tour data` | Tour JSON data loads successfully |
-| `should maintain state during navigation` | Back/forward navigation preserves state |
-| `should display stops when tour is loaded` | Stop feed renders with content |
-
-### `audio-player.spec.ts` - Audio Tests
-
-Tests audio playback infrastructure.
-
-| Test | What it verifies |
-|------|------------------|
-| `should have audio elements available` | `HTMLAudioElement` API is available |
-| `should handle audio context initialization` | `AudioContext` API is available |
-| `should not crash on initial render` | Mini player renders without errors |
-| `should have Media Session API available` | Browser supports media controls |
-
-### `language.spec.ts` - Language Tests
-
-Tests the multi-language system. These tests dynamically discover available languages.
-
-| Test | What it verifies |
-|------|------------------|
-| `should load app with tour content` | App loads and displays tour title |
-| `should show language selector when multiple languages exist` | Language button visible for multi-language tours |
-| `should have localStorage available for language preference` | localStorage is accessible |
-| `should discover available tour languages` | At least one language file exists |
-| `should load tour data for each discovered language` | Each discovered language's tour file is valid JSON |
-| `should have consistent tour ID across all languages` | All language files share the same tour ID |
-
-### `pwa.spec.ts` - PWA Tests
-
-Tests Progressive Web App features.
-
-| Test | What it verifies |
-|------|------------------|
-| `should have a valid manifest` | `<link rel="manifest">` exists in HTML |
-| `should register service worker` | `navigator.serviceWorker` API available |
-| `should have IndexedDB available` | `indexedDB` API available for offline storage |
-| `should cache tour data for offline use` | `caches` API available |
-
-### `stop-card-display.spec.ts` - Stop Card Display Tests
-
-Tests the configurable stop card display options. Modifies `metadata.json` to test all 8 combinations of `showStopImage`, `showStopDuration`, and `showStopNumber` settings.
-
-| Test | What it verifies |
-|------|------------------|
-| `1-full-card` | Default card layout with image, duration, and number |
-| `2-card-no-number` | Card without number indicator |
-| `3-card-no-duration` | Card without duration badge |
-| `4-card-minimal` | Card with image only |
-| `5-list-full` | List layout with number and duration |
-| `6-list-no-number` | List layout with duration only |
-| `7-list-no-duration` | List layout with number only |
-| `8-list-minimal` | List layout with title only |
-
-> **Note:** These tests modify `src/data/tour/metadata.json` to trigger Vite HMR rebuilds. The original file is restored after tests complete.
+> Tests are generic — they use `helpers.ts` to discover tour IDs and languages at runtime rather than hardcoding values.
 
 ## Configuration
 
-The Playwright configuration is in `playwright.config.ts`:
+Key settings in `playwright.config.ts`:
 
 ```typescript
-// Key settings
 {
-  testDir: './tests',           // Test file location
-  fullyParallel: true,          // Run tests in parallel
-  retries: process.env.CI ? 2 : 0,  // Retry failed tests in CI
-
+  testDir: './tests',
+  fullyParallel: true,
+  retries: process.env.CI ? 2 : 0,
   use: {
     baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',    // Capture trace on failure
+    trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-
-  // Auto-start dev server
   webServer: {
     command: 'bun run dev',
     url: 'http://localhost:3000',
@@ -164,251 +64,60 @@ The Playwright configuration is in `playwright.config.ts`:
 }
 ```
 
-### Device Profiles
+Device profiles: **Chromium** (1280×720), **Mobile Chrome** (Pixel 5, 393×851), **Mobile Safari** (iPhone 12, 390×844).
 
-Tests run on three device configurations:
-
-| Project | Device | Viewport |
-|---------|--------|----------|
-| `chromium` | Desktop Chrome | 1280x720 |
-| `Mobile Chrome` | Pixel 5 | 393x851 |
-| `Mobile Safari` | iPhone 12 | 390x844 |
-
-## Writing New Tests
-
-### Basic Test Structure
+## Writing tests
 
 ```typescript
 import { test, expect } from '@playwright/test';
 import { getTourId } from './helpers';
 
-test.describe('Feature Name', () => {
-  // Runs before each test in this describe block
+test.describe('Feature', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
   });
 
   test('should do something', async ({ page, request }) => {
-    // Use dynamic tour discovery (don't hardcode tour names)
     const tourId = await getTourId(request);
-
-    // Arrange: Set up test conditions
     await page.goto(`/tour/${tourId}`);
-
-    // Act: Perform actions
     await page.click('button[data-testid="play"]');
-
-    // Assert: Verify results
     await expect(page.locator('.player')).toBeVisible();
   });
 });
 ```
 
-### Test Helpers
-
-The `helpers.ts` file provides utilities for generic tests:
+### Helpers
 
 ```typescript
 import { getTourId, discoverTourLanguages, waitForAppLoad } from './helpers';
 
-// Get tour ID from metadata.json or first available tour
 const tourId = await getTourId(request);
-
-// Discover all available language codes
 const languages = await discoverTourLanguages(request);
-
-// Wait for app loading to complete
 await waitForAppLoad(page);
 ```
 
-### Common Patterns
-
-**Wait for network to settle:**
-```typescript
-await page.waitForLoadState('networkidle');
-```
-
-**Wait for element to appear:**
-```typescript
-await expect(page.locator('.my-element')).toBeVisible();
-```
-
-**Wait for specific time (use sparingly):**
-```typescript
-await page.waitForTimeout(2000);
-```
-
-**Check for text content:**
-```typescript
-await expect(page.locator('h1')).toContainText('Welcome');
-```
-
-**Intercept network requests:**
-```typescript
-const responsePromise = page.waitForResponse(
-  response => response.url().includes('api/data')
-);
-await page.click('button');
-const response = await responsePromise;
-expect(response.status()).toBe(200);
-```
-
-**Execute JavaScript in browser:**
-```typescript
-const result = await page.evaluate(() => {
-  return localStorage.getItem('key');
-});
-```
-
-**Take screenshot on demand:**
-```typescript
-await page.screenshot({ path: 'screenshot.png' });
-```
-
-### Selectors
-
-Playwright supports multiple selector strategies:
+### Preferred selector strategies
 
 ```typescript
-// By role (preferred for accessibility)
-page.getByRole('button', { name: 'Play' })
-
-// By test ID (add data-testid to components)
-page.locator('[data-testid="mini-player"]')
-
-// By CSS selector
-page.locator('.play-button')
-
-// By text content
-page.getByText('Start Tour')
+page.getByRole('button', { name: 'Play' })      // Role (preferred)
+page.locator('[data-testid="mini-player"]')       // Test ID
+page.getByText('Start Tour')                      // Text
 ```
 
-### Adding Test IDs to Components
+Add `data-testid` to components when CSS selectors become fragile.
 
-For reliable test selection, add `data-testid` attributes:
+## Best practices
 
-```tsx
-// In your React component
-<button data-testid="play-button" onClick={handlePlay}>
-  Play
-</button>
-```
+- An implementation is not complete until `bun run test` passes with zero console errors
+- Use `expect().toBeVisible()` instead of `waitForTimeout()`
+- Keep tests independent — no state shared between tests
+- Test user journeys, not implementation details
 
-Then in tests:
-```typescript
-await page.click('[data-testid="play-button"]');
-```
-
-## Test Reports
-
-After running tests, Playwright generates an HTML report:
+## Reports
 
 ```bash
-# View the report
 bunx playwright show-report
 ```
 
-Reports are saved to `/playwright-report/` (gitignored).
-
-### CI Artifacts
-
-In CI, failed tests generate:
-- Screenshots in `/test-results/`
-- Trace files for debugging
-- HTML report
-
-## Debugging Tests
-
-### Using Playwright Inspector
-
-```bash
-bun run test:debug
-```
-
-This opens the Playwright Inspector where you can:
-- Step through tests line by line
-- See element selectors
-- View console logs
-- Inspect the page
-
-### Using UI Mode
-
-```bash
-bun run test:ui
-```
-
-UI mode provides:
-- Visual test runner
-- Time-travel debugging
-- Watch mode for development
-- DOM snapshot at each step
-
-### Console Logs
-
-Add console logs to see what's happening:
-
-```typescript
-test('debug example', async ({ page }) => {
-  page.on('console', msg => console.log('PAGE LOG:', msg.text()));
-
-  await page.goto('/');
-  console.log('Current URL:', page.url());
-});
-```
-
-## Best Practices
-
-1. **No console errors before done** - An implementation is not complete until tests pass with zero console errors. The `app.spec.ts` test verifies this.
-
-2. **Use `networkidle` wisely** - It waits for 500ms of no network activity. For faster tests, use specific waits.
-
-3. **Prefer role selectors** - `getByRole()` is more resilient to UI changes and tests accessibility.
-
-4. **Avoid hard-coded waits** - Use `expect().toBeVisible()` or `waitForResponse()` instead of `waitForTimeout()`.
-
-5. **Keep tests independent** - Each test should work in isolation. Don't rely on state from previous tests.
-
-6. **Test user journeys** - Focus on what users actually do, not implementation details.
-
-7. **Add test IDs for complex selectors** - When CSS selectors become fragile, use `data-testid`.
-
-## Troubleshooting
-
-### Tests timeout waiting for dev server
-
-The dev server has a 120-second timeout. If it takes longer:
-
-```typescript
-// In playwright.config.ts
-webServer: {
-  timeout: 180 * 1000,  // Increase to 3 minutes
-}
-```
-
-### Tests pass locally but fail in CI
-
-- Check viewport sizes - CI may use different defaults
-- Check for race conditions - add explicit waits
-- Review screenshots/traces from CI artifacts
-
-### Element not found
-
-1. Check if element is in viewport (may need scroll)
-2. Check if element is inside an iframe
-3. Verify the selector is correct using UI mode
-4. Element may be lazy-loaded - add wait
-
-### Service worker issues
-
-Service workers can cache old content. In tests:
-
-```typescript
-// Clear service worker before test
-await page.evaluate(async () => {
-  const registrations = await navigator.serviceWorker.getRegistrations();
-  for (const reg of registrations) {
-    await reg.unregister();
-  }
-});
-```
+Reports save to `/playwright-report/` (gitignored). CI artifacts include screenshots, traces, and the HTML report in `/test-results/`.

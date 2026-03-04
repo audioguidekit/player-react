@@ -39,7 +39,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
             return (
                 <div className="min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans">
-                    <div className="w-full max-w-[400px] h-[100dvh] md:h-[844px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex items-center justify-center">
+                    <div className="w-full h-[100dvh] md:h-[844px] md:max-w-[400px] bg-white md:rounded-[2.5rem] relative overflow-hidden shadow-2xl flex items-center justify-center">
                         <div className="text-center p-8">
                             <div className="text-6xl mb-4">😵</div>
                             <h2 className="text-xl font-bold text-gray-900 mb-2">Something went wrong</h2>

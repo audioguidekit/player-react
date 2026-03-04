@@ -62,6 +62,8 @@ Shared properties across all language versions. Individual language files can ov
 | `false` | `false` | `true` | List: `[1] Title` |
 | `false` | `false` | `false` | List: `Title` |
 
+> **Map view:** The map tab (`mapView`, `mapProvider`, `mapCenter`, etc.) is also configured in `metadata.json`. See [map.md](./map.md) for the full field reference.
+
 ### Offline modes
 
 | Mode | Behavior |
@@ -95,45 +97,7 @@ Each language file contains translated content and can override any metadata fie
 }
 ```
 
-### Language file fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | ✓ | Must match `metadata.json` id |
-| `language` | string | ✓ | ISO 639-1 code: `"en"`, `"cs"`, `"de"` |
-| `title` | string | ✓ | Translated tour title |
-| `description` | string | ✓ | Translated description |
-| `totalDuration` | string | ✓ | Total tour length |
-| `totalStops` | number | ✓ | Number of stops |
-| `stops` | array | ✓ | Array of stop objects |
-
-### Stop fields
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `id` | string | ✓ | Unique within tour, must match across languages |
-| `type` | StopType | ✓ | See stop types below |
-| `title` | string | ✓ | Stop name |
-| `duration` | string | ✓ | Audio length (e.g. `"5 min audio"`) |
-| `image` | string | ✓ | Stop image URL (for audio stops) |
-| `imageAlt` | string | | Accessibility alt text |
-| `imageCaption` | string | | Caption shown below image |
-| `imageCredit` | string | | Photo credit |
-| `audioFile` | string | | Audio URL (required for `type: "audio"`) |
-| `transcription` | string | | Text transcription of audio |
-
-### Stop types
-
-`"audio"`, `"text"`, `"image-text"`, `"video"`, `"headline"`, `"rating"`, `"email"`, `"quote"`, `"image-gallery"`, `"image-comparison"`, `"hotspot-image"`, `"embed"`, `"3d-object"`
-
-See `types.ts` for the full interface of each stop type.
-
-## Multi-language requirements
-
-- All language files must share the same `id`
-- Stop `id` values must match across all languages
-- `totalStops` must be the same across all languages
-- See [languages.md](./languages.md) for the full language system
+For stop fields, types, and per-type JSON examples see [stops.md](./stops.md). For the full language system (selection order, adding languages, localStorage) see [languages.md](./languages.md).
 
 ## Validation checklist
 

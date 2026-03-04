@@ -4,23 +4,7 @@ Themes are TypeScript config objects in `src/theme/themes/`. Each follows the `T
 
 Two built-in themes: `default-light` and `default-dark`.
 
-## Tour-level layout options
-
-These settings live in `metadata.json`, not in the theme file:
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `showStopImage` | `boolean \| "thumbnail"` | `true` | Stop card layout: `true` = full image card, `"thumbnail"` = compact row, `false` = text list |
-| `showStopDuration` | `boolean` | `true` | Duration badge on stop cards |
-| `showStopNumber` | `boolean` | `true` | Numbered circle indicator |
-| `showProgressBar` | `boolean` | `true` | Playback progress bar in header |
-| `showLanguageLabel` | `boolean` | `true` | Language name next to flag |
-| `fullscreenPlayer` | `boolean` | `false` | Fullscreen overlay player |
-| `backgroundColor` | `string` | — | TourStart status bar / background color (see [Status bar background](#status-bar-background)) |
-
-See [adding-tours.md](./adding-tours.md#stop-card-display-options) for layout combinations.
-
----
+> **Layout options** (stop card style, progress bar, fullscreen player, etc.) are configured in `metadata.json`, not the theme. See [adding-tours.md](./adding-tours.md#metadata-json).
 
 ## Theme properties
 

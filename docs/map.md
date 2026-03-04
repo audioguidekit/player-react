@@ -2,9 +2,6 @@
 
 An optional interactive map tab on the tour detail screen. When enabled, stops are shown as markers on a tile map. The user can switch between map and list views via a segmented control in the header.
 
-> **Status:** Temporary doc — merge into `adding-tours.md` and `themes.md` when stable.
-
----
 
 ## Enabling the map
 
@@ -218,63 +215,7 @@ To use a different style:
 
 ## Theming markers
 
-Map markers have their own theme tokens, independent from the list's `stepIndicators`. Add a `mapMarkers` block to your `ThemeConfig`:
-
-```typescript
-mapMarkers: {
-  active: {
-    outlineColor: '#459825',
-    numberColor: '#FFFFFF',
-    backgroundColor: '#459825',
-    shadow: '0 2px 8px rgba(0,0,0,0.35)',
-  },
-  inactive: {
-    borderColor: 'transparent',
-    numberColor: '#FFFFFF',
-    backgroundColor: '#555555',
-    numberFontSize: '12px',
-    numberFontWeight: '700',
-  },
-  completed: {
-    backgroundColor: '#459825',
-    checkmarkColor: '#FFFFFF',
-  },
-  cluster: {
-    backgroundColor: '#1A1A1A',
-    numberColor: '#FFFFFF',
-    borderColor: 'rgba(255,255,255,0.2)',
-    shadow: '0 3px 10px rgba(0,0,0,0.35)',
-    fontSize: '18px',
-    fontWeight: '700',
-    size: 64,             // visual diameter in px
-    maxClusterRadius: 48, // clustering threshold in px
-  },
-},
-```
-
-If `mapMarkers` is absent the player falls back to `stepIndicators` (backward compatible).
-
-| Token | Description |
-|-------|-------------|
-| `active.outlineColor` | Ring around the active marker |
-| `active.backgroundColor` | Fill of the active marker |
-| `active.numberColor` | Number text on the active marker |
-| `active.shadow` | Drop shadow (also used for completed) |
-| `inactive.backgroundColor` | Fill of unvisited markers |
-| `inactive.borderColor` | Border of unvisited markers (`"transparent"` = none) |
-| `inactive.numberColor` | Number text on unvisited markers |
-| `inactive.numberFontSize` | Font size for marker numbers |
-| `inactive.numberFontWeight` | Font weight for marker numbers |
-| `completed.backgroundColor` | Fill when stop is finished |
-| `completed.checkmarkColor` | Checkmark stroke colour |
-| `cluster.backgroundColor` | Cluster bubble fill |
-| `cluster.numberColor` | Count number colour |
-| `cluster.borderColor` | Optional border |
-| `cluster.shadow` | Drop shadow |
-| `cluster.fontSize` | Count number font size |
-| `cluster.fontWeight` | Count number font weight |
-| `cluster.size` | Visual diameter in px (default `64`) |
-| `cluster.maxClusterRadius` | Pixel radius for grouping markers (default `48`) |
+Marker colors (active, inactive, completed, clusters, user location dot) are controlled via `mapMarkers` in your `ThemeConfig`. See [themes.md](./themes.md#mapmarkers-optional) for the full reference.
 
 ---
 

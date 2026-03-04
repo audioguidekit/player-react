@@ -8,14 +8,13 @@ A mobile-first lightweight audio guide player built in React for the web. Runs o
 
 ## Features
 
-- **Audio tours** - Create and configure audio tours
-- **Progress tracking** - Application-wide progress tracking
-- **Offline support** - Full PWA with Service Worker caching and Media Session API support
-- **Multiple languages support** - Automatic language detection, seamless switching
-- **Localised app UI** - UI out-of-the-box supports English, German, Italian, French, Spanish and Czech
-- **Layout options** - Simple list of stops, image thumbnails or large images, fullscreen player
-- **Theming** - Customizable themes with full control over styling
-- **Deep Linking** - Shareable URLs to specific stops
+- **Audio tours** — 13 stop types: audio, video, text, image gallery, before/after slider, hotspots, 3D objects, embeds, and more
+- **Progress tracking** — Application-wide progress tracking with deep linking to specific stops
+- **Offline support** — Full PWA with Service Worker caching and Media Session API support
+- **Multiple languages** — Automatic language detection, seamless switching, localized UI (English, German, French, Italian, Spanish, Czech)
+- **Layout options** — List, thumbnail row, or large image cards; optional fullscreen player
+- **Interactive map** — Optional map tab with GPS stop markers, clustering, and multiple tile providers
+- **Theming** — Fully customizable themes: colors, typography, markers, and more
 
 ## Quick start
 
@@ -37,10 +36,13 @@ Open http://localhost:3000
 
 | Guide | Description |
 |-------|-------------|
-| [Adding tours](docs/adding-tours.md) | Create and configure tours |
-| [Multi-Language](docs/languages.md) | Language system and translations |
-| [Theming](docs/themes.md) | Custom themes and styling |
-| [Testing](docs/testing.md) | Playwright testing guide |
+| [Adding tours](docs/adding-tours.md) | Tour setup: `metadata.json` fields, file structure, display options, validation |
+| [Stop types](docs/stops.md) | All 13 stop types with required/optional fields and JSON examples |
+| [Languages](docs/languages.md) | Multi-language setup, selection order, adding new languages |
+| [Map view](docs/map.md) | Interactive map tab: tile providers, GPS markers, clustering |
+| [Themes](docs/themes.md) | Full `ThemeConfig` reference and how to create a custom theme |
+| [PWA](docs/pwa.md) | App icons: file list, regeneration, manifest |
+| [Testing](docs/testing.md) | Playwright end-to-end tests: commands, test files, writing tests |
 
 ## Commands
 

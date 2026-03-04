@@ -14,6 +14,7 @@
   "showProgressBar": true,
   "mapView": true,
   "mapProvider": "openstreetmap",
+  "mapStyleId": "",
   "mapCluster": {
     "disableClusteringAtZoom": 16,
     "spiderfyOnMaxZoom": true

@@ -28,8 +28,9 @@ export interface TourMetadata {
   showProgressBar?: boolean;   // Show progress bar in tour header (default: true)
   backgroundColor?: string;    // Solid color for the iOS status bar area and TourStart background when no image (e.g. '#1a2634')
   mapView?: boolean;           // Enable map tab (default: false)
-  mapProvider?: 'openstreetmap' | 'mapbox'; // Tile provider (default: 'openstreetmap')
-  mapApiKey?: string;          // Needed only for mapbox
+  mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler'; // Tile provider (default: 'openstreetmap')
+  mapApiKey?: string;          // API key for the chosen provider
+  mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
   mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
   mapMarkerNumber?: boolean;   // Show stop number on markers (default: true)
   mapCluster?: {
@@ -183,8 +184,9 @@ export interface TourData {
   showProgressBar?: boolean;   // Show progress bar in tour header (default: true)
   backgroundColor?: string;    // Solid color for the iOS status bar area and TourStart background when no image (e.g. '#1a2634')
   mapView?: boolean;           // Enable map tab (default: false)
-  mapProvider?: 'openstreetmap' | 'mapbox'; // Tile provider (default: 'openstreetmap')
-  mapApiKey?: string;          // Needed only for mapbox
+  mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler'; // Tile provider (default: 'openstreetmap')
+  mapApiKey?: string;          // API key for the chosen provider
+  mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
   mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
   mapMarkerNumber?: boolean;   // Show stop number on markers (default: true)
   mapCluster?: {

@@ -26,8 +26,9 @@ Without `mapView: true` the map tab is hidden and everything works as before.
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `mapView` | boolean | `false` | Show map tab in tour detail |
-| `mapProvider` | `"openstreetmap"` \| `"mapbox"` | `"openstreetmap"` | Tile provider |
-| `mapApiKey` | string | — | Required for Mapbox |
+| `mapProvider` | `"openstreetmap"` \| `"mapbox"` \| `"jawg"` \| `"maptiler"` | `"openstreetmap"` | Tile provider |
+| `mapApiKey` | string | — | API key for the chosen provider |
+| `mapStyleId` | string | — | Provider-specific style/map ID (see per-provider defaults below) |
 | `mapMarkerIcon` | string (URL) | — | Custom image for all markers; replaces numbered circle |
 | `mapMarkerNumber` | boolean | `true` | Show stop number on markers |
 | `mapCluster` | object | — | Marker clustering behaviour (see below) |
@@ -107,6 +108,8 @@ Set `mapMarkerNumber: false` in `metadata.json` to render plain dots instead of 
 
 ## Tile providers
 
+All providers except OpenStreetMap require an API key via `mapApiKey`. If the key is missing the player silently falls back to OpenStreetMap.
+
 ### OpenStreetMap (default)
 
 No key needed. Free for typical usage.
@@ -117,11 +120,41 @@ No key needed. Free for typical usage.
 
 ### Mapbox
 
-Requires an access token from [mapbox.com](https://mapbox.com). Uses the `streets-v12` style.
+Requires an access token from [mapbox.com](https://www.mapbox.com/). Default style: `mapbox/outdoors-v12`.
 
 ```json
 "mapProvider": "mapbox",
 "mapApiKey": "pk.eyJ1IjoiZXhhb..."
+```
+
+To use a custom style from your Mapbox Studio account:
+
+```json
+"mapProvider": "mapbox",
+"mapApiKey": "pk.eyJ1IjoiZXhhb...",
+"mapStyleId": "yourname/cl9abc1234def"
+```
+
+### Jawg Maps
+
+Requires an access token from [jawg.io](https://www.jawg.io/). Default style: `jawg-terrain`.
+
+Available built-in styles: `jawg-streets`, `jawg-terrain`, `jawg-sunny`, `jawg-lagoon`, `jawg-dark`, `jawg-light`.
+
+```json
+"mapProvider": "jawg",
+"mapApiKey": "your-jawg-access-token",
+"mapStyleId": "jawg-lagoon"
+```
+
+### MapTiler
+
+Requires an API key from [maptiler.com](https://www.maptiler.com/). Default style: `outdoor-v2`.
+
+```json
+"mapProvider": "maptiler",
+"mapApiKey": "your-maptiler-api-key",
+"mapStyleId": "topo-v2"
 ```
 
 ---

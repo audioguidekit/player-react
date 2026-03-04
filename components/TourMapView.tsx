@@ -19,6 +19,7 @@ interface TourMapViewProps {
   onStopClick: (stopId: string) => void;
   mapProvider?: MapProvider;
   mapApiKey?: string;
+  mapStyleId?: string;
   mapMarkerIcon?: string;
   mapMarkerNumber?: boolean;
   mapCluster?: {
@@ -253,6 +254,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   onStopClick,
   mapProvider = 'openstreetmap',
   mapApiKey,
+  mapStyleId,
   mapMarkerIcon,
   mapMarkerNumber = true,
   mapCluster,
@@ -260,7 +262,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
 }) => {
   const theme = useTheme() as ThemeConfig;
   const isOnline = useOnlineStatus();
-  const tileConfig = getTileConfig(mapProvider, mapApiKey);
+  const tileConfig = getTileConfig(mapProvider, mapApiKey, mapStyleId);
   const mapRef = useRef<L.Map | null>(null);
 
   const {

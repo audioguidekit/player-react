@@ -31,6 +31,7 @@ interface TourMapViewProps {
   };
   mapRoute?: boolean | MapRouteConfig;
   onRequestListView?: () => void;
+  showLocateButton?: boolean;
 }
 
 // ─── Styled components ────────────────────────────────────────────────────────
@@ -266,6 +267,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   mapCluster,
   mapRoute,
   onRequestListView,
+  showLocateButton = true,
 }) => {
   const theme = useTheme() as ThemeConfig;
 
@@ -367,7 +369,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
         />
       </MapContainer>
 
-      {(() => {
+      {showLocateButton && (() => {
         const portal = document.getElementById('map-controls-portal');
         if (!portal) return null;
         return createPortal(

@@ -82,6 +82,7 @@ interface TourDetailProps {
   scrollTrigger?: number | null;
   onScrollComplete?: () => void;
   onOpenRatingSheet?: () => void;
+  showMapLocateButton?: boolean;
 }
 
 export const TourDetail = React.memo<TourDetailProps>(({
@@ -101,6 +102,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
   scrollTrigger,
   onScrollComplete,
   onOpenRatingSheet,
+  showMapLocateButton = true,
 }) => {
   const [viewMode, setViewMode] = useState<'map' | 'list'>(
     tour.mapView === true ? 'map' : 'list'
@@ -240,6 +242,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
               mapCluster={tour.mapCluster}
               mapRoute={tour.mapRoute}
               onRequestListView={() => setViewMode('list')}
+              showLocateButton={showMapLocateButton}
             />
           </Suspense>
         </motion.div>
@@ -314,6 +317,9 @@ export const TourDetail = React.memo<TourDetailProps>(({
       return false;
     }
     if (prevProps.tour.id !== nextProps.tour.id) {
+      return false;
+    }
+    if (prevProps.showMapLocateButton !== nextProps.showMapLocateButton) {
       return false;
     }
     if (prevProps.scrollTrigger !== nextProps.scrollTrigger) {

@@ -813,6 +813,7 @@ const App: React.FC = () => {
                     scrollTrigger={scrollToStopId?.timestamp ?? null}
                     onScrollComplete={handleScrollComplete}
                     onOpenRatingSheet={() => setActiveSheet('RATING')}
+                    showMapLocateButton={hasStarted}
                   />
                 }
               />

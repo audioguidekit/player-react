@@ -31,7 +31,7 @@ const OverlayPortal = styled.div`
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 75; /* above MiniPlayer z-[70], below sheets */
+  z-index: 69; /* just below MiniPlayer z-[70] */
 `;
 
 export const MobileFrame: React.FC<MobileFrameProps> = ({

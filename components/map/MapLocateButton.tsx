@@ -166,13 +166,13 @@ export const UserLocationLayer: React.FC<UserLocationLayerProps> = ({
 
     const icon = L.divIcon({
       html: `
-        <div style="position:relative;width:20px;height:20px">
+        <div style="position:relative;width:32px;height:32px">
           <div class="map-location-pulse" style="position:absolute;inset:0;border-radius:50%;background:${dotColor}"></div>
-          <div style="position:absolute;inset:3px;border-radius:50%;background:${dotColor};border:2px solid ${borderColor};box-shadow:0 0 8px ${dotColor}99"></div>
+          <div style="position:absolute;inset:4px;border-radius:50%;background:${dotColor};border:3px solid ${borderColor};box-shadow:0 0 10px ${dotColor}99"></div>
         </div>`,
       className: '',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
     });
 
     if (markerRef.current) {
@@ -223,8 +223,16 @@ export function useUserLocation() {
       return;
     }
 
-    // Already tracking — re-center and go back to following
-    if ((currentState === 'following' || currentState === 'tracking') && currentLocation) {
+    // Following (full arrow) — toggle off: hide dot and reset to idle
+    if (currentState === 'following') {
+      stopWatching();
+      setUserLocation(null);
+      setLocateState('idle');
+      return;
+    }
+
+    // Tracking (panned away) — re-center and resume following
+    if (currentState === 'tracking' && currentLocation) {
       setShouldCenter(true);
       setLocateState('following');
       return;

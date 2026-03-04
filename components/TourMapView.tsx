@@ -4,12 +4,13 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import tw from 'twin.macro';
 import styled, { useTheme } from 'styled-components';
-import { Stop } from '../types';
+import { Stop, MapRouteConfig, RouteGeoJSON } from '../types';
 import { getTileConfig, MapProvider } from '../src/utils/mapTileProvider';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ThemeConfig } from '../src/theme/types';
 import { MapZoomControls } from './map/MapZoomControls';
 import { MapLocateButton, UserLocationLayer, useUserLocation } from './map/MapLocateButton';
+import { MapRoute } from './map/MapRoute';
 
 interface TourMapViewProps {
   stops: Stop[];
@@ -28,6 +29,7 @@ interface TourMapViewProps {
     disableClusteringAtZoom?: number;
     spiderfyOnMaxZoom?: boolean;
   };
+  mapRoute?: boolean | MapRouteConfig;
   onRequestListView?: () => void;
 }
 
@@ -269,9 +271,25 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   mapMarkerIcon,
   mapMarkerNumber = true,
   mapCluster,
+  mapRoute,
   onRequestListView,
 }) => {
   const theme = useTheme() as ThemeConfig;
+
+  // Resolve route config: merge metadata overrides onto theme defaults
+  const routeConfig = mapRoute && mapRoute !== false
+    ? (typeof mapRoute === 'boolean' ? {} : mapRoute) as MapRouteConfig
+    : null;
+  const themeRoute = theme.mapMarkers?.route ?? {};
+  const resolvedRoute = routeConfig ? {
+    completedColor: themeRoute.completedColor ?? '#459825',
+    upcomingColor:  themeRoute.upcomingColor  ?? '#888888',
+    weight:         themeRoute.weight         ?? 3,
+    opacity:        themeRoute.opacity        ?? 0.85,
+    dashArray:      themeRoute.dashArray      ?? '8 6',
+    minZoom:        routeConfig.minZoom       ?? 13,
+    geoJSON:        typeof routeConfig.geoJSON === 'object' ? routeConfig.geoJSON as RouteGeoJSON : undefined,
+  } : null;
   const isOnline = useOnlineStatus();
   const tileConfig = getTileConfig(mapProvider, mapApiKey, mapStyleId);
   const mapRef = useRef<L.Map | null>(null);
@@ -326,6 +344,19 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
         />
         <MapRefCapture mapRef={mapRef} />
         <MapBoundsFitter locations={locations} center={mapCenter} zoom={mapZoom} />
+        {resolvedRoute && (
+          <MapRoute
+            stops={stops}
+            isStopCompleted={isStopCompleted}
+            geoJSON={resolvedRoute.geoJSON}
+            completedColor={resolvedRoute.completedColor}
+            upcomingColor={resolvedRoute.upcomingColor}
+            weight={resolvedRoute.weight}
+            opacity={resolvedRoute.opacity}
+            dashArray={resolvedRoute.dashArray}
+            minZoom={resolvedRoute.minZoom}
+          />
+        )}
         <MapMarkers
           stops={stops}
           currentStopId={currentStopId}

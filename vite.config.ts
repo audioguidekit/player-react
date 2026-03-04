@@ -15,7 +15,7 @@ function syncTourDataPlugin(): Plugin {
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
     }
-    const files = fs.readdirSync(srcDir).filter(f => f.endsWith('.json'));
+    const files = fs.readdirSync(srcDir).filter(f => f.endsWith('.json') || f.endsWith('.geojson'));
     for (const file of files) {
       fs.copyFileSync(path.join(srcDir, file), path.join(destDir, file));
     }
@@ -27,7 +27,7 @@ function syncTourDataPlugin(): Plugin {
       syncFiles();
     },
     handleHotUpdate({ file }) {
-      if (file.includes('src/data/tour') && file.endsWith('.json')) {
+      if (file.includes('src/data/tour') && (file.endsWith('.json') || file.endsWith('.geojson'))) {
         syncFiles();
       }
     }
@@ -79,6 +79,15 @@ export default defineConfig(({ mode }) => {
       logOverride: { 'this-is-undefined-in-esm': 'silent' }
     },
     plugins: [
+      // Treat .geojson files as JSON modules (Vite only handles .json by default)
+      {
+        name: 'vite-plugin-geojson',
+        transform(src: string, id: string) {
+          if (id.endsWith('.geojson')) {
+            return { code: `export default ${src}`, map: null };
+          }
+        },
+      } satisfies Plugin,
       syncTourDataPlugin(),
       reactGrabPlugin(),
       react({

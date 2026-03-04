@@ -105,6 +105,13 @@ export interface ThemeConfig {
       dotColor: string;
       borderColor?: string;  // Inner dot border (default: '#FFFFFF')
     };
+    route?: {
+      completedColor?: string;   // color for visited segments
+      upcomingColor?: string;    // color for unvisited segments
+      weight?: number;           // line width in px
+      opacity?: number;          // 0–1
+      dashArray?: string;        // SVG dash pattern for upcoming segments
+    };
   };
 
   // Primary Buttons (main action buttons)

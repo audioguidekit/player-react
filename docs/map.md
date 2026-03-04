@@ -31,6 +31,7 @@ Without `mapView: true` the map tab is hidden and everything works as before.
 | `mapMarkerIcon` | string (URL) | — | Custom image for all markers; replaces numbered circle |
 | `mapMarkerNumber` | boolean | `true` | Show stop number on markers |
 | `mapCluster` | object | — | Marker clustering behaviour (see below) |
+| `mapRoute` | `boolean` \| object | `false` | Route polyline with progress indicator (see below) |
 
 ### mapCenter and mapZoom
 
@@ -219,6 +220,81 @@ Marker colors (active, inactive, completed, clusters, user location dot) are con
 
 ---
 
+## Route line and progress indicator
+
+An optional polyline connecting all stops in sequence. The line is split into two visual segments: a solid section for stops already visited, and a dashed section for stops still to come — functioning as a progress indicator along the route.
+
+The line is only shown at street-level zoom (controlled by `minZoom`) and is hidden when zoomed out, keeping the map uncluttered at overview zoom levels.
+
+### Enabling
+
+```json
+"mapRoute": true
+```
+
+This draws straight lines between stop coordinates using theme default colors.
+
+### With a GeoJSON route file
+
+For accurate walking paths that follow actual streets, provide a GeoJSON `LineString` file:
+
+```json
+"mapRoute": {
+  "geoJSON": "./route.geojson"
+}
+```
+
+Place `route.geojson` next to `metadata.json` in the tour folder:
+
+```
+src/data/tour/
+  my-tour/
+    metadata.json
+    route.geojson    ← drop it here
+    en.json
+```
+
+The file is bundled at build time — no runtime fetch occurs. The coordinates in the GeoJSON file follow the standard GeoJSON convention: `[longitude, latitude]` (note: reversed compared to the `{ lat, lng }` objects used elsewhere in the app).
+
+**Format:**
+```json
+{
+  "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "geometry": {
+      "type": "LineString",
+      "coordinates": [
+        [2.1734, 41.3851],
+        [2.1740, 41.3860]
+      ]
+    },
+    "properties": {}
+  }]
+}
+```
+
+Tools that export GPX tracks (Komoot, Google Maps, Strava, etc.) can convert to GeoJSON via [geojson.io](https://geojson.io) or similar.
+
+### Progress tracking
+
+The line splits at the **last completed stop**. Segment `[stop_n → stop_{n+1}]` turns solid once `stop_{n+1}` is completed — progress advances stop-by-stop, with no fractional display within a walking leg.
+
+All stops with a `location` field contribute to the route (not limited to audio stops). Stops without coordinates are silently skipped; the line connects the remaining stops in sequence.
+
+### Configuration fields
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `geoJSON` | string | — | Relative path to a GeoJSON file, e.g. `"./route.geojson"` |
+| `minZoom` | number | `13` | Line is hidden below this zoom level |
+
+### Theming
+
+All visual styling (colors, line weight, opacity, dash pattern) is controlled via `mapMarkers.route` in your `ThemeConfig`. See [themes.md](./themes.md#mapmarkers-optional) for the full reference.
+
+---
+
 ## Offline behaviour
 
 Map tiles require an internet connection. When the device is offline the map is replaced with an "unavailable offline" message and a **View list** button. Stop data, GPS coordinates, and audio files remain fully accessible offline.
@@ -230,8 +306,11 @@ Map tiles require an internet connection. When the device is offline the map is 
 | Component | Location | Role |
 |-----------|----------|------|
 | `TourMapView` | `components/TourMapView.tsx` | Main map component (lazy-loaded) |
+| `MapRoute` | `components/map/MapRoute.tsx` | Route polyline with progress split |
 | `MapZoomControls` | `components/map/MapZoomControls.tsx` | +/− zoom buttons |
 | `MapLocateButton` | `components/map/MapLocateButton.tsx` | User location button |
 | `UserLocationLayer` | `components/map/MapLocateButton.tsx` | Pulsing blue dot + drag detection |
 | `useUserLocation` | `components/map/MapLocateButton.tsx` | Location state hook |
 | `getTileConfig` | `src/utils/mapTileProvider.ts` | Tile URL/attribution resolver |
+| `buildGeoJSONRouteLines` | `src/utils/routeGeometry.ts` | Snap stops to GeoJSON line, slice for progress |
+| `buildStraightRouteLines` | `src/utils/routeGeometry.ts` | Straight-line fallback route segments |

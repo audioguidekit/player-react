@@ -1,5 +1,29 @@
 export type StopType = 'audio' | 'text' | 'image-text' | '3d-object' | 'video' | 'headline' | 'rating' | 'email' | 'quote' | 'image-gallery' | 'image-comparison' | 'hotspot-image' | 'embed';
 
+/** GeoJSON FeatureCollection containing a single LineString (the walking route). */
+export interface RouteGeoJSON {
+  type: 'FeatureCollection';
+  features: Array<{
+    type: 'Feature';
+    geometry: {
+      type: 'LineString';
+      /** Coordinates in [lng, lat] order — GeoJSON standard. */
+      coordinates: [number, number][];
+    };
+    properties: Record<string, unknown>;
+  }>;
+}
+
+/**
+ * Route polyline configuration.
+ * In metadata.json, `geoJSON` is a relative path string ("./route.geojson").
+ * At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.
+ */
+export interface MapRouteConfig {
+  geoJSON?: string | RouteGeoJSON;  // path in metadata.json → resolved object at runtime
+  minZoom?: number;                  // hide line below this zoom level (default: 13)
+}
+
 export interface StopLocation {
   lat: number;
   lng: number;
@@ -39,6 +63,7 @@ export interface TourMetadata {
     disableClusteringAtZoom?: number; // Zoom level at which clustering stops (e.g. 16)
     spiderfyOnMaxZoom?: boolean;     // Fan out overlapping markers at max zoom (default: true)
   };
+  mapRoute?: boolean | MapRouteConfig; // Show route polyline with progress indicator (default: false)
 }
 
 export interface BaseStop {
@@ -197,6 +222,7 @@ export interface TourData {
     disableClusteringAtZoom?: number;
     spiderfyOnMaxZoom?: boolean;
   };
+  mapRoute?: boolean | MapRouteConfig; // Show route polyline with progress indicator (default: false)
 }
 
 export interface Language {

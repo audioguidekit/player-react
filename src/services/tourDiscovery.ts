@@ -9,7 +9,7 @@
  * Properties in language files override metadata properties.
  */
 
-import { TourData, TourMetadata, Language } from '../../types';
+import { TourData, TourMetadata, Language, RouteGeoJSON, MapRouteConfig } from '../../types';
 
 // Import all tour JSON files at build time (language-specific files)
 // Uses /src/data/tour/ path - files must be in src directory for Vite to import them
@@ -25,6 +25,15 @@ const tourModules = import.meta.glob<TourData>(
 // Import metadata files separately
 const metadataModules = import.meta.glob<TourMetadata>(
   '/src/data/tour/**/metadata.json',
+  {
+    eager: true,
+    import: 'default',
+  }
+);
+
+// Import GeoJSON route files (resolved at build time, so no runtime fetch needed)
+const geojsonModules = import.meta.glob<RouteGeoJSON>(
+  '/src/data/tour/**/*.geojson',
   {
     eager: true,
     import: 'default',
@@ -52,6 +61,30 @@ const MAP_ENV_KEYS: Partial<Record<string, string>> = {
 };
 
 /**
+ * Resolve a mapRoute.geoJSON relative path string to the parsed GeoJSON object.
+ * Called during metadata registry build so the resolved object flows into TourData at runtime.
+ */
+function resolveMapRouteGeoJSON(metadata: TourMetadata, metadataPath: string): TourMetadata {
+  if (!metadata.mapRoute || typeof metadata.mapRoute === 'boolean') return metadata;
+  const config = metadata.mapRoute as MapRouteConfig;
+  if (typeof config.geoJSON !== 'string') return metadata; // already resolved or absent
+
+  // Resolve the relative path against the metadata file's directory
+  const dir = metadataPath.substring(0, metadataPath.lastIndexOf('/'));
+  const relativePath = config.geoJSON.replace(/^\.\//, '');
+  const resolvedPath = `${dir}/${relativePath}`;
+
+  const parsed = geojsonModules[resolvedPath];
+  if (!parsed) {
+    console.warn(`[TourDiscovery] mapRoute.geoJSON not found: ${resolvedPath} — falling back to straight lines`);
+    const { geoJSON: _, ...rest } = config;
+    return { ...metadata, mapRoute: rest };
+  }
+
+  return { ...metadata, mapRoute: { ...config, geoJSON: parsed } };
+}
+
+/**
  * Build metadata registry from discovered metadata files
  */
 function buildMetadataRegistry(): MetadataRegistry {
@@ -63,7 +96,7 @@ function buildMetadataRegistry(): MetadataRegistry {
       continue;
     }
 
-    registry[metadata.id] = metadata;
+    registry[metadata.id] = resolveMapRouteGeoJSON(metadata, path);
     console.log(`[TourDiscovery] Loaded metadata for tour: ${metadata.id}`);
   }
 

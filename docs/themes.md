@@ -144,6 +144,13 @@ mapMarkers: {
     dotColor: '#2563EB',
     borderColor: '#FFFFFF',               // Optional: inner dot border
   },
+  route: {                                 // Optional: route polyline (requires mapRoute in metadata.json)
+    completedColor: '#459825',             // color for visited segments
+    upcomingColor: '#888888',             // color for unvisited (dashed) segments
+    weight: 3,                            // line width in px
+    opacity: 0.85,                        // opacity for completed line (upcoming renders at 75% of this)
+    dashArray: '8 6',                     // SVG dash pattern for upcoming segment
+  },
 }
 ```
 

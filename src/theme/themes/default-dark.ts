@@ -100,6 +100,13 @@ export const defaultDarkTheme: ThemeConfig = {
       dotColor: '#60A5FA', // Vibrant sky-blue — readable on dark tiles
       borderColor: '#FFFFFF',
     },
+    route: {
+      completedColor: '#459825', // green — matches completed marker color
+      upcomingColor: '#555555',  // muted grey on dark tiles
+      weight: 3,
+      opacity: 0.85,
+      dashArray: '8 6',
+    },
   },
 
   buttons: {

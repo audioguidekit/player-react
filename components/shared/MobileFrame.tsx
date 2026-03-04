@@ -8,7 +8,11 @@ interface MobileFrameProps {
 }
 
 const OuterContainer = styled.div`
-  ${tw`h-full min-h-screen bg-zinc-800 flex items-center justify-center p-0 md:p-8 font-sans`}
+  ${tw`h-full min-h-screen flex items-center justify-center p-0 md:p-8 font-sans`}
+  background-color: ${({ theme }) => theme?.colors?.background?.primary || '#FFFFFF'};
+  @media (min-width: 768px) {
+    background-color: #27272a; /* zinc-800 on desktop only */
+  }
   min-height: ${({ theme }) => theme.platform.viewport.height};
 `;
 

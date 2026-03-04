@@ -239,6 +239,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
                 mapMarkerIcon={tour.mapMarkerIcon}
                 mapMarkerNumber={tour.mapMarkerNumber}
                 mapCluster={tour.mapCluster}
+                mapRoute={tour.mapRoute}
                 onRequestListView={() => setViewMode('list')}
               />
             </Suspense>

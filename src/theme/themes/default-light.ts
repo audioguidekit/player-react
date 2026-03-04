@@ -100,6 +100,13 @@ export const defaultLightTheme: ThemeConfig = {
       dotColor: '#2563EB', // Deep saturated blue — crisp on light/beige tiles
       borderColor: '#FFFFFF',
     },
+    route: {
+      completedColor: '#459825', // green — matches completed marker color
+      upcomingColor: '#AAAAAA',  // muted grey on light tiles
+      weight: 3,
+      opacity: 0.85,
+      dashArray: '8 6',
+    },
   },
 
   buttons: {

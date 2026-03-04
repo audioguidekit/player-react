@@ -14,6 +14,11 @@
   "showProgressBar": true,
   "mapView": true,
   "mapProvider": "openstreetmap",
+  "mapCluster": {
+    "disableClusteringAtZoom": 16,
+    "spiderfyOnMaxZoom": true
+  },
+  "mapMarkerIcon": "",
   "backgroundColor": "#1A2634",
   "image": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/images/cover.webp"
 }

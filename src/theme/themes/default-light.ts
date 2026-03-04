@@ -86,6 +86,16 @@ export const defaultLightTheme: ThemeConfig = {
       backgroundColor: '#459825',
       checkmarkColor: '#FFFFFF',
     },
+    cluster: {
+      backgroundColor: '#1A1A1A',
+      numberColor: '#FFFFFF',
+      borderColor: 'rgba(255,255,255,0.2)',
+      shadow: '0 3px 10px rgba(0,0,0,0.35)',
+      fontSize: '18px',
+      fontWeight: '700',
+      size: 64,
+      maxClusterRadius: 48,
+    },
   },
 
   buttons: {

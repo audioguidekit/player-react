@@ -30,6 +30,11 @@ export interface TourMetadata {
   mapView?: boolean;           // Enable map tab (default: false)
   mapProvider?: 'openstreetmap' | 'mapbox'; // Tile provider (default: 'openstreetmap')
   mapApiKey?: string;          // Needed only for mapbox
+  mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
+  mapCluster?: {
+    disableClusteringAtZoom?: number; // Zoom level at which clustering stops (e.g. 16)
+    spiderfyOnMaxZoom?: boolean;     // Fan out overlapping markers at max zoom (default: true)
+  };
 }
 
 export interface BaseStop {
@@ -178,6 +183,11 @@ export interface TourData {
   mapView?: boolean;           // Enable map tab (default: false)
   mapProvider?: 'openstreetmap' | 'mapbox'; // Tile provider (default: 'openstreetmap')
   mapApiKey?: string;          // Needed only for mapbox
+  mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
+  mapCluster?: {
+    disableClusteringAtZoom?: number;
+    spiderfyOnMaxZoom?: boolean;
+  };
 }
 
 export interface Language {

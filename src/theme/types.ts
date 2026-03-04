@@ -91,6 +91,16 @@ export interface ThemeConfig {
       backgroundColor: string;
       checkmarkColor: string;
     };
+    cluster: {
+      backgroundColor: string;
+      numberColor: string;
+      borderColor?: string;
+      shadow?: string;
+      fontSize?: string;
+      fontWeight?: string;
+      size?: number;           // Visual diameter in px (default: 64)
+      maxClusterRadius?: number; // Pixel radius at which markers cluster (default: 48)
+    };
   };
 
   // Primary Buttons (main action buttons)

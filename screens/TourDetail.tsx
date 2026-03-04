@@ -233,6 +233,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
                 onStopClick={handleStopClick}
                 mapProvider={tour.mapProvider}
                 mapApiKey={tour.mapApiKey}
+                mapCluster={tour.mapCluster}
                 onRequestListView={() => setViewMode('list')}
               />
             </Suspense>

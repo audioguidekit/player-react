@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet.markercluster';
 import tw from 'twin.macro';
 import styled, { useTheme } from 'styled-components';
 import { Stop } from '../types';
@@ -18,6 +19,11 @@ interface TourMapViewProps {
   onStopClick: (stopId: string) => void;
   mapProvider?: MapProvider;
   mapApiKey?: string;
+  mapMarkerIcon?: string;
+  mapCluster?: {
+    disableClusteringAtZoom?: number;
+    spiderfyOnMaxZoom?: boolean;
+  };
   onRequestListView?: () => void;
 }
 
@@ -108,16 +114,29 @@ interface MapMarkersProps {
   isStopCompleted: (stopId: string) => boolean;
   onStopClick: (stopId: string) => void;
   theme: ThemeConfig;
+  markerIcon?: string;
+  clusterConfig?: TourMapViewProps['mapCluster'];
 }
 
 const MapMarkers: React.FC<MapMarkersProps> = ({
-  stops, currentStopId, isStopCompleted, onStopClick, theme,
+  stops, currentStopId, isStopCompleted, onStopClick, theme, markerIcon, clusterConfig,
 }) => {
   const map = useMap();
-  const markersRef = useRef<L.Marker[]>([]);
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
-  const createIcon = useCallback(
+  const createStopIcon = useCallback(
     (stop: Stop, index: number): L.DivIcon => {
+      // Custom image marker — just the image, no number, no state variants
+      if (markerIcon) {
+        return L.divIcon({
+          html: `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer"><img src="${markerIcon}" style="width:32px;height:32px;object-fit:contain" draggable="false" /></div>`,
+          className: '',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+        });
+      }
+
+      // Default: themed numbered / checkmark circle
       const isActive = stop.id === currentStopId;
       const isCompleted = isStopCompleted(stop.id);
       const m = theme.mapMarkers ?? theme.stepIndicators;
@@ -146,7 +165,6 @@ const MapMarkers: React.FC<MapMarkersProps> = ({
         content = `<span style="font-size:${fs};font-weight:${fw};color:${m.inactive.numberColor}">${index + 1}</span>`;
       }
 
-      // 44px outer tap area (invisible) wrapping 32px visual — meets minimum touch target size
       return L.divIcon({
         html: `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;cursor:pointer"><div style="width:32px;height:32px;border-radius:50%;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;box-shadow:${shadow};box-sizing:border-box">${content}</div></div>`,
         className: '',
@@ -154,30 +172,70 @@ const MapMarkers: React.FC<MapMarkersProps> = ({
         iconAnchor: [22, 22],
       });
     },
-    [currentStopId, isStopCompleted, theme]
+    [markerIcon, currentStopId, isStopCompleted, theme]
+  );
+
+  const createClusterIcon = useCallback(
+    (cluster: L.MarkerCluster): L.DivIcon => {
+      const c = theme.mapMarkers?.cluster;
+      const count  = cluster.getChildCount();
+      const size   = c?.size            ?? 64;
+      const tap    = size + 8; // tap area slightly larger than visual
+      const bg     = c?.backgroundColor ?? '#1A1A1A';
+      const color  = c?.numberColor     ?? '#FFFFFF';
+      const border = c?.borderColor     ? `2px solid ${c.borderColor}` : 'none';
+      const shadow = c?.shadow          ?? '0 3px 10px rgba(0,0,0,0.35)';
+      const fs     = c?.fontSize        ?? '18px';
+      const fw     = c?.fontWeight      ?? '700';
+
+      return L.divIcon({
+        html: `<div style="width:${tap}px;height:${tap}px;display:flex;align-items:center;justify-content:center"><div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;box-shadow:${shadow};box-sizing:border-box;border:${border}"><span style="font-size:${fs};font-weight:${fw};color:${color}">${count}</span></div></div>`,
+        className: '',
+        iconSize: [tap, tap],
+        iconAnchor: [tap / 2, tap / 2],
+      });
+    },
+    [theme]
   );
 
   useEffect(() => {
-    markersRef.current.forEach(m => m.remove());
-    markersRef.current = [];
+    // Remove previous cluster group
+    if (clusterGroupRef.current) {
+      clusterGroupRef.current.remove();
+      clusterGroupRef.current = null;
+    }
+
+    const group = L.markerClusterGroup({
+      iconCreateFunction: createClusterIcon,
+      showCoverageOnHover: false,
+      maxClusterRadius: theme.mapMarkers?.cluster?.maxClusterRadius ?? 48,
+      disableClusteringAtZoom: clusterConfig?.disableClusteringAtZoom,
+      spiderfyOnMaxZoom: clusterConfig?.spiderfyOnMaxZoom ?? true,
+      zoomToBoundsOnClick: true,
+      animate: true,
+    });
 
     let audioIndex = 0;
     stops.forEach(stop => {
       if (stop.type === 'audio') {
         const idx = audioIndex++;
         if (!stop.location) return;
-        const marker = L.marker([stop.location.lat, stop.location.lng], { icon: createIcon(stop, idx) });
+        const marker = L.marker([stop.location.lat, stop.location.lng], {
+          icon: createStopIcon(stop, idx),
+        });
         marker.on('click', () => onStopClick(stop.id));
-        marker.addTo(map);
-        markersRef.current.push(marker);
+        group.addLayer(marker);
       }
     });
 
+    group.addTo(map);
+    clusterGroupRef.current = group;
+
     return () => {
-      markersRef.current.forEach(m => m.remove());
-      markersRef.current = [];
+      group.remove();
+      clusterGroupRef.current = null;
     };
-  }, [map, stops, createIcon, onStopClick]);
+  }, [map, stops, createStopIcon, createClusterIcon, onStopClick]);
 
   return null;
 };

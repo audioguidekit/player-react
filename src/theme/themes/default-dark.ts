@@ -86,6 +86,16 @@ export const defaultDarkTheme: ThemeConfig = {
       backgroundColor: '#459825',
       checkmarkColor: '#FFFFFF',
     },
+    cluster: {
+      backgroundColor: '#E5E5E5',
+      numberColor: '#1A1A1A',
+      borderColor: 'rgba(0,0,0,0.15)',
+      shadow: '0 3px 10px rgba(0,0,0,0.5)',
+      fontSize: '18px',
+      fontWeight: '700',
+      size: 64,
+      maxClusterRadius: 48,
+    },
   },
 
   buttons: {

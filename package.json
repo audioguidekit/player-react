@@ -17,7 +17,7 @@
     "@google/model-viewer": "^4.1.0",
     "@phosphor-icons/react": "^2.1.10",
     "country-flag-icons": "^1.6.4",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.1.2",
     "framer-motion": "^12.23.24",
     "idb": "^8.0.3",
     "leaflet": "^1.9.4",
@@ -53,7 +53,7 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-babel-macros": "^1.0.6",
-    "vite-plugin-pwa": "^0.21.2",
+    "vite-plugin-pwa": "^0.19.8",
     "workbox-window": "^7.4.0"
   }
 }

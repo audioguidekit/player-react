@@ -6,6 +6,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { BottomSheet } from '../BottomSheet';
 import { Language } from '../../types';
+import { useHaptics } from '../../src/hooks/useHaptics';
 
 // Map country codes to flag components
 const flagComponents: Record<string, React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
@@ -79,6 +80,7 @@ export const LanguageSheet = React.memo<LanguageSheetProps>(({
   onSelect,
   onClose
 }) => {
+  const triggerHaptic = useHaptics();
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose}>
       <Container>
@@ -89,7 +91,10 @@ export const LanguageSheet = React.memo<LanguageSheetProps>(({
             return (
               <LanguageButton
                 key={lang.code}
-                onClick={() => onSelect(lang)}
+                onClick={() => {
+                  triggerHaptic();
+                  onSelect(lang);
+                }}
                 $isSelected={selectedLanguage.code === lang.code}
               >
                 <LanguageContent>

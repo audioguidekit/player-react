@@ -1,6 +1,7 @@
 import React from 'react';
 import tw from 'twin.macro';
 import styled from 'styled-components';
+import { useHaptics } from '../../src/hooks/useHaptics';
 
 interface SkipButtonProps {
     direction: 'forward' | 'backward';
@@ -36,11 +37,16 @@ export const SkipButton = React.memo<SkipButtonProps>(({
     disabled = false,
     children
 }) => {
+    const triggerHaptic = useHaptics();
+
     return (
         <Button
             onClick={(e) => {
                 e.stopPropagation();
-                if (!disabled) onClick();
+                if (!disabled) {
+                    triggerHaptic();
+                    onClick();
+                }
             }}
             onPointerDownCapture={(e) => e.stopPropagation()}
             disabled={disabled}

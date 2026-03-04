@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import { useHaptics } from '../src/hooks/useHaptics';
 import { SkipBackIcon } from '@phosphor-icons/react/dist/csr/SkipBack';
 import { SkipForwardIcon } from '@phosphor-icons/react/dist/csr/SkipForward';
 import { XIcon } from '@phosphor-icons/react/dist/csr/X';
@@ -312,6 +313,8 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
 
   // Ref for transcription scroll container
   const transcriptionRef = useRef<HTMLDivElement>(null);
+
+  const triggerHaptic = useHaptics();
 
   // Scroll transcription to top when stop changes
   useEffect(() => {
@@ -645,6 +648,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                         <TranscriptionButton
                           onClick={(e) => {
                             e.stopPropagation();
+                            triggerHaptic();
                             setIsTranscriptionExpanded(!isTranscriptionExpanded);
                           }}
                           onPointerDownCapture={(e) => e.stopPropagation()}

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { XIcon } from '@phosphor-icons/react/dist/csr/X';
 import tw from 'twin.macro';
 import styled from 'styled-components';
+import { useHaptics } from '../src/hooks/useHaptics';
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -74,6 +75,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     // Body scroll lock logic could go here
   }, [isOpen]);
 
+  const triggerHaptic = useHaptics();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -85,7 +88,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              onClick={onClose}
+              onClick={() => {
+                triggerHaptic();
+                onClose();
+              }}
             />
           )}
 
@@ -114,7 +120,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           >
             {/* Handle Area */}
             {!hideHandle && (
-              <HandleArea onClick={onClose}>
+              <HandleArea
+                onClick={() => {
+                  triggerHaptic();
+                  onClose();
+                }}
+              >
                 <Handle />
               </HandleArea>
             )}
@@ -123,7 +134,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             {title && (
               <Header>
                 <Title>{title}</Title>
-                <CloseButton onClick={onClose}>
+                <CloseButton
+                  onClick={() => {
+                    triggerHaptic();
+                    onClose();
+                  }}
+                >
                   <XIcon size={20} weight="bold"/>
                 </CloseButton>
               </Header>

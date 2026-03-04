@@ -43,6 +43,7 @@ export interface TourMetadata {
   themeId?: string;
   transcriptAvailable?: boolean;
   collectFeedback?: boolean;
+  hapticsEnabled?: boolean;      // Enable or disable all haptic feedback for this tour (default: true)
   image?: string;
   showLanguageLabel?: boolean; // Show language name next to flag in selector (default: true)
   showStopImage?: boolean | 'thumbnail'; // Show stop image: true=full card, false=list, 'thumbnail'=compact with thumbnail (default: true)
@@ -204,6 +205,7 @@ export interface TourData {
   themeId?: string; // Optional theme ID for custom branding
   transcriptAvailable?: boolean;
   collectFeedback?: boolean; // Show rating button on main screen (default: true)
+  hapticsEnabled?: boolean;      // Enable or disable all haptic feedback for this tour (default: true)
   showLanguageLabel?: boolean; // Show language name next to flag in selector (default: true)
   showStopImage?: boolean | 'thumbnail'; // Show stop image: true=full card, false=list, 'thumbnail'=compact with thumbnail (default: true)
   showStopDuration?: boolean;  // Show duration on cards (default: true)

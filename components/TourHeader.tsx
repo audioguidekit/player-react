@@ -9,6 +9,7 @@ import styled from 'styled-components';
 import { AnimatedCounter } from './shared/AnimatedCounter';
 import { useTranslation } from '../src/translations';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
+import { useHaptics } from '../src/hooks/useHaptics';
 
 interface TourHeaderProps {
     onBack: () => void;
@@ -111,6 +112,7 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
 }) => {
     const { t } = useTranslation();
     const isOnline = useOnlineStatus();
+    const triggerHaptic = useHaptics();
 
     return (
         <Container
@@ -121,7 +123,12 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
         >
             <FlexContainer>
                 {/* Home Button - Ghost Style */}
-                <HomeButton onClick={onBack}>
+                <HomeButton
+                    onClick={() => {
+                        triggerHaptic();
+                        onBack();
+                    }}
+                >
                     <HouseIcon size={24} weight="bold" />
                 </HomeButton>
 
@@ -156,7 +163,10 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
                         <SegmentedControl>
                             <SegmentButton
                                 $isActive={viewMode === 'map'}
-                                onClick={() => onViewModeChange?.('map')}
+                                onClick={() => {
+                                    triggerHaptic();
+                                    onViewModeChange?.('map');
+                                }}
                                 aria-label="Map view"
                             >
                                 {viewMode === 'map' && (
@@ -174,7 +184,10 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
                             </SegmentButton>
                             <SegmentButton
                                 $isActive={viewMode === 'list'}
-                                onClick={() => onViewModeChange?.('list')}
+                                onClick={() => {
+                                    triggerHaptic();
+                                    onViewModeChange?.('list');
+                                }}
                                 aria-label="List view"
                             >
                                 {viewMode === 'list' && (

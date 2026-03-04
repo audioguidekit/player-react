@@ -7,6 +7,7 @@ import { InfoIcon } from '@phosphor-icons/react/dist/csr/Info';
 import { motion, AnimatePresence, useAnimationControls, useMotionValue, animate, type PanInfo } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
+import { useHaptics } from '../src/hooks/useHaptics';
 import { AudioStop } from '../types';
 import { RichText } from '../components/RichText';
 import { PlayPauseButton } from '../components/player/PlayPauseButton';
@@ -446,6 +447,8 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
   const hasTranscription = transcriptAvailable && transcription && transcription.trim().length > 0;
   const hasCaption = !!(currentStop.imageCaption || currentStop.imageCredit);
 
+  const triggerHaptic = useHaptics();
+
   // Pan-driven carousel for track navigation
   const dragX = useMotionValue(0);
   const artworkRef = useRef<HTMLDivElement>(null);
@@ -559,7 +562,10 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
       {/* Header */}
       <Header>
         <HeaderButton
-          onClick={onClose}
+          onClick={() => {
+            triggerHaptic();
+            onClose();
+          }}
           onPointerDownCapture={(e) => e.stopPropagation()}
         >
           <CaretDownIcon size={28} weight="bold" />
@@ -569,6 +575,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
           <TranscriptionToggle
             $active={isTranscriptionOpen}
             onClick={() => {
+              triggerHaptic();
               setIsTranscriptionOpen(!isTranscriptionOpen);
               // Scroll to top when opening
               if (!isTranscriptionOpen && transcriptionRef.current) {
@@ -737,7 +744,10 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
         {/* Controls — same components as expanded MiniPlayer */}
         <FSControlsRow>
           <TrackButton
-            onClick={canGoPrev ? goPrev : undefined}
+            onClick={canGoPrev ? () => {
+              triggerHaptic();
+              goPrev();
+            } : undefined}
             $disabled={!canGoPrev}
             disabled={!canGoPrev}
             onPointerDownCapture={(e) => e.stopPropagation()}
@@ -766,7 +776,10 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
           </SkipButton>
 
           <TrackButton
-            onClick={canGoNext ? goNext : undefined}
+            onClick={canGoNext ? () => {
+              triggerHaptic();
+              goNext();
+            } : undefined}
             $disabled={!canGoNext}
             disabled={!canGoNext}
             onPointerDownCapture={(e) => e.stopPropagation()}

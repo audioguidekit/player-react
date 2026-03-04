@@ -85,6 +85,40 @@ const ControlsOverlay = styled.div`
 
 // ─── Internal sub-components (require MapContainer context) ───────────────────
 
+// Leaflet 1.9 removed the Tap handler that synthesised dblclick from touch.
+// With user-scalable=no enforced, browsers also skip dblclick synthesis.
+// This component re-implements double-tap zoom around the tap point.
+const MapDoubleTapZoom: React.FC = () => {
+  const map = useMap();
+  const lastTapRef = useRef<{ time: number; x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.changedTouches.length !== 1) return;
+      const touch = e.changedTouches[0];
+      const now = Date.now();
+      const prev = lastTapRef.current;
+
+      if (prev && now - prev.time < 300 && Math.abs(touch.clientX - prev.x) < 30 && Math.abs(touch.clientY - prev.y) < 30) {
+        e.preventDefault();
+        const rect = container.getBoundingClientRect();
+        const point = L.point(touch.clientX - rect.left, touch.clientY - rect.top);
+        map.setZoomAround(point, map.getZoom() + 1, { animate: true });
+        lastTapRef.current = null;
+      } else {
+        lastTapRef.current = { time: now, x: touch.clientX, y: touch.clientY };
+      }
+    };
+
+    container.addEventListener('touchend', onTouchEnd, { passive: false });
+    return () => container.removeEventListener('touchend', onTouchEnd);
+  }, [map]);
+
+  return null;
+};
+
 interface MapBoundsFitterProps {
   locations: Array<{ lat: number; lng: number }>;
   center?: { lat: number; lng: number };
@@ -131,6 +165,16 @@ const MapMarkers: React.FC<MapMarkersProps> = ({
 }) => {
   const map = useMap();
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+  const hasFlownRef = useRef(false);
+
+  // On first active stop (covers deep links), fly the map to it
+  useEffect(() => {
+    if (hasFlownRef.current || !currentStopId) return;
+    const stop = stops.find(s => s.id === currentStopId);
+    if (!stop?.location) return;
+    hasFlownRef.current = true;
+    map.flyTo([stop.location.lat, stop.location.lng], Math.max(map.getZoom(), 15), { duration: 0.8 });
+  }, [currentStopId, stops, map]);
 
   const createStopIcon = useCallback(
     (stop: Stop, index: number): L.DivIcon => {
@@ -335,6 +379,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
           maxZoom={tileConfig.maxZoom}
           {...(tileConfig.subdomains ? { subdomains: tileConfig.subdomains } : {})}
         />
+        <MapDoubleTapZoom />
         <MapBoundsFitter locations={locations} center={mapCenter} zoom={mapZoom} />
         {resolvedRoute && (
           <MapRoute

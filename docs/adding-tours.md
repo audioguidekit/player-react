@@ -47,6 +47,7 @@ Shared properties across all language versions. Individual language files can ov
 | `showStopImage` | `boolean \| "thumbnail"` | `true` | Stop card layout (see below) |
 | `showStopDuration` | boolean | `true` | Show duration on stop cards |
 | `showStopNumber` | boolean | `true` | Show number indicator on stops |
+| `hapticsEnabled` | boolean | `true` | Enable haptic feedback on taps |
 | `image` | string | — | Default tour cover image URL |
 
 ### Stop card display options
@@ -63,6 +64,12 @@ Shared properties across all language versions. Individual language files can ov
 | `false` | `false` | `false` | List: `Title` |
 
 > **Map view:** The map tab (`mapView`, `mapProvider`, `mapCenter`, etc.) is also configured in `metadata.json`. See [map.md](./map.md) for the full field reference.
+
+### Haptic feedback
+
+Set `"hapticsEnabled": false` to disable all haptic feedback for a tour. Defaults to `true`.
+
+Haptics work on Android via the Vibration API and on iOS via a hidden-checkbox trick that fires the system Taptic Engine — the same feel as toggling a native switch. Desktop is a no-op. The flag is read once at startup; there is no runtime toggle.
 
 ### Offline modes
 

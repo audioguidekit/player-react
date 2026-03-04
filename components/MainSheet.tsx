@@ -61,10 +61,10 @@ export const MainSheet: React.FC<MainSheetProps> = ({
     (window.navigator as any).standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches
   );
-  
+
   const contentRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // State to track the measured height of the StartCard content
   const [startContentHeight, setStartContentHeight] = useState(420); // Increased default from 380
   const [containerHeight, setContainerHeight] = useState(0);
@@ -77,7 +77,7 @@ export const MainSheet: React.FC<MainSheetProps> = ({
   // Add a small buffer to ensure content is not cut off at the bottom
   // Use window.innerHeight as fallback if containerHeight is not measured yet
   const effectiveContainerHeight = containerHeight > 0 ? containerHeight : (typeof window !== 'undefined' ? window.innerHeight : 800);
-  const calculatedCollapsedY = effectiveContainerHeight - startContentHeight - (isPWA ? 8 : 30); // 8px in PWA (no browser chrome), 30px in browser
+  const calculatedCollapsedY = effectiveContainerHeight - startContentHeight - (isPWA ? 8 : 0); // 8px in PWA (no browser chrome), 16px in browser
   // Ensure COLLAPSED_Y is always reasonable (not negative, not too high)
   const COLLAPSED_Y = Math.max(100, Math.min(calculatedCollapsedY, effectiveContainerHeight - 100));
 
@@ -104,10 +104,10 @@ export const MainSheet: React.FC<MainSheetProps> = ({
 
     // Measure immediately
     measure();
-    
+
     // Also measure after a short delay to ensure DOM is ready
     const timeoutId = setTimeout(measure, 100);
-    
+
     const resizeObserver = new ResizeObserver(measure);
     if (contentRef.current) resizeObserver.observe(contentRef.current);
     if (containerRef.current) resizeObserver.observe(containerRef.current);

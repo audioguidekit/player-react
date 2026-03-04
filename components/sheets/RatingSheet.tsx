@@ -8,6 +8,7 @@ import styled from 'styled-components';
 import { BottomSheet } from '../BottomSheet';
 import { useRating } from '../../context/RatingContext';
 import { useTranslation } from '../../src/translations';
+import { useHaptics } from '../../src/hooks/useHaptics';
 
 interface RatingSheetProps {
   isOpen: boolean;
@@ -169,6 +170,7 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
   } = useRating();
 
   const { t } = useTranslation();
+  const triggerHaptic = useHaptics();
 
   const [step, setStep] = useState<RatingStep>('RATING');
 
@@ -230,7 +232,10 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
                 {[1, 2, 3, 4, 5].map((star) => (
                   <StarButton
                     key={star}
-                    onClick={() => setRating(star)}
+                    onClick={() => {
+                      triggerHaptic();
+                      setRating(star);
+                    }}
                   >
                     <StyledStar
                       size={36}
@@ -287,7 +292,10 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
                       />
 
                       <Button
-                        onClick={handleFeedbackSubmit}
+                    onClick={() => {
+                      triggerHaptic();
+                      handleFeedbackSubmit();
+                    }}
                         disabled={isFeedbackButtonDisabled}
                         $disabled={isFeedbackButtonDisabled}
                       >
@@ -330,14 +338,22 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
 
                 <ButtonGroup>
                   <Button
-                    onClick={handleEmailSubmit}
+                    onClick={() => {
+                      triggerHaptic();
+                      handleEmailSubmit();
+                    }}
                     disabled={!isEmailValid}
                     $disabled={!isEmailValid}
                   >
                     {t.rating.subscribe}
                   </Button>
 
-                  <SkipButton onClick={handleSkip}>
+                  <SkipButton
+                    onClick={() => {
+                      triggerHaptic();
+                      handleSkip();
+                    }}
+                  >
                     {t.rating.skip}
                   </SkipButton>
                 </ButtonGroup>
@@ -361,7 +377,12 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
               <SuccessTitle>{t.rating.thankYou}</SuccessTitle>
               <SuccessDescription>{t.rating.appreciateFeedback}</SuccessDescription>
 
-              <Button onClick={handleFinalClose}>
+              <Button
+                onClick={() => {
+                  triggerHaptic();
+                  handleFinalClose();
+                }}
+              >
                 {t.rating.close}
               </Button>
             </StepContainer>

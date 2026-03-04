@@ -28,6 +28,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
         console.error('ErrorBoundary caught an error:', error, errorInfo);
         this.props.onError?.(error, errorInfo);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#ffffff');
     }
 
     render(): ReactNode {

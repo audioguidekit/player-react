@@ -31,6 +31,8 @@ export interface TourMetadata {
   mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler'; // Tile provider (default: 'openstreetmap')
   mapApiKey?: string;          // API key for the chosen provider
   mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
+  mapCenter?: { lat: number; lng: number }; // Initial map center; defaults to fitting all stops in view
+  mapZoom?: number;            // Initial zoom level 0–23; if mapCenter is omitted, fitBounds zoom is used instead
   mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
   mapMarkerNumber?: boolean;   // Show stop number on markers (default: true)
   mapCluster?: {
@@ -187,6 +189,8 @@ export interface TourData {
   mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler'; // Tile provider (default: 'openstreetmap')
   mapApiKey?: string;          // API key for the chosen provider
   mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
+  mapCenter?: { lat: number; lng: number }; // Initial map center; defaults to fitting all stops in view
+  mapZoom?: number;            // Initial zoom level 0–23; if mapCenter is omitted, fitBounds zoom is used instead
   mapMarkerIcon?: string;      // URL to a custom marker image — replaces numbered circle (clusters unaffected)
   mapMarkerNumber?: boolean;   // Show stop number on markers (default: true)
   mapCluster?: {

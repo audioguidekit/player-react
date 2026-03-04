@@ -29,9 +29,31 @@ Without `mapView: true` the map tab is hidden and everything works as before.
 | `mapProvider` | `"openstreetmap"` \| `"mapbox"` \| `"jawg"` \| `"maptiler"` | `"openstreetmap"` | Tile provider |
 | `mapApiKey` | string | — | API key for the chosen provider |
 | `mapStyleId` | string | — | Provider-specific style/map ID (see per-provider defaults below) |
+| `mapCenter` | `{ lat, lng }` | — | Initial map center; if omitted, the map fits all stops in view |
+| `mapZoom` | number (0–23) | — | Initial zoom level; if `mapCenter` is omitted, fitBounds zoom is used |
 | `mapMarkerIcon` | string (URL) | — | Custom image for all markers; replaces numbered circle |
 | `mapMarkerNumber` | boolean | `true` | Show stop number on markers |
 | `mapCluster` | object | — | Marker clustering behaviour (see below) |
+
+### mapCenter and mapZoom
+
+By default the map automatically fits all stops in view. Use `mapCenter` and `mapZoom` to set a fixed starting position:
+
+```json
+"mapCenter": { "lat": 41.3851, "lng": 2.1734 },
+"mapZoom": 13
+```
+
+Both fields are independent — you can set either or both:
+
+| Combination | Behaviour |
+|-------------|-----------|
+| neither set | fitBounds to show all stops |
+| `mapCenter` only | center there at zoom 13 |
+| `mapCenter` + `mapZoom` | center there at the given zoom |
+| `mapZoom` only | fitBounds to show all stops, then override zoom |
+
+---
 
 ### mapCluster
 

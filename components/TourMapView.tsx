@@ -20,6 +20,8 @@ interface TourMapViewProps {
   mapProvider?: MapProvider;
   mapApiKey?: string;
   mapStyleId?: string;
+  mapCenter?: { lat: number; lng: number };
+  mapZoom?: number;
   mapMarkerIcon?: string;
   mapMarkerNumber?: boolean;
   mapCluster?: {
@@ -89,9 +91,11 @@ const MapRefCapture: React.FC<{ mapRef: React.MutableRefObject<L.Map | null> }> 
 
 interface MapBoundsFitterProps {
   locations: Array<{ lat: number; lng: number }>;
+  center?: { lat: number; lng: number };
+  zoom?: number;
 }
 
-const MapBoundsFitter: React.FC<MapBoundsFitterProps> = ({ locations }) => {
+const MapBoundsFitter: React.FC<MapBoundsFitterProps> = ({ locations, center, zoom }) => {
   const map = useMap();
   const hasFitted = useRef(false);
 
@@ -99,13 +103,18 @@ const MapBoundsFitter: React.FC<MapBoundsFitterProps> = ({ locations }) => {
     if (hasFitted.current || locations.length === 0) return;
     hasFitted.current = true;
 
-    if (locations.length === 1) {
-      map.setView([locations[0].lat, locations[0].lng], 15);
+    if (center) {
+      // Explicit center provided — use it with the given zoom (or a sensible default)
+      map.setView([center.lat, center.lng], zoom ?? 13);
+    } else if (locations.length === 1) {
+      map.setView([locations[0].lat, locations[0].lng], zoom ?? 15);
     } else {
       const bounds = L.latLngBounds(locations.map(loc => [loc.lat, loc.lng]));
       map.fitBounds(bounds, { padding: [48, 48] });
+      // Override the fitBounds-calculated zoom if the user specified one
+      if (zoom !== undefined) map.setZoom(zoom);
     }
-  }, [map, locations]);
+  }, [map, locations, center, zoom]);
 
   return null;
 };
@@ -255,6 +264,8 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   mapProvider = 'openstreetmap',
   mapApiKey,
   mapStyleId,
+  mapCenter,
+  mapZoom,
   mapMarkerIcon,
   mapMarkerNumber = true,
   mapCluster,
@@ -313,7 +324,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
           maxZoom={tileConfig.maxZoom}
         />
         <MapRefCapture mapRef={mapRef} />
-        <MapBoundsFitter locations={locations} />
+        <MapBoundsFitter locations={locations} center={mapCenter} zoom={mapZoom} />
         <MapMarkers
           stops={stops}
           currentStopId={currentStopId}

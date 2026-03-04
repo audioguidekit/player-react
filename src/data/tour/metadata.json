@@ -15,6 +15,8 @@
   "mapView": true,
   "mapProvider": "openstreetmap",
   "mapStyleId": "",
+  "mapCenter": { "lat": 41.3851, "lng": 2.1734 },
+  "mapZoom": 13,
   "mapCluster": {
     "disableClusteringAtZoom": 16,
     "spiderfyOnMaxZoom": true

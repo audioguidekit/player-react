@@ -3,7 +3,7 @@ import { HouseIcon } from '@phosphor-icons/react/dist/csr/House';
 import { CloudSlashIcon } from '@phosphor-icons/react/dist/csr/CloudSlash';
 import { MapPinIcon } from '@phosphor-icons/react/dist/csr/MapPin';
 import { ListIcon } from '@phosphor-icons/react/dist/csr/List';
-import { motion, MotionValue, AnimatePresence } from 'framer-motion';
+import { motion, MotionValue, AnimatePresence, LayoutGroup } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
 import { AnimatedCounter } from './shared/AnimatedCounter';
@@ -22,7 +22,7 @@ interface TourHeaderProps {
 }
 
 const Container = styled(motion.div)`
-  ${tw`sticky top-0 z-30 px-6 backdrop-blur-md`}
+  ${tw`sticky top-0 z-30 px-3 backdrop-blur-md`}
   padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
   padding-bottom: 0.5rem;
   background-color: ${({ theme }) => theme.header.backgroundColor};
@@ -70,18 +70,25 @@ const TimeText = styled.div`
 `;
 
 const SegmentedControl = styled.div`
-  ${tw`flex items-center rounded-full p-0.5 shrink-0 ml-auto`}
+  ${tw`flex items-center h-10 rounded-full p-0.5 shrink-0 ml-auto relative overflow-hidden`}
+  min-width: 88px;
   background-color: ${({ theme }) => theme.colors.background.secondary};
   border: 1px solid ${({ theme }) => theme.colors.border.light};
 `;
 
 const SegmentButton = styled.button<{ $isActive: boolean }>`
-  ${tw`w-9 h-8 rounded-full flex items-center justify-center transition-colors`}
+  ${tw`flex-1 h-full rounded-full flex items-center justify-center transition-colors relative`}
   color: ${({ $isActive, theme }) =>
     $isActive ? theme.header.iconColor : theme.colors.text.tertiary};
-  background-color: ${({ $isActive, theme }) =>
-    $isActive ? theme.colors.background.primary : 'transparent'};
-  box-shadow: ${({ $isActive }) => $isActive ? '0 1px 3px rgba(0,0,0,0.15)' : 'none'};
+  background-color: transparent;
+  box-shadow: none;
+`;
+
+const SegmentThumb = styled(motion.div)`
+  ${tw`absolute inset-0 rounded-full`}
+  background-color: ${({ theme }) => theme.colors.background.primary};
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  z-index: 0;
 `;
 
 const OfflineBadge = styled(motion.div)`
@@ -144,23 +151,47 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
                     </ProgressSection>
                 )}
 
-                {showViewToggle && (
-                    <SegmentedControl>
-                        <SegmentButton
-                            $isActive={viewMode === 'map'}
-                            onClick={() => onViewModeChange?.('map')}
-                            aria-label="Map view"
-                        >
-                            <MapPinIcon size={18} weight={viewMode === 'map' ? 'fill' : 'regular'} />
-                        </SegmentButton>
-                        <SegmentButton
-                            $isActive={viewMode === 'list'}
-                            onClick={() => onViewModeChange?.('list')}
-                            aria-label="List view"
-                        >
-                            <ListIcon size={18} weight={viewMode === 'list' ? 'bold' : 'regular'} />
-                        </SegmentButton>
-                    </SegmentedControl>
+                {showViewToggle && viewMode && (
+                    <LayoutGroup>
+                        <SegmentedControl>
+                            <SegmentButton
+                                $isActive={viewMode === 'map'}
+                                onClick={() => onViewModeChange?.('map')}
+                                aria-label="Map view"
+                            >
+                                {viewMode === 'map' && (
+                                    <SegmentThumb
+                                        layoutId="tour-header-segment-thumb"
+                                        initial={false}
+                                        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                                    />
+                                )}
+                                <MapPinIcon
+                                    size={24}
+                                    weight={viewMode === 'map' ? 'fill' : 'regular'}
+                                    style={{ position: 'relative', zIndex: 1 }}
+                                />
+                            </SegmentButton>
+                            <SegmentButton
+                                $isActive={viewMode === 'list'}
+                                onClick={() => onViewModeChange?.('list')}
+                                aria-label="List view"
+                            >
+                                {viewMode === 'list' && (
+                                    <SegmentThumb
+                                        layoutId="tour-header-segment-thumb"
+                                        initial={false}
+                                        transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                                    />
+                                )}
+                                <ListIcon
+                                    size={24}
+                                    weight={viewMode === 'list' ? 'bold' : 'regular'}
+                                    style={{ position: 'relative', zIndex: 1 }}
+                                />
+                            </SegmentButton>
+                        </SegmentedControl>
+                    </LayoutGroup>
                 )}
             </FlexContainer>
         </Container>

@@ -29,7 +29,18 @@ interface StartCardProps {
 }
 
 const Container = styled.div`
-  ${tw`px-8 pt-10 pb-8 flex flex-col items-center text-center w-full`}
+  ${tw`px-8 pt-4 pb-8 flex flex-col items-center text-center w-full`}
+  /* The collapsed sheet is exactly as tall as this card, so on short viewports
+     the card would cover the whole screen and hide the media/map behind it. */
+  @media (max-height: 740px) {
+    ${tw`pb-5`}
+  }
+`;
+
+/* Grabber: the only affordance that the card can be dragged up to the tour detail. */
+const DragHandle = styled.div`
+  ${tw`w-10 h-1 rounded-full mb-5 shrink-0`}
+  background-color: ${({ theme }) => theme.sheets.handleColor};
 `;
 
 const IconContainer = styled.div<{ $showBorder?: boolean }>`
@@ -79,6 +90,18 @@ const Description = styled.p`
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
   font-size: ${({ theme }) => theme.startCard.descriptionFontSize};
   color: ${({ theme }) => theme.colors.text.secondary};
+  /* Clamp so a long tour description can't push the CTA off a short screen. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+  @media (max-height: 740px) {
+    ${tw`mb-4`}
+    -webkit-line-clamp: 3;
+  }
+  @media (max-height: 620px) {
+    -webkit-line-clamp: 2;
+  }
 `;
 
 const ErrorBox = styled.div`
@@ -228,6 +251,8 @@ export const StartCard = React.memo<StartCardProps>(({
   return (
     // No fixed height. We let the content define the height, and the parent measures it.
     <Container>
+      <DragHandle aria-hidden="true" />
+
       {/* Logo Container - only shown when logoUrl is set */}
       {logoUrl && (
         <IconContainer $showBorder={showLogoBorder}>

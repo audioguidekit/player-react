@@ -14,10 +14,10 @@ import * as path from 'path';
 
 test.use({ viewport: { width: 430, height: 1100 } });
 
-// ── No mutation needed: lower-manhattan ships with mapView off ──────────────
+// ── No mutation needed: _fixture has no mapView field, so it's list-only ────
 test.describe('View toggle gating', () => {
   test('a list-only tour (mapView off) shows no map/list toggle', async ({ page }) => {
-    await startTour(page, 'lower-manhattan');
+    await startTour(page, '_fixture');
     await expect(page.getByTestId('stop-feed')).toBeVisible({ timeout: 10000 });
     await expect(page.getByRole('button', { name: 'Map view' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'List view' })).toHaveCount(0);

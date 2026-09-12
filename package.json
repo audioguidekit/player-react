@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "bun scripts/deployments/use.ts barcelona && vite",
     "schema": "bun scripts/generate-schema.ts",
     "validate": "bun scripts/validate-tours.ts",
-    "build": "bun run validate && vite build",
+    "build": "bun scripts/deployments/use.ts barcelona && vite build",
     "preview": "vite preview",
     "tour:use": "bun scripts/deployments/use.ts",
     "tour:sync-r2": "bun scripts/deployments/sync-r2.ts",

@@ -1,0 +1,16 @@
+#!/bin/sh
+# Refuses to commit any src/data/tour/ content other than barcelona/_fixture —
+# real deployment content (tours-content/) must never land in this repo's history.
+# Installed via: git config core.hooksPath .githooks
+
+bad=$(git diff --cached --name-only --diff-filter=ACMR -- src/data/tour \
+  | grep -vE '^src/data/tour/(barcelona|_fixture)/')
+
+if [ -n "$bad" ]; then
+  echo "error: refusing to commit non-default tour content:" >&2
+  echo "$bad" | sed 's/^/  /' >&2
+  echo "" >&2
+  echo "Run \`bun run tour:use barcelona\` before committing, or if this is" >&2
+  echo "intentional, commit with --no-verify." >&2
+  exit 1
+fi

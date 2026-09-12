@@ -27,6 +27,28 @@ tours-content/
                                   # fields are plain R2 URLs, as most are today)
 ```
 
+## Always defaults back to barcelona
+
+`bun run dev` and `bun run build` both run `tour:use barcelona` first, no
+matter what was last active — so you never have to remember to switch back.
+Testing another deployment locally is always an explicit, separate step:
+
+```bash
+bun run tour:use new-york   # switch
+bun run dev                 # ...would reset straight back to barcelona!
+```
+
+To actually preview a non-default deployment, keep a dev server running
+across the switch (start it once on barcelona, then `tour:use new-york` in
+another terminal — Vite's HMR picks up the change), or use `tour:build
+<name>` for a one-off build of that deployment specifically.
+
+A `pre-commit` hook (`.githooks/pre-commit`, wired via
+`git config core.hooksPath .githooks` — already set for this checkout) also
+refuses to commit anything under `src/data/tour/` other than `barcelona/` or
+`_fixture/`, as a second line of defense in case something ever gets staged
+while a different deployment is active.
+
 ## Commands
 
 - **`bun run tour:use <deployment>`** — switch which content is active locally.

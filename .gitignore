@@ -56,13 +56,30 @@ dev-dist/
 create-audioguidekit-player/
 
 # Scripts directory (local tooling, not part of the repo)
-# ...except the tour-data schema tooling, which CI and the build depend on.
+# ...except the tour-data schema tooling, which CI and the build depend on,
+# and the deployment-switching tooling below.
 scripts/*
 !scripts/generate-schema.ts
 !scripts/validate-tours.ts
+!scripts/deployments/
+scripts/deployments/*
+!scripts/deployments/use.ts
+!scripts/deployments/sync-r2.ts
+!scripts/deployments/build.ts
+!scripts/deployments/README.md
 
 # Screenshots (local output, not part of the repo)
 screenshots/
 
 # Generated tour data (mirrored from src/data/tour by the vite sync plugin for test HTTP access)
 public/data/tour/
+
+# Deployment content (real client tours) — lives in its own separate git repo,
+# switched into src/data/tour/ locally via `bun run tour:use <deployment>`.
+# See scripts/deployments/README.md.
+tours-content/
+
+# Local asset copies staged by `tour:use` for offline dev/testing — regenerated
+# from tours-content/ (or absent entirely for the repo's own R2-hosted demo tour).
+public/images/
+public/audio/

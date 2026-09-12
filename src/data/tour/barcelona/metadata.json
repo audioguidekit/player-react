@@ -1,0 +1,17 @@
+{
+  "id": "barcelona",
+  "defaultLanguage": "en",
+  "offlineMode": "optional",
+  "transitionAudio": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/audio/end.m4a",
+  "themeId": "default-light",
+  "transcriptAvailable": true,
+  "collectFeedback": true,
+  "showLanguageLabel": false,
+  "showStopImage": "thumbnail",
+  "showStopDuration": true,
+  "showStopNumber": true,
+  "fullscreenPlayer": true,
+  "showProgressBar": true,
+  "imageColor": "#1A2634",
+  "image": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/images/cover.webp"
+}

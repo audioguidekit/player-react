@@ -216,7 +216,7 @@ const TourSelectionContent: React.FC<TourSelectionContentProps> = ({
           )}
         </Header>
 
-        <ScrollArea>
+        <ScrollArea className="no-scrollbar">
           <List>
             {tours.map(tour => (
               <TourSelectionCard

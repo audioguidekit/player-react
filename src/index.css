@@ -7,6 +7,21 @@
 
 .leaflet-control-attribution { font-size: 10px !important; opacity: 0.7; }
 
+/*
+  Hide the native scrollbar on in-app scroll containers. The UI is a phone frame,
+  and desktop Chromium reserves ~15px for a classic scrollbar inside it — visible
+  as an empty gutter down the right edge even when nothing overflows. Scrolling
+  itself is unaffected. (TourDetail's feed already asked for this class; it was
+  never defined.)
+*/
+.no-scrollbar {
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* legacy Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;              /* Chromium, Safari */
+}
+
 /* User location dot on map */
 @keyframes map-location-pulse {
   0%   { transform: scale(1); opacity: 0.5; }

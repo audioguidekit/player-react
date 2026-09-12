@@ -74,4 +74,7 @@ if (remoteAssets) {
   console.log('(Run `bun run tour:sync-r2 ' + deployment + '` beforehand so those URLs actually resolve.)');
 }
 
-execSync('bun run build', { cwd: root, stdio: 'inherit' });
+// Not `bun run build` — that script now always resets to barcelona first (see
+// package.json), which would silently discard the tour:use above for any other
+// deployment. use.ts already ran `bun run validate`, so just build directly.
+execSync('bunx vite build', { cwd: root, stdio: 'inherit' });

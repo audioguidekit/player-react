@@ -32,8 +32,10 @@ function nonFixtureEntries(): string[] {
   return readdirSync(tourDataDir).filter((name) => name !== '_fixture');
 }
 
-function clearActiveDeployment() {
+/** Remove every non-fixture entry (optionally keeping one) plus the generated public/ asset dirs. */
+function clearActiveDeployment(keep?: string) {
   for (const name of nonFixtureEntries()) {
+    if (name === keep) continue;
     rmSync(join(tourDataDir, name), { recursive: true, force: true });
   }
   rmSync(resolve(root, 'public/images'), { recursive: true, force: true });
@@ -45,12 +47,7 @@ if (deployment === 'barcelona') {
   // own unrelated uncommitted edits) or the wider tree. Remove any other deployment's
   // leftover folders first (untracked, safe to rmSync), then restore just barcelona/
   // from git in case a previous `tour:use` overwrote it.
-  for (const name of nonFixtureEntries()) {
-    if (name === 'barcelona') continue;
-    rmSync(join(tourDataDir, name), { recursive: true, force: true });
-  }
-  rmSync(resolve(root, 'public/images'), { recursive: true, force: true });
-  rmSync(resolve(root, 'public/audio'), { recursive: true, force: true });
+  clearActiveDeployment('barcelona');
   execSync('git checkout -- src/data/tour/barcelona', { cwd: root, stdio: 'inherit' });
   console.log('Restored the repo\'s default (barcelona) tour content.');
 } else {

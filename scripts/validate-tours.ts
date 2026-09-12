@@ -1,7 +1,7 @@
 /**
  * Validates every tour data file against the generated JSON Schemas and exits
  * non-zero on any problem. Catches unsupported/misspelled properties, invalid
- * enum values (stop `type`, `mapProvider`, CARTO `mapStyleId`, …) and missing
+ * enum values (stop `type`, `mapProvider`, per-provider `mapStyleId`, …) and missing
  * required fields per stop type.
  *
  * Run directly (`bun run validate`) or as the pre-step of `bun run build`.

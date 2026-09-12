@@ -14,8 +14,8 @@
   "fullscreenPlayer": true,
   "showProgressBar": true,
   "mapView": false,
-  "mapProvider": "carto",
-  "mapStyleId": "rastertiles/voyager",
+  "mapProvider": "openfreemap",
+  "mapStyleId": "bright",
   "mapCenter": {
     "lat": 40.7058,
     "lng": -74.0132

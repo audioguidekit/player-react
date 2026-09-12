@@ -21,14 +21,17 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const path = resolve(root, 'src/schema/authoring-types.ts');
 const tsconfig = resolve(root, 'tsconfig.json');
 
-/** CARTO basemap styles — keep in sync with docs/map.md. */
-const CARTO_STYLES = [
-  'rastertiles/voyager',
-  'light_all',
-  'dark_all',
-  'light_nolabels',
-  'dark_nolabels',
-];
+/** Providers with a fixed style list — keep in sync with docs/map.md. */
+const PROVIDER_STYLES: Record<string, string[]> = {
+  openfreemap: ['bright', 'liberty', 'positron', 'fiord', 'dark'],
+  carto: [
+    'rastertiles/voyager',
+    'light_all',
+    'dark_all',
+    'light_nolabels',
+    'dark_nolabels',
+  ],
+};
 
 function generate(type: string): Schema {
   return createGenerator({ path, tsconfig, type, topRef: true }).createSchema(type);
@@ -43,21 +46,23 @@ function allowSchemaKey(def: Schema): void {
 }
 
 /**
- * CARTO only supports a fixed set of style IDs (other providers accept arbitrary
- * strings). Constrain mapStyleId to the documented set when mapProvider is "carto".
+ * OpenFreeMap and CARTO only serve a fixed set of style IDs (other providers accept
+ * arbitrary strings). Constrain mapStyleId to the documented set for those two.
  */
-function addCartoConditional(def: Schema): void {
+function addStyleConditionals(def: Schema): void {
   if (!def.properties?.mapProvider) return;
   const allOf = (def.allOf as Schema[]) ?? [];
-  allOf.push({
-    if: {
-      properties: { mapProvider: { const: 'carto' } },
-      required: ['mapProvider'],
-    },
-    then: {
-      properties: { mapStyleId: { enum: CARTO_STYLES } },
-    },
-  });
+  for (const [provider, styles] of Object.entries(PROVIDER_STYLES)) {
+    allOf.push({
+      if: {
+        properties: { mapProvider: { const: provider } },
+        required: ['mapProvider'],
+      },
+      then: {
+        properties: { mapStyleId: { enum: styles } },
+      },
+    });
+  }
   def.allOf = allOf;
 }
 
@@ -86,7 +91,7 @@ function resolveDef(schema: Schema, rootType: string): Schema {
 function finalize(schema: Schema, rootType: string): Schema {
   const def = resolveDef(schema, rootType);
   allowSchemaKey(def);
-  addCartoConditional(def);
+  addStyleConditionals(def);
   if (rootType === 'TourFile') addStopDiscriminator(def);
   return schema;
 }

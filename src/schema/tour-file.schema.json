@@ -82,12 +82,16 @@
         "mapProvider": {
           "type": "string",
           "enum": [
+            "openfreemap",
             "openstreetmap",
             "mapbox",
             "jawg",
             "maptiler",
             "carto"
           ]
+        },
+        "mapStyle": {
+          "type": "string"
         },
         "mapApiKey": {
           "type": "string"
@@ -266,6 +270,31 @@
       "additionalProperties": false,
       "description": "Shape of a language file, e.g. `src/data/tour/en.json`. Mirrors  {@link  TourData }  but with runtime-only stop state removed.",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {

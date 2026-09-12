@@ -54,7 +54,8 @@ export interface TourMetadata {
   imageColor?: string;         // Solid color for the iOS status bar area and TourStart background when no image (e.g. '#1a2634')
   listView?: boolean;          // Enable list tab (default: true)
   mapView?: boolean;           // Enable map tab (default: false)
-  mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler' | 'carto'; // Tile provider (default: 'openstreetmap')
+  mapProvider?: 'openfreemap' | 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler' | 'carto'; // Tile provider (default: 'openfreemap')
+  mapStyle?: string;           // MapLibre style.json URL (key in the URL) — overrides mapProvider entirely
   mapApiKey?: string;          // API key for the chosen provider
   mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
   mapCenter?: { lat: number; lng: number }; // Initial map center; defaults to fitting all stops in view
@@ -254,7 +255,8 @@ export interface TourData {
   imageColor?: string;         // Solid color for the iOS status bar area and TourStart background when no image (e.g. '#1a2634')
   listView?: boolean;          // Enable list tab (default: true)
   mapView?: boolean;           // Enable map tab (default: false)
-  mapProvider?: 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler' | 'carto'; // Tile provider (default: 'openstreetmap')
+  mapProvider?: 'openfreemap' | 'openstreetmap' | 'mapbox' | 'jawg' | 'maptiler' | 'carto'; // Tile provider (default: 'openfreemap')
+  mapStyle?: string;           // MapLibre style.json URL (key in the URL) — overrides mapProvider entirely
   mapApiKey?: string;          // API key for the chosen provider
   mapStyleId?: string;         // Provider-specific style/map ID (uses provider's default outdoor style if omitted)
   mapCenter?: { lat: number; lng: number }; // Initial map center; defaults to fitting all stops in view

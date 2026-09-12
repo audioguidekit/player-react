@@ -252,6 +252,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
                 isStopCompleted={isStopCompleted}
                 onStopClick={handleStopClick}
                 mapProvider={tour.mapProvider}
+                mapStyle={tour.mapStyle}
                 mapApiKey={tour.mapApiKey}
                 mapStyleId={tour.mapStyleId}
                 mapCenter={tour.mapCenter}

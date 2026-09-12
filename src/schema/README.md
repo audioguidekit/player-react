@@ -20,7 +20,7 @@ Validation runs in two places:
 
 1. **In the editor** — each data file points at its schema via a `$schema` key, and
    `.vscode/settings.json` maps the files too. You get red squiggles + autocomplete
-   as you type (unknown property names, invalid `type` / `mapProvider` / CARTO
+   as you type (unknown property names, invalid `type` / `mapProvider` / per-provider
    `mapStyleId`, etc.).
 2. **At build / in CI** — `bun run validate` checks every file and exits non-zero on
    any problem. It runs before `vite build` and in `.github/workflows/validate.yml`.
@@ -39,5 +39,5 @@ CI fails if the committed schemas are stale (it regenerates and diffs).
 
 - `public/data/tour` is a generated copy (synced from `src/data/tour` by the
   vite-config plugin) — only the `src` files are authored and validated.
-- CARTO `mapStyleId` values are constrained to the set documented in `docs/map.md`;
-  keep the `CARTO_STYLES` list in `scripts/generate-schema.ts` in sync with it.
+- OpenFreeMap and CARTO `mapStyleId` values are constrained to the sets documented
+  in `docs/map.md`; keep `PROVIDER_STYLES` in `scripts/generate-schema.ts` in sync.

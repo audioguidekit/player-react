@@ -11,6 +11,7 @@ import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ThemeConfig } from '../src/theme/types';
 import { MapLocateButton, UserLocationLayer, useUserLocation } from './map/MapLocateButton';
 import { MapRoute } from './map/MapRoute';
+import { VectorTileLayer } from './map/VectorTileLayer';
 
 interface TourMapViewProps {
   stops: Stop[];
@@ -18,6 +19,7 @@ interface TourMapViewProps {
   isStopCompleted: (stopId: string) => boolean;
   onStopClick: (stopId: string) => void;
   mapProvider?: MapProvider;
+  mapStyle?: string;
   mapApiKey?: string;
   mapStyleId?: string;
   mapCenter?: { lat: number; lng: number };
@@ -394,7 +396,8 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   currentStopId,
   isStopCompleted,
   onStopClick,
-  mapProvider = 'openstreetmap',
+  mapProvider = 'openfreemap',
+  mapStyle,
   mapApiKey,
   mapStyleId,
   mapCenter,
@@ -426,7 +429,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
     geoJSON:        typeof routeConfig.geoJSON === 'object' ? routeConfig.geoJSON as RouteGeoJSON : undefined,
   } : null;
   const isOnline = useOnlineStatus();
-  const tileConfig = getTileConfig(mapProvider, mapApiKey, mapStyleId);
+  const tileConfig = getTileConfig(mapProvider, mapApiKey, mapStyleId, mapStyle);
   const {
     locateState,
     userLocation,
@@ -475,13 +478,18 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
         style={{ height: '100%', width: '100%', background: theme.mainContent.backgroundColor }}
         zoomControl={false}
         bounceAtZoomLimits={false}
+        maxZoom={tileConfig.maxZoom}
       >
-        <TileLayer
-          url={tileConfig.url}
-          attribution={tileConfig.attribution}
-          maxZoom={tileConfig.maxZoom}
-          {...(tileConfig.subdomains ? { subdomains: tileConfig.subdomains } : {})}
-        />
+        {tileConfig.vector ? (
+          <VectorTileLayer styleUrl={tileConfig.url} attribution={tileConfig.attribution} />
+        ) : (
+          <TileLayer
+            url={tileConfig.url}
+            attribution={tileConfig.attribution}
+            maxZoom={tileConfig.maxZoom}
+            {...(tileConfig.subdomains ? { subdomains: tileConfig.subdomains } : {})}
+          />
+        )}
         <MapDoubleTapZoom />
         <MapInitialCamera locations={locations} center={mapCenter} zoom={mapZoom} activeLocation={activeLocation} />
         {resolvedRoute && (

@@ -10,7 +10,7 @@ In `metadata.json`, set `mapView: true`. The tour will open in map view by defau
 ```json
 {
   "mapView": true,
-  "mapProvider": "openstreetmap"
+  "mapProvider": "openfreemap"
 }
 ```
 
@@ -48,7 +48,8 @@ Because `listView` defaults to `true`, existing tours are unaffected: omit it to
 |-------|------|---------|-------------|
 | `mapView` | boolean | `false` | Show map tab in tour detail |
 | `listView` | boolean | `true` | Show list tab in tour detail |
-| `mapProvider` | `"openstreetmap"` \| `"mapbox"` \| `"jawg"` \| `"maptiler"` \| `"carto"` | `"openstreetmap"` | Tile provider |
+| `mapStyle` | string | — | A MapLibre `style.json` URL (API key included in the URL). Overrides `mapProvider` / `mapStyleId` entirely — the way to bring your own map |
+| `mapProvider` | `"openfreemap"` \| `"openstreetmap"` \| `"mapbox"` \| `"jawg"` \| `"maptiler"` \| `"carto"` | `"openfreemap"` | Built-in tile provider |
 | `mapApiKey` | string | — | API key for the chosen provider. Set via `.env.local` (recommended) or directly here as a fallback — env var takes priority |
 | `mapStyleId` | string | — | Provider-specific style/map ID (see per-provider defaults below) |
 | `mapCenter` | `{ lat, lng }` | — | Initial map center; if omitted, the map fits all stops in view |
@@ -195,21 +196,83 @@ Clusters are always unaffected by any of these.
 
 ## Tile providers
 
-All providers except OpenStreetMap and CARTO require an API key. Keys are set as environment variables — never put them in `metadata.json`.
+The basemap is resolved in this order — the first one set wins:
 
-Copy `.env` to `.env.local` and fill in your keys:
+1. `VITE_MAP_STYLE` (env) — a style URL for every tour
+2. `mapStyle` (per tour) — a style URL for that tour
+3. `mapProvider` + `mapStyleId` — one of the built-in providers
+4. OpenFreeMap `bright` — the default
+
+So a fresh checkout has a working map with no key, no account and no setup, and
+one field replaces it with any map you like.
+
+### Bring your own map
+
+Point `mapStyle` at any MapLibre `style.json`, with the vendor's API key in the
+URL. Nothing else needs configuring — the map's attribution is read from the
+style's own sources.
+
+```json
+"mapStyle": "https://api.maptiler.com/maps/streets-v2/style.json?key=YOUR_KEY"
+```
+
+To keep the key out of git, set it in `.env.local` instead (this applies to every
+tour and overrides any `mapStyle` in `metadata.json`):
+
+```bash
+VITE_MAP_STYLE=https://api.maptiler.com/maps/streets-v2/style.json?key=YOUR_KEY
+```
+
+Any style.json works — MapTiler, Mapbox, Stadia, Protomaps, a self-hosted one, or
+a hand-written style pointing at your own raster XYZ tiles.
+
+### Built-in providers
+
+Alternatively use `mapProvider`. All except OpenFreeMap and OpenStreetMap need a
+key, set as an environment variable — never put keys in `metadata.json`:
 
 ```bash
 VITE_MAPBOX_API_KEY=pk.eyJ1...
 VITE_JAWG_API_KEY=your-jawg-token
 VITE_MAPTILER_API_KEY=your-maptiler-key
+VITE_CARTO_API_KEY=your-carto-key
 ```
 
 `.env.local` is gitignored. The active provider's key is automatically injected at build time — no other configuration needed.
 
-### OpenStreetMap (default)
+A provider whose key is missing silently falls back to raster OpenStreetMap tiles.
 
-No key needed. Free for typical usage.
+### OpenFreeMap (default)
+
+No key, no account, no request quota. Vector tiles rendered by MapLibre GL —
+the only vector provider here; the rest are raster `{z}/{x}/{y}` tiles.
+
+Switch between the official styles with `mapStyleId`:
+
+| Style | `mapStyleId` |
+|-------|-------------|
+| Bright (default) | `bright` |
+| Liberty | `liberty` |
+| Positron (light) | `positron` |
+| Fiord | `fiord` |
+| Dark | `dark` |
+
+```json
+"mapProvider": "openfreemap",
+"mapStyleId": "dark"
+```
+
+These five are the complete set that `tiles.openfreemap.org/styles/<id>` serves.
+The "3D" button on openfreemap.org is **not** a sixth style — it is `liberty`
+with a camera pitch and bearing applied. That can't be reproduced here: Leaflet
+has no rotated or tilted camera, and the MapLibre layer is synced to Leaflet's
+flat one. A tilted map would mean dropping Leaflet for MapLibre outright.
+
+### OpenStreetMap
+
+No key needed, raster tiles. Note that the [OSMF tile usage
+policy](https://operations.osmfoundation.org/policies/tiles/) discourages
+production app traffic — prefer OpenFreeMap.
 
 ```json
 "mapProvider": "openstreetmap"
@@ -256,7 +319,10 @@ Requires an API key from [maptiler.com](https://www.maptiler.com/). Default styl
 
 ### CARTO
 
-No API key required — free public basemaps. Default style: `rastertiles/voyager`.
+Requires an API key from [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey)
+since August 2026 — free up to 5M tiles/month. Without one, CARTO serves tiles
+watermarked "API KEY REQUIRED". CARTO is also retiring raster basemaps.
+Default style: `rastertiles/voyager`.
 
 Available raster styles:
 
@@ -269,7 +335,8 @@ Available raster styles:
 | Dark Matter no labels | `dark_nolabels` |
 
 ```json
-"mapProvider": "carto"
+"mapProvider": "carto",
+"mapApiKey": "your-carto-key"
 ```
 
 To use a different style:
@@ -378,6 +445,7 @@ Map tiles require an internet connection. When the device is offline the map is 
 | `UserLocationLayer` | `components/map/MapLocateButton.tsx` | Pulsing blue dot + drag detection |
 | `useUserLocation` | `components/map/MapLocateButton.tsx` | Location state hook |
 | `getTileConfig` | `src/utils/mapTileProvider.ts` | Tile URL/attribution resolver |
+| `VectorTileLayer` | `components/map/VectorTileLayer.tsx` | MapLibre GL layer for vector providers |
 | `buildGeoJSONRouteLines` | `src/utils/routeGeometry.ts` | Snap stops to GeoJSON line, slice for progress |
 | `buildStraightRouteLines` | `src/utils/routeGeometry.ts` | Straight-line fallback route segments |
 

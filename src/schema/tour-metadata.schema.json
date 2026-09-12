@@ -74,12 +74,16 @@
         "mapProvider": {
           "type": "string",
           "enum": [
+            "openfreemap",
             "openstreetmap",
             "mapbox",
             "jawg",
             "maptiler",
             "carto"
           ]
+        },
+        "mapStyle": {
+          "type": "string"
         },
         "mapApiKey": {
           "type": "string"
@@ -152,6 +156,31 @@
       "additionalProperties": false,
       "description": "Tour metadata - shared properties across all language versions These can be overridden in individual language files",
       "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
         {
           "if": {
             "properties": {

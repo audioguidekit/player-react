@@ -67,6 +67,7 @@ const MAP_ENV_KEYS: Partial<Record<string, string>> = {
   mapbox:    import.meta.env.VITE_MAPBOX_API_KEY,
   jawg:      import.meta.env.VITE_JAWG_API_KEY,
   maptiler:  import.meta.env.VITE_MAPTILER_API_KEY,
+  carto:     import.meta.env.VITE_CARTO_API_KEY,
 };
 
 /**
@@ -193,6 +194,12 @@ function buildTourRegistry(): TourRegistry {
     const mergedTourData: TourData = metadata
       ? { ...metadata, ...tourData }
       : tourData;
+
+    // A style.json URL from the env overrides the basemap for every tour — the way
+    // to bring your own map without committing its API key to metadata.json.
+    if (import.meta.env.VITE_MAP_STYLE) {
+      mergedTourData.mapStyle = import.meta.env.VITE_MAP_STYLE;
+    }
 
     // Inject map API key from env var if available (env takes priority over metadata.json)
     if (mergedTourData.mapProvider) {

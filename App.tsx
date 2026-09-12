@@ -603,7 +603,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
                     scrollTrigger={scrollToStopId?.timestamp ?? null}
                     onScrollComplete={handleScrollComplete}
                     onOpenRatingSheet={() => setActiveSheet('RATING')}
-                    showMapLocateButton={hasStarted && activeSheet === 'NONE'}
+                    showMapLocateButton={hasStarted && activeSheet === 'NONE' && !isFullscreenPlayerOpen}
                     sheetExpanded={hasStarted}
                   />
                 }

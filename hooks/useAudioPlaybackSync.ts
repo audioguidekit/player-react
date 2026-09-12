@@ -77,20 +77,35 @@ export const useAudioPlaybackSync = ({
   }, [audioPlayer.audioElement, setIsPlaying]);
 
   // ---------------------------------------------------------------------------
-  // 2. CRITICAL FOR iOS: Pre-load first audio into the singleton element so it
-  // is ALREADY LOADED when the user clicks "Start tour". iOS requires actual
-  // audio playback (not just buffering) for Media Session to activate.
+  // 2. CRITICAL FOR iOS: Pre-load the opening stop's audio into the singleton
+  // element so it is ALREADY LOADED when the user clicks "Start tour". iOS
+  // requires actual audio playback (not just buffering) for Media Session to
+  // activate. "Opening stop" is currentStopId when a deep link or resume has
+  // already selected one — NOT always tour.stops[0]: this effect only fires
+  // once assetsReady flips (after the eager preloader's own network fetch),
+  // by which point a deep link may have already loaded a different stop into
+  // the element via useAudioPlayer. Targeting stop 1 unconditionally here
+  // clobbered that back to stop 1's audio while the UI stayed on the deep-
+  // linked stop (played stop 1, showed stop 3 — see DEVLOG).
   // ---------------------------------------------------------------------------
   const hasPreloadedSingletonRef = useRef(false);
   useEffect(() => {
     if (!tour || !assetsReady || hasPreloadedSingletonRef.current) return;
     if (!audioPlayer.audioElement) return;
 
-    const firstAudioStop = tour.stops.find(s => s.type === 'audio');
-    if (!firstAudioStop || firstAudioStop.type !== 'audio') return;
+    const openingStop = (currentStopId && tour.stops.find(s => s.id === currentStopId && s.type === 'audio'))
+      || tour.stops.find(s => s.type === 'audio');
+    if (!openingStop || openingStop.type !== 'audio') return;
 
-    const audioUrl = firstAudioStop.audioFile;
+    const audioUrl = openingStop.audioFile;
     const audio = audioPlayer.audioElement;
+
+    // Already loaded (e.g. useAudioPlayer already set this exact stop) — don't
+    // reload it, that would reset playback position/buffering for no reason.
+    if (audio.src === new URL(audioUrl, window.location.href).href) {
+      hasPreloadedSingletonRef.current = true;
+      return;
+    }
 
     // Only preload if not already playing something
     if (audio.src && !audio.paused) return;
@@ -108,7 +123,7 @@ export const useAudioPlaybackSync = ({
     return () => {
       audio.removeEventListener('canplay', handleCanPlay);
     };
-  }, [tour, assetsReady, audioPlayer.audioElement]);
+  }, [tour, assetsReady, audioPlayer.audioElement, currentStopId]);
 
   // ---------------------------------------------------------------------------
   // 3. AUTO-RESUME: Restore playback position when resuming.

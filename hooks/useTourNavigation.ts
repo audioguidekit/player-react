@@ -45,16 +45,7 @@ export const useTourNavigation = ({
     const [currentStopId, setCurrentStopId] = useState<string | null>(null);
     const [isPlayingInternal, setIsPlayingInternal] = useState(false);
 
-    // DEBUG: Wrap setIsPlaying to log all internal calls
-    const setIsPlaying = useCallback((value: boolean | ((prev: boolean) => boolean)) => {
-        const stack = new Error().stack?.split('\n').slice(1, 4).join('\n');
-        if (typeof value === 'function') {
-            console.log('[DEBUG useTourNavigation setIsPlaying] Called with function updater\n', stack);
-        } else {
-            console.log(`[DEBUG useTourNavigation setIsPlaying] Setting to ${value}\n`, stack);
-        }
-        setIsPlayingInternal(value);
-    }, []);
+    const setIsPlaying = setIsPlayingInternal;
 
     const isPlaying = isPlayingInternal;
     const [isAudioCompleting, setIsAudioCompleting] = useState(false);

@@ -41,12 +41,17 @@ function clearActiveDeployment() {
 }
 
 if (deployment === 'barcelona') {
-  // Remove whatever a previous `tour:use <deployment>` staged (untracked leftovers
-  // only — barcelona/_fixture are git-tracked and untouched by clean), then restore
-  // the tracked defaults. Order matters: never rmSync barcelona itself, since it's
-  // the thing being restored, not staged content to clear.
-  execSync('git clean -fd -- src/data/tour public/images public/audio', { cwd: root, stdio: 'inherit' });
-  execSync('git checkout -- src/data/tour', { cwd: root, stdio: 'inherit' });
+  // Scoped to src/data/tour/barcelona/ only — never touch _fixture/ (may have its
+  // own unrelated uncommitted edits) or the wider tree. Remove any other deployment's
+  // leftover folders first (untracked, safe to rmSync), then restore just barcelona/
+  // from git in case a previous `tour:use` overwrote it.
+  for (const name of nonFixtureEntries()) {
+    if (name === 'barcelona') continue;
+    rmSync(join(tourDataDir, name), { recursive: true, force: true });
+  }
+  rmSync(resolve(root, 'public/images'), { recursive: true, force: true });
+  rmSync(resolve(root, 'public/audio'), { recursive: true, force: true });
+  execSync('git checkout -- src/data/tour/barcelona', { cwd: root, stdio: 'inherit' });
   console.log('Restored the repo\'s default (barcelona) tour content.');
 } else {
   const deploymentDir = join(contentDir, deployment);

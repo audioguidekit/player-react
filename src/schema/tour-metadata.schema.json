@@ -121,6 +121,9 @@
         "mapMarkerIcon": {
           "type": "string"
         },
+        "mapMarkerColors": {
+          "$ref": "#/definitions/MapMarkerColors"
+        },
         "mapCluster": {
           "type": "object",
           "properties": {
@@ -216,6 +219,25 @@
         "offline-only"
       ]
     },
+    "MapMarkerColors": {
+      "type": "object",
+      "properties": {
+        "upcoming": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "string"
+        },
+        "active": {
+          "type": "string"
+        },
+        "cluster": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Per-tour overrides for the map marker background colors. Each field falls back to the theme's `mapMarkers.<state>.backgroundColor`. Number/checkmark colors stay with the theme (white in both shipped themes), so pick backgrounds dark enough for white text — for a deeper restyle give the tour its own `themeId`."
+    },
     "MapRouteConfig": {
       "type": "object",
       "properties": {
@@ -231,10 +253,25 @@
         },
         "minZoom": {
           "type": "number"
+        },
+        "completedColor": {
+          "type": "string"
+        },
+        "upcomingColor": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number"
+        },
+        "dashArray": {
+          "type": "string"
         }
       },
       "additionalProperties": false,
-      "description": "Route polyline configuration. In metadata.json, `geoJSON` is a relative path string (\"./route.geojson\"). At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object."
+      "description": "Route polyline configuration. In metadata.json, `geoJSON` is a relative path string (\"./route.geojson\"). At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.\n\nThe style fields are optional per-tour overrides of the theme's `mapMarkers.route`. They exist because the basemap is per-tour (`mapProvider` / `mapStyleId`), so a tour on dark tiles can recolor its line without cloning a whole theme. Precedence: mapRoute → theme → built-in default."
     },
     "RouteGeoJSON": {
       "type": "object",

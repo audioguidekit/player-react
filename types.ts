@@ -18,10 +18,33 @@ export interface RouteGeoJSON {
  * Route polyline configuration.
  * In metadata.json, `geoJSON` is a relative path string ("./route.geojson").
  * At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.
+ *
+ * The style fields are optional per-tour overrides of the theme's
+ * `mapMarkers.route`. They exist because the basemap is per-tour
+ * (`mapProvider` / `mapStyleId`), so a tour on dark tiles can recolor its line
+ * without cloning a whole theme. Precedence: mapRoute → theme → built-in default.
  */
 export interface MapRouteConfig {
   geoJSON?: string | RouteGeoJSON;  // path in metadata.json → resolved object at runtime
   minZoom?: number;                  // hide line below this zoom level (default: 13)
+  completedColor?: string;           // visited segments + progress dot (theme default: '#459825')
+  upcomingColor?: string;            // unvisited, dashed segments (theme default: '#888888')
+  weight?: number;                   // line width in px (theme default: 3)
+  opacity?: number;                  // 0–1 for the completed line; upcoming renders at 75% of it (theme default: 0.85)
+  dashArray?: string;                // SVG dash pattern for upcoming segments (theme default: '8 6')
+}
+
+/**
+ * Per-tour overrides for the map marker background colors. Each field falls back
+ * to the theme's `mapMarkers.<state>.backgroundColor`. Number/checkmark colors stay
+ * with the theme (white in both shipped themes), so pick backgrounds dark enough
+ * for white text — for a deeper restyle give the tour its own `themeId`.
+ */
+export interface MapMarkerColors {
+  upcoming?: string;   // stops not visited yet (theme: mapMarkers.inactive)
+  completed?: string;  // stops already played (theme: mapMarkers.completed)
+  active?: string;     // the stop currently playing (theme: mapMarkers.active) — also recolors its outline ring, so the pin reads as one solid color
+  cluster?: string;    // the bubble shown for a group of stops (theme: mapMarkers.cluster)
 }
 
 export interface StopLocation {
@@ -62,6 +85,7 @@ export interface TourMetadata {
   mapZoom?: number;            // Initial zoom level 0–23; if mapCenter is omitted, fitBounds zoom is used instead
   mapMarker?: 'number' | 'image' | 'empty'; // Marker style: 'number'=numbered circle (default), 'image'=stop photo in a circle, 'empty'=plain circle with no number/image. A custom mapMarkerIcon (tour- or stop-level) overrides this.
   mapMarkerIcon?: string;      // Custom marker image URL applied to all stops; overrides mapMarker. A per-stop mapMarkerIcon overrides this for that stop.
+  mapMarkerColors?: MapMarkerColors; // Per-tour marker background colors; each falls back to the theme's mapMarkers
   mapCluster?: {
     disableClusteringAtZoom?: number; // Zoom level at which clustering stops (e.g. 16)
     spiderfyOnMaxZoom?: boolean;     // Fan out overlapping markers at max zoom (default: true)
@@ -90,9 +114,9 @@ export interface AppConfig {
   title?: LocalizedString;     // Landing heading; falls back to t.tourSelection.title when absent
   subtitle?: LocalizedString;  // Landing subheading; falls back to t.tourSelection.subtitle when absent
   logo?: string;               // Optional logo image URL shown in the header
-  hero?: string;               // Optional hero/cover image URL shown above the list
+  hero?: string;               // Optional full-screen backdrop image URL behind the picker (lowest layer)
   splash?: string;             // Optional full-screen intro image/video URL; tap to continue to the picker (branding)
-  splashArrowColor?: string;   // Optional color for the splash's double-arrow hint button (border + chevrons); defaults to white
+  splashArrowColor?: string;   // Optional color for the splash's arrow hint button (border + arrow); defaults to white
   statusBarColor?: string;     // Optional color for the iOS status bar / browser chrome on the landing screen (theme-color); defaults to the theme header color
   tourOrder?: string[];        // Tour ids in display order; unlisted tours are appended in discovery order
   tourCard?: TourCardConfig;   // What each tour card shows in the list; applies to ALL tours (no per-tour override)
@@ -263,6 +287,7 @@ export interface TourData {
   mapZoom?: number;            // Initial zoom level 0–23; if mapCenter is omitted, fitBounds zoom is used instead
   mapMarker?: 'number' | 'image' | 'empty'; // Marker style: 'number'=numbered circle (default), 'image'=stop photo in a circle, 'empty'=plain circle with no number/image. A custom mapMarkerIcon (tour- or stop-level) overrides this.
   mapMarkerIcon?: string;      // Custom marker image URL applied to all stops; overrides mapMarker. A per-stop mapMarkerIcon overrides this for that stop.
+  mapMarkerColors?: MapMarkerColors; // Per-tour marker background colors; each falls back to the theme's mapMarkers
   mapCluster?: {
     disableClusteringAtZoom?: number;
     spiderfyOnMaxZoom?: boolean;

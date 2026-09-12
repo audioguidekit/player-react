@@ -96,6 +96,8 @@ stepIndicators: {
     numberColor: '#9CA3AF',
     backgroundColor: '#F9FAFB',
   },
+  // Any of the four marker states' backgroundColor can be overridden per tour
+  // via `mapMarkerColors` in metadata.json — see map.md#marker-colors
   completed: {
     backgroundColor: '#6366F1',
     checkmarkColor: '#FFFFFF',
@@ -144,7 +146,7 @@ mapMarkers: {
     dotColor: '#2563EB',
     borderColor: '#FFFFFF',               // Optional: inner dot border
   },
-  route: {                                 // Optional: route polyline (requires mapRoute in metadata.json)
+  route: {                                 // Optional: route polyline (requires mapRoute in metadata.json; any field can be overridden per tour there)
     completedColor: '#459825',             // color for visited segments
     upcomingColor: '#888888',             // color for unvisited (dashed) segments
     weight: 3,                            // line width in px

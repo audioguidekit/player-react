@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import tw from 'twin.macro';
 import styled, { useTheme } from 'styled-components';
-import { Stop, MapRouteConfig, RouteGeoJSON } from '../types';
+import { Stop, MapRouteConfig, MapMarkerColors, RouteGeoJSON } from '../types';
 import { getTileConfig, MapProvider } from '../src/utils/mapTileProvider';
 import { useOnlineStatus } from '../hooks/useOnlineStatus';
 import { ThemeConfig } from '../src/theme/types';
@@ -26,6 +26,7 @@ interface TourMapViewProps {
   mapZoom?: number;
   mapMarker?: 'number' | 'image' | 'empty';
   mapMarkerIcon?: string;
+  mapMarkerColors?: MapMarkerColors;
   mapCluster?: {
     disableClusteringAtZoom?: number;
     spiderfyOnMaxZoom?: boolean;
@@ -404,6 +405,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
   mapZoom,
   mapMarker,
   mapMarkerIcon,
+  mapMarkerColors,
   mapCluster,
   mapRoute,
   onRequestListView,
@@ -414,18 +416,61 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
 
   const markerMode = mapMarker ?? 'number';
 
+  // Per-tour marker colors layered onto the theme. One rule for every state:
+  // the override paints the pin's body — its fill, plus any ring the theme
+  // already draws for that state — while glyphs (number, checkmark) keep the
+  // theme's colors. A ring the theme leaves 'transparent' stays absent; we
+  // recolor rings, never add them.
+  //
+  // Patching the theme here (rather than threading colors into MapMarkers) keeps
+  // the icon builder untouched, and covers image markers too, where the ring is
+  // drawn from these same values. Memoised because MapMarkers keeps `theme` in a
+  // ref and rebuilds every marker when its identity changes — that rebuild is
+  // what makes image markers blink.
+  const markerTheme = useMemo(() => {
+    if (!mapMarkerColors) return theme;
+    const base = theme.mapMarkers ?? theme.stepIndicators;
+
+    /** Repaint one marker state: fill + whichever ring key that state uses. */
+    const paint = <T extends Record<string, unknown>>(state: T, color?: string): T => {
+      if (!color || !state) return state;
+      const hasRing = (key: string) =>
+        key in state && state[key] !== 'transparent' && state[key] != null;
+      return {
+        ...state,
+        backgroundColor: color,
+        ...(hasRing('outlineColor') ? { outlineColor: color } : {}),
+        ...(hasRing('borderColor') ? { borderColor: color } : {}),
+      };
+    };
+
+    return {
+      ...theme,
+      mapMarkers: {
+        ...base,
+        active:    paint(base.active,    mapMarkerColors.active),
+        inactive:  paint(base.inactive,  mapMarkerColors.upcoming),
+        completed: paint(base.completed, mapMarkerColors.completed),
+        cluster:   paint(base.cluster,   mapMarkerColors.cluster),
+      },
+    } as ThemeConfig;
+  }, [theme, mapMarkerColors]);
+
   // Resolve route config: merge metadata overrides onto theme defaults
   const routeConfig = mapRoute
     ? (typeof mapRoute === 'boolean' ? {} : mapRoute) as MapRouteConfig
     : null;
   const themeRoute = theme.mapMarkers?.route ?? {};
+  // Precedence: per-tour mapRoute → theme mapMarkers.route → built-in default.
+  // The per-tour layer exists because the basemap is per-tour too, so a tour on
+  // dark tiles can recolor its line without needing its own theme.
   const resolvedRoute = routeConfig ? {
-    completedColor: themeRoute.completedColor ?? '#459825',
-    upcomingColor:  themeRoute.upcomingColor  ?? '#888888',
-    weight:         themeRoute.weight         ?? 3,
-    opacity:        themeRoute.opacity        ?? 0.85,
-    dashArray:      themeRoute.dashArray      ?? '8 6',
-    minZoom:        routeConfig.minZoom       ?? 13,
+    completedColor: routeConfig.completedColor ?? themeRoute.completedColor ?? '#459825',
+    upcomingColor:  routeConfig.upcomingColor  ?? themeRoute.upcomingColor  ?? '#888888',
+    weight:         routeConfig.weight         ?? themeRoute.weight         ?? 3,
+    opacity:        routeConfig.opacity        ?? themeRoute.opacity        ?? 0.85,
+    dashArray:      routeConfig.dashArray      ?? themeRoute.dashArray      ?? '8 6',
+    minZoom:        routeConfig.minZoom        ?? 13,
     geoJSON:        typeof routeConfig.geoJSON === 'object' ? routeConfig.geoJSON as RouteGeoJSON : undefined,
   } : null;
   const isOnline = useOnlineStatus();
@@ -510,7 +555,7 @@ export const TourMapView: React.FC<TourMapViewProps> = ({
           currentStopId={currentStopId}
           isStopCompleted={isStopCompleted}
           onStopClick={onStopClick}
-          theme={theme}
+          theme={markerTheme}
           markerIcon={mapMarkerIcon}
           markerMode={markerMode}
           clusterConfig={mapCluster}

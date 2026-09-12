@@ -56,6 +56,7 @@ Because `listView` defaults to `true`, existing tours are unaffected: omit it to
 | `mapZoom` | number (0–23) | — | Initial zoom level; if `mapCenter` is omitted, fitBounds zoom is used |
 | `mapMarker` | `"number"` \| `"image"` \| `"empty"` | `"number"` | Default marker style for the tour (see [Marker styles](#marker-styles)) |
 | `mapMarkerIcon` | string (URL) | — | Custom image URL for all markers; overrides `mapMarker`. A per-stop `mapMarkerIcon` overrides it (see [Custom marker icons](#custom-marker-icons)) |
+| `mapMarkerColors` | object | theme | Per-tour marker background colors (see [Marker colors](#marker-colors)) |
 | `mapCluster` | object | — | Marker clustering behaviour (see below) |
 | `mapRoute` | `boolean` \| object | `false` | Route polyline with progress indicator (see below) |
 | `mapLocateButton` | boolean | `true` | Show the locate-me button on the map |
@@ -182,6 +183,44 @@ Custom icons replace the circle entirely with your own image (rendered at 32 × 
 }
 ```
 
+### Marker colors
+
+Marker backgrounds come from the theme (`mapMarkers.active` / `.inactive` /
+`.completed` / `.cluster`). `mapMarkerColors` in `metadata.json` overrides those
+backgrounds **for one tour** — useful when a tour carries its own branding or
+sits on a different basemap:
+
+```json
+"mapMarkerColors": {
+  "completed": "#CB2826",
+  "upcoming": "#030A16"
+}
+```
+
+| Field | Marker | Theme keys it repaints |
+|-------|--------|------------------------|
+| `upcoming` | Stops not visited yet | `mapMarkers.inactive.backgroundColor` (+ `.borderColor`) |
+| `completed` | Stops already played (checkmark) | `mapMarkers.completed.backgroundColor` |
+| `active` | The stop currently playing | `mapMarkers.active.backgroundColor` + `.outlineColor` |
+| `cluster` | The bubble for a group of stops | `mapMarkers.cluster.backgroundColor` (+ `.borderColor`) |
+
+**The rule is the same for every state:** the override paints the pin's *body* —
+its fill plus whatever ring the theme already draws around it — so a recolored
+marker reads as one solid color instead of keeping the theme's accent ring. Rings
+are recolored, never added: a state whose theme ring is `transparent` (both
+shipped themes do this for `inactive`) stays ringless. In `mapMarker: "image"`
+mode, where the ring is the only colored part of the pin, it follows the same
+values.
+
+Glyphs are never touched — number, checkmark and cluster-count colors stay with
+the theme (white in both shipped themes), so choose fills dark enough for white
+to read on. For a deeper restyle, give the tour its own `themeId`. Omitted states
+keep the theme's color, so overriding `completed` alone leaves the rest as it was.
+
+> Markers and the route line are styled separately: set `mapRoute.upcomingColor`
+> to the same value as `mapMarkerColors.upcoming` if you want the dashed line to
+> match the upcoming pins.
+
 ### Precedence
 
 For each stop the marker is chosen in this order — first match wins:
@@ -190,7 +229,7 @@ For each stop the marker is chosen in this order — first match wins:
 2. **`mapMarkerIcon`** in `metadata.json` — tour-level custom icon
 3. **`mapMarker`** mode — `image` / `number` / `empty`
 
-Clusters are always unaffected by any of these.
+Clusters are always unaffected by any of these (their color comes from the theme, or `mapMarkerColors.cluster`).
 
 ---
 
@@ -422,10 +461,26 @@ All stops with a `location` field contribute to the route (not limited to audio 
 |-------|------|---------|-------------|
 | `geoJSON` | string | — | Relative path to a GeoJSON file, e.g. `"./route.geojson"` |
 | `minZoom` | number | `13` | Line is hidden below this zoom level |
+| `completedColor` | string | theme | Visited segments and the progress dot |
+| `upcomingColor` | string | theme | Unvisited, dashed segments |
+| `weight` | number | theme | Line width in px |
+| `opacity` | number | theme | 0–1 for the completed line; the upcoming line renders at 75% of it |
+| `dashArray` | string | theme | SVG dash pattern for upcoming segments, e.g. `"8 6"` |
 
 ### Theming
 
-All visual styling (colors, line weight, opacity, dash pattern) is controlled via `mapMarkers.route` in your `ThemeConfig`. See [themes.md](./themes.md#mapmarkers-optional) for the full reference.
+Visual styling defaults to `mapMarkers.route` in your `ThemeConfig` — see [themes.md](./themes.md#mapmarkers-optional) for the full reference. That is the place to set it once for the whole app.
+
+The five style fields above override the theme **for one tour**. They exist because the basemap is per-tour as well (`mapProvider` / `mapStyleId`), so a tour on dark tiles can keep its line legible without cloning an entire theme for one hex value:
+
+```json
+"mapRoute": {
+  "geoJSON": "./route.geojson",
+  "upcomingColor": "#555555"
+}
+```
+
+Precedence per field is **`mapRoute` → theme `mapMarkers.route` → built-in default** (`#459825`, `#888888`, `3`, `0.85`, `"8 6"`). Omitted fields fall through, so overriding one colour leaves the rest of the theme's route style intact. Prefer the theme unless a tour's basemap actually differs — otherwise the same value ends up defined in two places.
 
 ---
 

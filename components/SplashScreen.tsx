@@ -3,6 +3,9 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import tw from 'twin.macro';
 import styled, { keyframes } from 'styled-components';
+// Same glyph family (and weight) as the in-tour back button in
+// screens/TourStart.tsx — mirrored, since this one points onward.
+import { ArrowRightIcon } from '@phosphor-icons/react/dist/csr/ArrowRight';
 
 /**
  * Full-screen branding splash shown over the tour selection screen.
@@ -14,14 +17,14 @@ import styled, { keyframes } from 'styled-components';
  * padding. On desktop the Backdrop flex-centers the Mask into the exact phone
  * mockup (400×844, rounded, overflow:hidden), mirroring MobileFrame — and the
  * Card's slide-left dismiss is clipped to that mask, so it disappears into the
- * frame edge rather than sliding over the desktop background. A "double arrow
- * button" hint (after manelroig's CodePen rJMVRO) nudges that tapping — or
- * swiping — continues to the picker. Configured via app.json `splash`.
+ * frame edge rather than sliding over the desktop background. A pulsing arrow
+ * hint — the in-tour back button's arrow, mirrored to point onward — nudges
+ * that tapping or swiping continues to the picker. Configured via app.json
+ * `splash`.
  */
 
-// "bounceAlpha" — the staggered pulse from the Double Arrow Button pen. Each
-// chevron fades out as it slides forward, snaps back invisibly, then fades in at
-// rest; the two arrows run with a delay offset so they chase each other.
+// The arrow fades out as it slides forward, snaps back invisibly, then fades
+// in at rest.
 const bounceAlpha = keyframes`
   0%   { opacity: 1; transform: translateX(0)     scale(1);   }
   25%  { opacity: 0; transform: translateX(10px)  scale(0.9); }
@@ -29,11 +32,6 @@ const bounceAlpha = keyframes`
   55%  { opacity: 1; transform: translateX(0)     scale(1);   }
   100% { opacity: 1; transform: translateX(0)     scale(1);   }
 `;
-
-// Double-chevron (») shape — the inlined SVG from the pen's `.next` class. Used
-// as a CSS mask (only its alpha matters) so the fill can be any color.
-const ARROW_SVG =
-  'data:image/svg+xml;base64,PHN2ZyBpZD0iTGF5ZXJfMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHN0eWxlPi5zdDB7ZmlsbDojZmZmfTwvc3R5bGU+PHBhdGggY2xhc3M9InN0MCIgZD0iTTMxOS4xIDIxN2MyMC4yIDIwLjIgMTkuOSA1My4yLS42IDczLjdzLTUzLjUgMjAuOC03My43LjZsLTE5MC0xOTBjLTIwLjEtMjAuMi0xOS44LTUzLjIuNy03My43UzEwOSA2LjggMTI5LjEgMjdsMTkwIDE5MHoiLz48cGF0aCBjbGFzcz0ic3QwIiBkPSJNMzE5LjEgMjkwLjVjMjAuMi0yMC4yIDE5LjktNTMuMi0uNi03My43cy01My41LTIwLjgtNzMuNy0uNmwtMTkwIDE5MGMtMjAuMiAyMC4yLTE5LjkgNTMuMi42IDczLjdzNTMuNSAyMC44IDczLjcuNmwxOTAtMTkweiIvPjwvc3ZnPg==';
 
 // Fixed full-window layer that positions the mask. Mirrors MobileFrame's
 // OuterContainer so the desktop splash lands exactly inside the phone mockup:
@@ -99,8 +97,8 @@ const Hint = styled.div`
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
 `;
 
-// The circular button outline; the chevron group is flex-centered inside it.
-// Border + chevrons share one color (--arrow-color) so the hint stays visible
+// The circular button outline; the arrow is flex-centered inside it.
+// Border + arrow share one color (--arrow-color) so the hint stays visible
 // on any splash background.
 const Round = styled.div<{ $color: string }>`
   ${tw`relative flex items-center justify-center`}
@@ -111,34 +109,9 @@ const Round = styled.div<{ $color: string }>`
   border-radius: 100%;
 `;
 
-// Wraps the two staggered chevrons. width 22 = arrow (14) + the second's 8px
-// offset. The chevron SVG has asymmetric right padding inside its 512 viewBox,
-// so `contain`-centering leaves the painted ink ~2px left of geometric centre —
-// nudge the whole group right to truly centre it in the circle.
-const ArrowGroup = styled.div`
-  ${tw`relative`}
-  width: 22px;
-  height: 14px;
-  transform: translateX(2px);
-`;
-
-const Arrow = styled.div`
-  ${tw`absolute`}
-  top: 0;
-  width: 14px;
-  height: 14px;
-  background-color: var(--arrow-color);
-  -webkit-mask: url(${ARROW_SVG}) no-repeat center / contain;
-  mask: url(${ARROW_SVG}) no-repeat center / contain;
+const Arrow = styled(ArrowRightIcon)`
+  color: var(--arrow-color);
   animation: ${bounceAlpha} 1.4s linear infinite;
-
-  &.first {
-    left: 0;
-  }
-  &.second {
-    left: 8px;
-    animation-delay: 0.2s;
-  }
 `;
 
 const isVideo = (src: string) => /\.(mp4|webm|ogg|mov)(\?|$)/i.test(src);
@@ -150,7 +123,7 @@ interface SplashScreenProps {
   statusBarColor?: string;
   /** Slide in from the left (reverse of the dismiss) instead of appearing instantly. */
   slideIn?: boolean;
-  /** Color of the double-arrow hint button (border + chevrons). Defaults to white. */
+  /** Color of the arrow hint button (border + arrow). Defaults to white. */
   arrowColor?: string;
 }
 
@@ -202,10 +175,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
           </Media>
           <Hint>
             <Round $color={arrowColor}>
-              <ArrowGroup>
-                <Arrow className="first" />
-                <Arrow className="second" />
-              </ArrowGroup>
+              <Arrow size={24} weight="bold" />
             </Round>
           </Hint>
         </Card>

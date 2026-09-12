@@ -71,12 +71,20 @@ default behavior.
 | `title` | `LocalizedString` | built-in `t.tourSelection.title` ("Choose a tour") | Landing heading. Per-language map; missing languages fall back to the built-in translation. |
 | `subtitle` | `LocalizedString` | built-in `t.tourSelection.subtitle` ("Select a tour to begin your visit") | Landing subheading. Same fallback as `title`. |
 | `logo` | string | — | Image URL shown above the title in the header (rendered ~32px tall). Tapping it re-opens the `splash` if one is set. |
-| `hero` | string | — | Image URL used as a **full-screen backdrop** behind all content (lowest layer). |
+| `hero` | string | — | Image URL used as a **full-screen backdrop** behind all content (lowest layer, `object-fit: cover`). The header and the card list have no background of their own, so it shows through behind the logo, title and subtitle and around the cards — pick something light enough for the header text to stay readable, or pre-wash the image. |
 | `splash` | string | — | Image **or video** URL for a full-screen branding intro shown over the picker — see below. |
-| `splashArrowColor` | string | `"#FFFFFF"` | Color (hex) of the splash's double-arrow hint button (its circle border and chevrons). Set it so the hint stays visible on your splash — white is invisible on a white background. |
+| `splashArrowColor` | string | `"#FFFFFF"` | Color (hex) of the splash's arrow hint button (its circle border and the arrow inside). Set it so the hint stays visible on your splash — white is invisible on a white background. |
 | `statusBarColor` | string | theme header color | Color (hex) for the iOS status bar / browser chrome (`theme-color`) **while the splash is shown**. Set it to match your splash. The picker itself uses the theme's header color. |
 | `tourOrder` | string[] | discovery order | Tour `id`s in display order. Listed ids come first; any remaining tours are appended. Unknown ids are ignored. |
 | `tourCard` | `TourCardConfig` | all shown | What every tour card displays — see below. |
+
+### Where the images live
+
+`logo`, `hero` and `splash` take any URL. For assets that ship with the app, put
+the file in `public/` and reference it root-relative — `"/images/app/logo.webp"`
+resolves to `public/images/app/logo.webp`, is copied to `dist/` untouched, and
+works offline. Remote URLs (R2, S3, a CDN) are equally valid and keep the bundle
+small.
 
 ### Localized strings
 
@@ -103,7 +111,8 @@ canvas first.
 
 - **Image or video** — videos (`.mp4`, `.webm`, `.ogg`, `.mov`) autoplay muted and
   loop; anything else is treated as an image. Both fill the frame (`object-fit: cover`).
-- A **pulsing double-arrow button** hints that swiping continues to the picker.
+- A **pulsing arrow button** hints that swiping continues to the picker. The
+  arrow is the same glyph as the in-tour back button, mirrored to point onward.
   Swiping left or tapping anywhere slides the splash off to the left (with haptic
   feedback) to reveal the list. Color it with `splashArrowColor` (defaults to
   white) so it stays visible against your splash.
@@ -136,8 +145,11 @@ effect.
 
 ## Behavior notes
 
-- **Single tour** → the selection screen is skipped and the tour opens directly.
-  `app.json` theming/copy is only used when the picker is shown (2+ tours).
+- **Single tour** → the selection screen is skipped and the tour opens directly,
+  so `title`, `subtitle`, `logo`, `hero` and `tourCard` never render. `splash` is
+  the exception: it is portaled to `<body>` above everything, so it still plays
+  over the tour on first load — which also means it appears over a deep link
+  straight into a tour (`/tour/<id>`) in multi-tour apps.
 - **Themes stay in code.** `app.json` references a registered `themeId`; it cannot
   define a new theme inline. To add a new look, create a theme in
   `src/theme/themes/` (see [themes.md](./themes.md)).

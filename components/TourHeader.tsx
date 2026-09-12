@@ -1,5 +1,6 @@
 import React from 'react';
 import { HouseIcon } from '@phosphor-icons/react/dist/csr/House';
+import { ArrowLeftIcon } from '@phosphor-icons/react/dist/csr/ArrowLeft';
 import { CloudSlashIcon } from '@phosphor-icons/react/dist/csr/CloudSlash';
 import { MapPinIcon } from '@phosphor-icons/react/dist/csr/MapPin';
 import { ListIcon } from '@phosphor-icons/react/dist/csr/List';
@@ -13,6 +14,10 @@ import { useHaptics } from '../src/hooks/useHaptics';
 
 interface TourHeaderProps {
     onBack: () => void;
+    // Multi-tour deployments show a back arrow here instead of a house icon:
+    // this button never leaves the tour (it returns to TourStart, not the app
+    // home), and a house icon in a multi-tour app misleadingly implies it does.
+    hasMultipleTours?: boolean;
     progressWidth: MotionValue<string>;
     consumedMinutes: number;
     totalMinutes: number;
@@ -102,6 +107,7 @@ const OfflineBadge = styled(motion.div)`
 
 export const TourHeader: React.FC<TourHeaderProps> = ({
     onBack,
+    hasMultipleTours,
     progressWidth,
     consumedMinutes,
     totalMinutes,
@@ -130,7 +136,11 @@ export const TourHeader: React.FC<TourHeaderProps> = ({
                         onBack();
                     }}
                 >
-                    <HouseIcon size={24} weight="bold" />
+                    {hasMultipleTours ? (
+                        <ArrowLeftIcon size={24} weight="bold" />
+                    ) : (
+                        <HouseIcon size={24} weight="bold" />
+                    )}
                 </HomeButton>
 
                 {showProgressBar && (

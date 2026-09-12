@@ -88,6 +88,7 @@ interface TourDetailProps {
   onTogglePlay: () => void;
   onStopPlayPause: (stopId: string) => void;
   onBack: () => void;
+  hasMultipleTours?: boolean;
   tourProgress: number;
   consumedMinutes: number;
   totalMinutes: number;
@@ -108,6 +109,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
   onTogglePlay,
   onStopPlayPause,
   onBack,
+  hasMultipleTours,
   tourProgress,
   consumedMinutes,
   totalMinutes,
@@ -233,6 +235,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
 
       <TourHeader
         onBack={onBack}
+        hasMultipleTours={hasMultipleTours}
         progressWidth={width}
         consumedMinutes={consumedMinutes}
         totalMinutes={totalMinutes}

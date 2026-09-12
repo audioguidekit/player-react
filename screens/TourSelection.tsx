@@ -271,6 +271,7 @@ const TourSelectionContent: React.FC<TourSelectionContentProps> = ({
  */
 export const TourSelection: React.FC<{ frameless?: boolean }> = ({ frameless = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { data: languages, loading } = useLanguages();
   const [selectedLanguage, setSelectedLanguage] = useState<Language | null>(null);
 
@@ -295,7 +296,13 @@ export const TourSelection: React.FC<{ frameless?: boolean }> = ({ frameless = f
   };
 
   // Single-tour deployments skip the picker and open the tour directly.
+  // Only redirect when we're actually sitting on the picker path ("/"): this
+  // component doubles as RootNavigator's always-mounted base layer, so it keeps
+  // rendering underneath an already-open tour (including a deep link straight to
+  // /tour/:tourId/:stopId). Redirecting unconditionally there would stomp the
+  // stop id right back off the URL.
   if (tourIds.length <= 1) {
+    if (location.pathname.startsWith('/tour/')) return null;
     return <RedirectToTour tourId={tourIds[0]} navigate={navigate} />;
   }
 
@@ -330,7 +337,18 @@ const RedirectToTour: React.FC<{ tourId?: string; navigate: ReturnType<typeof us
   tourId,
   navigate,
 }) => {
+  // Run the redirect exactly once. `navigate` is not referentially stable across
+  // route changes (react-router hands out a new function on every navigation),
+  // so depending on it directly would re-fire this effect — and re-issue the
+  // redirect, stomping the URL back to the bare tour path — every time anything
+  // else navigates (e.g. useStopUrlSync adding a stop id to the URL). Since
+  // TourSelection stays mounted as RootNavigator's base layer even while a tour
+  // is open, that turned into an infinite redirect/re-sync loop as soon as any
+  // stop started playing in a single-tour deployment.
+  const hasRedirectedRef = React.useRef(false);
   React.useEffect(() => {
+    if (hasRedirectedRef.current) return;
+    hasRedirectedRef.current = true;
     navigate(`/tour/${tourId ?? ''}`, { replace: true });
   }, [tourId, navigate]);
   return null;

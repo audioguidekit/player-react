@@ -99,6 +99,8 @@ interface TourDetailProps {
   onScrollComplete?: () => void;
   onOpenRatingSheet?: () => void;
   showMapLocateButton?: boolean;
+  /** True once the sheet has been opened — gates mounting the map (see mapReady). */
+  sheetExpanded?: boolean;
 }
 
 export const TourDetail = React.memo<TourDetailProps>(({
@@ -120,10 +122,21 @@ export const TourDetail = React.memo<TourDetailProps>(({
   onScrollComplete,
   onOpenRatingSheet,
   showMapLocateButton = true,
+  sheetExpanded = false,
 }) => {
   // Which views are available. List is on unless explicitly disabled (backward-compatible);
   // map is off unless explicitly enabled.
   const mapEnabled = tour.mapView === true;
+
+  // Mount the map only once the sheet has actually been opened, then keep it
+  // mounted. A WebGL/canvas map behind the collapsed start card promotes the
+  // whole sheet to a composited layer, which drops subpixel antialiasing and
+  // makes the start card's text render visibly softer than on a map-less tour.
+  // It also avoids fetching tiles for a map nobody has looked at yet.
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    if (sheetExpanded) setMapReady(true);
+  }, [sheetExpanded]);
   const listEnabled = tour.listView !== false;
   // The toggle only makes sense when both views are available.
   const showViewToggle = mapEnabled && listEnabled;
@@ -246,7 +259,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
       />
 
       <ViewArea>
-        {mapEnabled && (
+        {mapEnabled && mapReady && (
           <MapLayer $active={viewMode === 'map'}>
             <Suspense fallback={<MapLoadingState>Loading map…</MapLoadingState>}>
               <TourMapView
@@ -262,6 +275,7 @@ export const TourDetail = React.memo<TourDetailProps>(({
                 mapZoom={tour.mapZoom}
                 mapMarker={tour.mapMarker}
                 mapMarkerIcon={tour.mapMarkerIcon}
+                mapMarkerColors={tour.mapMarkerColors}
                 mapCluster={tour.mapCluster}
                 mapRoute={tour.mapRoute}
                 active={viewMode === 'map'}
@@ -345,6 +359,9 @@ export const TourDetail = React.memo<TourDetailProps>(({
       return false;
     }
     if (prevProps.showMapLocateButton !== nextProps.showMapLocateButton) {
+      return false;
+    }
+    if (prevProps.sheetExpanded !== nextProps.sheetExpanded) {
       return false;
     }
     if (prevProps.scrollTrigger !== nextProps.scrollTrigger) {

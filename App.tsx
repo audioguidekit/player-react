@@ -593,6 +593,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
                     onTogglePlay={handlePlayPause}
                     onStopPlayPause={handleStopPlayPause}
                     onBack={handleBackToStart}
+                    hasMultipleTours={hasMultipleTours}
                     tourProgress={tourProgress}
                     consumedMinutes={consumedMinutes}
                     totalMinutes={totalMinutes}
@@ -603,6 +604,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
                     onScrollComplete={handleScrollComplete}
                     onOpenRatingSheet={() => setActiveSheet('RATING')}
                     showMapLocateButton={hasStarted && activeSheet === 'NONE'}
+                    sheetExpanded={hasStarted}
                   />
                 }
               />

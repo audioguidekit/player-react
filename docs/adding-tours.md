@@ -17,6 +17,8 @@ src/data/tour/
 
 > Files are automatically synced to `public/data/tour/` by Vite for test HTTP access. Only maintain the `src/` version.
 
+> **Shipping several separate builds** (a different tour set per client or venue)? Keep each set in its own folder under `tours-content/` and switch with `bun run tour:use <name>`. Note this **replaces** everything in `src/data/tour/` — so it's for swapping whole deployments, not for editing tours in place. `bun run tour:use barcelona` restores the repo's bundled demo tour.
+
 ## metadata.json
 
 Shared properties across all language versions. Individual language files can override any field.

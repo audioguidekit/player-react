@@ -29,21 +29,27 @@ tours-content/
                                   # fields are plain R2 URLs, as most are today)
 ```
 
-## Always defaults back to barcelona
+## Switching is always explicit
 
-`bun run dev` and `bun run build` both run `tour:use barcelona` first, no
-matter what was last active — so you never have to remember to switch back.
-Testing another deployment locally is always an explicit, separate step:
+`bun run dev` and `bun run build` use whatever is currently in
+`src/data/tour/` — they never switch deployments for you. Switch with
+`tour:use`, and switch back the same way:
 
 ```bash
 bun run tour:use new-york   # switch
-bun run dev                 # ...would reset straight back to barcelona!
+bun run dev                 # runs new-york
+bun run tour:use barcelona  # back to the repo's tracked demo
 ```
 
-To actually preview a non-default deployment, keep a dev server running
-across the switch (start it once on barcelona, then `tour:use new-york` in
-another terminal — Vite's HMR picks up the change), or use `tour:build
-<name>` for a one-off build of that deployment specifically.
+`tour:use` is the only thing that clears `src/data/tour/` — it used to be
+wired into `dev`/`build`, which silently deleted any tour authored directly
+in the repo.
+
+A dev server left running across a switch picks the change up — the tour data
+is an eager `import.meta.glob`, so adding or removing folders under
+`src/data/tour/` re-resolves it and Vite triggers a **full page reload** (not
+an in-place HMR patch). Run `tour:use` in a second terminal and the browser
+swaps deployments on its own; player state resets, as with any reload.
 
 A `pre-commit` hook (`.githooks/pre-commit`, wired via
 `git config core.hooksPath .githooks` — already set for this checkout) also

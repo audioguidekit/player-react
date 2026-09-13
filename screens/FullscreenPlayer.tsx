@@ -312,6 +312,9 @@ const ProgressContainer = styled.div`
   ${tw`relative flex items-center justify-center shrink-0`}
   width: 64px;
   height: 64px;
+  /* Scaled as one unit on press — see pressTargetRef on PlayPauseButton. */
+  transform-origin: center center;
+  transition: transform 100ms ease-out;
 `;
 
 const TranscriptionToggle = styled.button<{ $active: boolean }>(({ $active, theme }) => [
@@ -435,6 +438,8 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
   const [showCaption, setShowCaption] = useState(false);
 
   // Marquee animation for long titles
+  // Play button + progress ring scale together on press
+  const progressGroupRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const titleContainerRef = useRef<HTMLDivElement>(null);
   const titleControls = useAnimationControls();
@@ -759,7 +764,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
             <BackwardIcon size={32} />
           </SkipButton>
 
-          <ProgressContainer>
+          <ProgressContainer ref={progressGroupRef}>
             <ProgressRing progress={0} size={64} strokeWidth={3} animated={false} />
             <PlayPauseButton
               isPlaying={isPlaying}
@@ -768,6 +773,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
               onClick={onTogglePlay}
               size="expanded"
               buttonVariants={buttonVariants}
+              pressTargetRef={progressGroupRef}
             />
           </ProgressContainer>
 

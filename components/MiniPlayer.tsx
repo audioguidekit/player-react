@@ -120,6 +120,9 @@ const ProgressContainer = styled.div`
   ${tw`relative flex items-center justify-center`}
   width: 64px;
   height: 64px;
+  /* Scaled as one unit on press — see pressTargetRef on PlayPauseButton. */
+  transform-origin: center center;
+  transition: transform 100ms ease-out;
 `;
 
 const TitleSection = styled(motion.div)`
@@ -301,6 +304,9 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
 
   // Use real progress from audio player
   const visualProgress = Math.max(0, Math.min(100, progress || 0));
+
+  // Play button + progress ring scale together on press
+  const progressGroupRef = useRef<HTMLDivElement>(null);
 
   // Marquee animation for expanded title
   const titleRef = useRef<HTMLSpanElement>(null);
@@ -624,7 +630,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                         <BackwardIcon size={32} />
                       </SkipButton>
 
-                      <ProgressContainer>
+                      <ProgressContainer ref={progressGroupRef}>
                         {!isTransitioning && (
                           <ProgressRing
                             progress={visualProgress}
@@ -638,6 +644,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                           onClick={onTogglePlay}
                           size="expanded"
                           buttonVariants={buttonVariants}
+                          pressTargetRef={progressGroupRef}
                         />
                       </ProgressContainer>
 

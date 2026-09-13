@@ -16,6 +16,12 @@ interface PlayPauseButtonProps {
     variant?: 'default' | 'mini';
     className?: string;
     buttonVariants?: Variants;
+    /**
+     * Element to scale on press instead of the button itself — pass the wrapper
+     * that also holds the progress ring so the two scale as one unit. Without it
+     * the ring stays static while the button shrinks.
+     */
+    pressTargetRef?: React.RefObject<HTMLElement | null>;
 }
 
 interface StyledButtonProps {
@@ -92,12 +98,23 @@ export const PlayPauseButton = React.memo<PlayPauseButtonProps>(({
     size = 'md',
     variant = 'default',
     className = '',
-    buttonVariants
+    buttonVariants,
+    pressTargetRef
 }) => {
     const triggerHaptic = useHaptics();
     const { icon, checkSize } = sizeConfig[size];
     const showCheckmark = isCompleting || isTransitioning;
     const isMini = variant === 'mini';
+
+    // The press scale is driven from pointer events rather than :active, which
+    // iOS Safari does not apply reliably, or framer's whileTap, which animates
+    // through WAAPI and is invisible here.
+    const pressTarget = (e: React.PointerEvent) =>
+        pressTargetRef?.current ?? (e.currentTarget as HTMLElement);
+    const press = (e: React.PointerEvent, value: string) => {
+        const el = pressTarget(e);
+        if (el) el.style.transform = value;
+    };
 
     return (
         <StyledButton
@@ -118,10 +135,10 @@ export const PlayPauseButton = React.memo<PlayPauseButtonProps>(({
             className={className}
             onPointerDownCapture={(e) => {
                 e.stopPropagation();
-                (e.currentTarget as HTMLElement).style.transform = 'scale(0.9)';
+                press(e, 'scale(0.9)');
             }}
-            onPointerUp={(e) => { (e.currentTarget as HTMLElement).style.transform = ''; }}
-            onPointerLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = ''; }}
+            onPointerUp={(e) => press(e, '')}
+            onPointerLeave={(e) => press(e, '')}
         >
             <AnimatePresence mode="popLayout" initial={false}>
                 {showCheckmark && !isMini ? (
@@ -168,6 +185,7 @@ export const PlayPauseButton = React.memo<PlayPauseButtonProps>(({
         prevProps.isTransitioning === nextProps.isTransitioning &&
         prevProps.size === nextProps.size &&
         prevProps.variant === nextProps.variant &&
-        prevProps.className === nextProps.className
+        prevProps.className === nextProps.className &&
+        prevProps.pressTargetRef === nextProps.pressTargetRef
     );
 });

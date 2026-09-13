@@ -13,10 +13,15 @@ import * as path from 'path';
  * See docs/multi-tour.md.
  */
 
-const APP_JSON_PATH = path.join(process.cwd(), 'src/data/tour/app.json');
+const TOUR_DIR = path.join(process.cwd(), 'src/data/tour');
+const APP_JSON_PATH = path.join(TOUR_DIR, 'app.json');
 
 // Each tour card is a <button> containing the title as an <h2>.
 const TOUR_CARD = 'button:has(h2)';
+
+const discoveredTourCount = fs
+  .readdirSync(TOUR_DIR, { withFileTypes: true })
+  .filter(d => d.isDirectory() && !d.name.startsWith('_')).length;
 
 const combinations = [
   { showImage: true,  showDescription: true,  showMeta: true,  name: '1-full' },
@@ -26,18 +31,21 @@ const combinations = [
   { showImage: false, showDescription: false, showMeta: false, name: '5-title-only' },
 ];
 
-let originalAppJson: string;
+let originalAppJson: string | undefined;
 
 // Serial: every test mutates the same file.
 test.describe.configure({ mode: 'serial' });
 
 test.describe('Tour card display options', () => {
   test.beforeAll(() => {
+    // tourCard config only affects the multi-tour picker screen, and the repo's
+    // own default (single-tour) content doesn't ship an app.json at all.
+    test.skip(!fs.existsSync(APP_JSON_PATH) || discoveredTourCount < 2, 'not a multi-tour deployment with app.json');
     originalAppJson = fs.readFileSync(APP_JSON_PATH, 'utf-8');
   });
 
   test.afterAll(() => {
-    fs.writeFileSync(APP_JSON_PATH, originalAppJson);
+    if (originalAppJson !== undefined) fs.writeFileSync(APP_JSON_PATH, originalAppJson);
   });
 
   for (const combo of combinations) {

@@ -15,6 +15,7 @@ import * as path from 'path';
  */
 
 const TOUR_DIR = path.join(process.cwd(), 'src/data/tour');
+const APP_JSON_PATH = path.join(TOUR_DIR, 'app.json');
 
 interface AppConfig {
   title?: Record<string, string>;
@@ -24,9 +25,15 @@ interface AppConfig {
   tourOrder?: string[];
 }
 
-const appConfig: AppConfig = JSON.parse(
-  fs.readFileSync(path.join(TOUR_DIR, 'app.json'), 'utf-8')
-);
+// app.json is optional — the repo's own default (single-tour) content doesn't
+// ship one. This whole suite is gated on being a multi-tour deployment below.
+const appConfig: AppConfig = fs.existsSync(APP_JSON_PATH)
+  ? JSON.parse(fs.readFileSync(APP_JSON_PATH, 'utf-8'))
+  : {};
+
+const discoveredTourCount = fs
+  .readdirSync(TOUR_DIR, { withFileTypes: true })
+  .filter(d => d.isDirectory() && !d.name.startsWith('_')).length;
 
 /** Top-level title of a tour, in the given language. */
 function tourTitle(tourId: string, lang = 'en'): string {
@@ -40,6 +47,7 @@ const TOUR_CARD = 'button:has(h2)';
 
 test.describe('Tour selection screen', () => {
   test.beforeEach(async ({ page }) => {
+    test.skip(discoveredTourCount < 2, 'not a multi-tour deployment');
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await dismissSplashIfPresent(page);
     await page.locator(TOUR_CARD).first().waitFor({ timeout: 15000 });

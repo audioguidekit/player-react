@@ -73,6 +73,14 @@ test.describe('Player — mini player lifecycle', () => {
     const tourId = await getTourId(request);
     await startTour(page, tourId);
 
+    // MobileFrame is a fixed 844px-tall mockup on desktop (md:h-[844px]) inside a
+    // 720px-tall viewport, so the bottom ~60px of the frame — the collapsed mini
+    // player's handle — is clipped off-screen and unclickable. Grow the viewport
+    // height (never the width: that would flip the mobile projects to the desktop
+    // layout) so the whole frame is reachable.
+    const vp = page.viewportSize();
+    if (vp && vp.height < 940) await page.setViewportSize({ width: vp.width, height: 940 });
+
     const miniPlayer = page.getByTestId('mini-player');
     const control = miniPlayer.getByRole('button', { name: /Play|Pause/ });
     await expect(control).toBeVisible();

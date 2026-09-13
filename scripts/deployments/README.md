@@ -58,8 +58,14 @@ while a different deployment is active.
     `src/data/tour/` + `public/images/` + `public/audio/`. Runs `bun run validate`
     afterward.
 - **`bun run tour:sync-r2 <deployment>`** — uploads `tours-content/<deployment>/assets/**`
-  to the `superguided-audio` R2 bucket under that deployment's prefix. Requires
-  `wrangler` already authenticated locally.
+  to the `superguided-audio` R2 bucket under that deployment's prefix, and **deletes**
+  any object under that prefix this script uploaded before but no longer has a
+  matching local file for (a renamed/removed local asset doesn't linger in the
+  bucket forever). Requires `wrangler` already authenticated locally. Tracks what
+  it last uploaded in `tours-content/<deployment>/.r2-sync-manifest.json` — commit
+  that file in the `tours-content` repo so a sync from a different clone still
+  knows what's already up there (wrangler's R2 CLI has no "list objects" command,
+  so this is the only way to detect staleness without new credentials/tooling).
 - **`bun run tour:build <deployment> [--remote-assets]`** — `tour:use` + `bun run build`,
   producing a standalone `dist/` for that one deployment. With `--remote-assets`,
   first rewrites any local `/images/tours/...` / `/audio/tours/...` paths in the

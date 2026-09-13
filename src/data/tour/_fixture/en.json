@@ -15,7 +15,7 @@
       "title": "Audio stop",
       "duration": "0:30 mins",
       "image": "https://placehold.co/600x600/1A2634/FFFFFF/png?text=Audio",
-      "audioFile": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/audio/silence.mp3",
+      "audioFile": "https://pub-f2d1a02a5dea4125b3453ea5789cc9b1.r2.dev/audio/demo-tour-1.mp3",
       "transcription": "This is the transcription for the audio stop, used to exercise the transcription panel.",
       "location": { "lat": 40.7825, "lng": -73.9635 }
     },

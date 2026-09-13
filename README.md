@@ -2,7 +2,7 @@
 
 A mobile-first lightweight audio guide player built in React for the web. Runs online and offline as a PWA, self-hosted by default, with easy customization via themes.
 
-[Live demo](https://audioguidekit.vercel.app/) · [Documentation](https://audioguidekit.org/docs) · [GitHub](https://github.com/audioguidekit/player-react)
+[Live demo](https://audioguidekit.org/demo/barcelona/) · [Documentation](https://audioguidekit.org/docs) · [GitHub](https://github.com/audioguidekit/player-react)
 
 ![AudioGuideKit demo](https://github.com/audioguidekit/player-react/releases/download/v1.0.0/audioguidekit-video.gif)
 

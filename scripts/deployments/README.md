@@ -4,7 +4,9 @@ This repo ships exactly one committed tour: **barcelona**, a small public demo
 (`src/data/tour/barcelona/`). Real client tour-sets (e.g. a "New York" build)
 never live in this repo — they live in `tours-content/`, a separate, gitignored
 git repo nested at `player-react/tours-content/`, so they can have their own
-history without ever touching `player-react`'s.
+history without ever touching `player-react`'s. Its remote is
+[github.com/agilek/tours-content](https://github.com/agilek/tours-content) —
+**private**, and it must stay that way (real client content lives there).
 
 `src/data/tour/**/*.json` is discovered at **build time** via `import.meta.glob`
 (`src/services/tourDiscovery.ts`) — whatever is physically in that folder when

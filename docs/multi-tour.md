@@ -35,6 +35,18 @@ or folder name — but one folder per tour keeps things tidy.
 > Files are mirrored to `public/data/tour/` by Vite for test HTTP access. Only
 > maintain the `src/` version.
 
+### The `_fixture/` folder
+
+A folder id prefixed with `_` (currently just `_fixture/`) is a **hidden tour**:
+`getAvailableTourIds()` filters it out, so it never appears in the picker, the
+default-tour selection, or `public/data/tour/`'s mirrored/flat copies — it's
+only reachable directly at `/tour/_fixture`. `_fixture` specifically backs the
+E2E suite: it's the one tour with a stop of every content type (real tours are
+audio-only), plus a deliberate XSS payload for sanitization tests. See
+`tests/content-types.spec.ts` / `tests/sanitization.spec.ts` / `tests/config-flags.spec.ts`.
+It ships in every deployment regardless of which real tour content is active
+(`bun run tour:use` never touches it) — leave it in place.
+
 ## How the selection screen is themed
 
 Without `app.json` the picker borrows the **first tour's** `themeId` and shows a

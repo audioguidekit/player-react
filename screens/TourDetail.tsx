@@ -103,13 +103,22 @@ interface TourDetailProps {
   sheetExpanded?: boolean;
 }
 
-export const TourDetail = React.memo<TourDetailProps>(({
+// TourHeader needs tourProgress/consumedMinutes/totalMinutes fresh on every
+// audio tick to keep the progress bar and countdown animating (they feed a
+// spring/counter via effects that only run when this component actually
+// re-renders with a new value — there's no other way for them to update).
+// The stop list + map below are expensive and don't need to re-render on
+// those ticks, so they're split into TourDetailBody, memoized separately with
+// a comparator that ignores exactly those three props. Splitting the memo
+// boundary here (instead of trying to skip re-rendering everything, header
+// included) avoids the risk of freezing the header's own animations —
+// see docs/multi-tour.md's history / DEVLOG for why a naive "skip whenever
+// progress-only props change" comparator on the whole component would break.
+export const TourDetail: React.FC<TourDetailProps> = ({
   tour,
   currentStopId,
   isPlaying,
   onStopClick,
-  onTogglePlay,
-  onStopPlayPause,
   onBack,
   hasMultipleTours,
   tourProgress,
@@ -127,16 +136,6 @@ export const TourDetail = React.memo<TourDetailProps>(({
   // Which views are available. List is on unless explicitly disabled (backward-compatible);
   // map is off unless explicitly enabled.
   const mapEnabled = tour.mapView === true;
-
-  // Mount the map only once the sheet has actually been opened, then keep it
-  // mounted. A WebGL/canvas map behind the collapsed start card promotes the
-  // whole sheet to a composited layer, which drops subpixel antialiasing and
-  // makes the start card's text render visibly softer than on a map-less tour.
-  // It also avoids fetching tiles for a map nobody has looked at yet.
-  const [mapReady, setMapReady] = useState(false);
-  useEffect(() => {
-    if (sheetExpanded) setMapReady(true);
-  }, [sheetExpanded]);
   const listEnabled = tour.listView !== false;
   // The toggle only makes sense when both views are available.
   const showViewToggle = mapEnabled && listEnabled;
@@ -148,6 +147,96 @@ export const TourDetail = React.memo<TourDetailProps>(({
 
   // Slower spring: reduced stiffness from 75 to 35 to match counter
   const progressSpring = useSpring(0, { mass: 0.8, stiffness: 35, damping: 15 });
+  useEffect(() => {
+    // Animate to the passed progress value whenever it changes
+    progressSpring.set(tourProgress);
+  }, [progressSpring, tourProgress]);
+  const width = useTransform(progressSpring, (value) => `${value}%`);
+
+  return (
+    <Container>
+
+      <TourHeader
+        onBack={onBack}
+        hasMultipleTours={hasMultipleTours}
+        progressWidth={width}
+        consumedMinutes={consumedMinutes}
+        totalMinutes={totalMinutes}
+        showProgressBar={tour.showProgressBar}
+        showViewToggle={showViewToggle}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      />
+
+      <TourDetailBody
+        tour={tour}
+        currentStopId={currentStopId}
+        isPlaying={isPlaying}
+        onStopClick={onStopClick}
+        isStopCompleted={isStopCompleted}
+        completedStopsCount={completedStopsCount}
+        scrollToStopId={scrollToStopId}
+        scrollTrigger={scrollTrigger}
+        onScrollComplete={onScrollComplete}
+        onOpenRatingSheet={onOpenRatingSheet}
+        showMapLocateButton={showMapLocateButton}
+        sheetExpanded={sheetExpanded}
+        mapEnabled={mapEnabled}
+        listEnabled={listEnabled}
+        viewMode={viewMode}
+        setViewMode={setViewMode}
+      />
+    </Container>
+  );
+};
+
+interface TourDetailBodyProps {
+  tour: TourData;
+  currentStopId: string | null;
+  isPlaying: boolean;
+  onStopClick: (stopId: string) => void;
+  isStopCompleted: (stopId: string) => boolean;
+  completedStopsCount: number;
+  scrollToStopId?: string | null;
+  scrollTrigger?: number | null;
+  onScrollComplete?: () => void;
+  onOpenRatingSheet?: () => void;
+  showMapLocateButton: boolean;
+  sheetExpanded: boolean;
+  mapEnabled: boolean;
+  listEnabled: boolean;
+  viewMode: 'map' | 'list';
+  setViewMode: (mode: 'map' | 'list') => void;
+}
+
+/** The map + stop list — the expensive part of the tour detail screen. */
+const TourDetailBody = React.memo<TourDetailBodyProps>(({
+  tour,
+  currentStopId,
+  isPlaying,
+  onStopClick,
+  isStopCompleted,
+  scrollToStopId,
+  scrollTrigger,
+  onScrollComplete,
+  onOpenRatingSheet,
+  showMapLocateButton,
+  sheetExpanded,
+  mapEnabled,
+  listEnabled,
+  viewMode,
+  setViewMode,
+}) => {
+  // Mount the map only once the sheet has actually been opened, then keep it
+  // mounted. A WebGL/canvas map behind the collapsed start card promotes the
+  // whole sheet to a composited layer, which drops subpixel antialiasing and
+  // makes the start card's text render visibly softer than on a map-less tour.
+  // It also avoids fetching tiles for a map nobody has looked at yet.
+  const [mapReady, setMapReady] = useState(false);
+  useEffect(() => {
+    if (sheetExpanded) setMapReady(true);
+  }, [sheetExpanded]);
+
   const containerRef = React.useRef<HTMLDivElement>(null);
   const rafIdRef = React.useRef<number | null>(null);
   // Latest currentStopId, read inside the view-switch scroll effect without making it
@@ -155,11 +244,6 @@ export const TourDetail = React.memo<TourDetailProps>(({
   // (track changes while in the list are handled by the animated scrollTrigger effect).
   const currentStopIdRef = React.useRef(currentStopId);
   currentStopIdRef.current = currentStopId;
-
-  useEffect(() => {
-    // Animate to the passed progress value whenever it changes
-    progressSpring.set(tourProgress);
-  }, [progressSpring, tourProgress]);
 
   // Handle scrolling to specific stop
   useEffect(() => {
@@ -235,8 +319,6 @@ export const TourDetail = React.memo<TourDetailProps>(({
     container.scrollTop = computeStopScrollTop(container, element, stopIndex === 0);
   }, [viewMode, tour.stops]);
 
-  const width = useTransform(progressSpring, (value) => `${value}%`);
-
   // Memoize stop click handler to prevent unnecessary re-renders
   // Use a single handler that accepts stopId to maintain referential equality
   const handleStopClick = useCallback((stopId: string) => {
@@ -244,144 +326,114 @@ export const TourDetail = React.memo<TourDetailProps>(({
   }, [onStopClick]);
 
   return (
-    <Container>
-
-      <TourHeader
-        onBack={onBack}
-        hasMultipleTours={hasMultipleTours}
-        progressWidth={width}
-        consumedMinutes={consumedMinutes}
-        totalMinutes={totalMinutes}
-        showProgressBar={tour.showProgressBar}
-        showViewToggle={showViewToggle}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-      />
-
-      <ViewArea>
-        {mapEnabled && mapReady && (
-          <MapLayer $active={viewMode === 'map'}>
-            <Suspense fallback={<MapLoadingState>Loading map…</MapLoadingState>}>
-              <TourMapView
-                stops={tour.stops}
-                currentStopId={currentStopId}
-                isStopCompleted={isStopCompleted}
-                onStopClick={handleStopClick}
-                mapProvider={tour.mapProvider}
-                mapStyle={tour.mapStyle}
-                mapApiKey={tour.mapApiKey}
-                mapStyleId={tour.mapStyleId}
-                mapCenter={tour.mapCenter}
-                mapZoom={tour.mapZoom}
-                mapMarker={tour.mapMarker}
-                mapMarkerIcon={tour.mapMarkerIcon}
-                mapMarkerColors={tour.mapMarkerColors}
-                mapCluster={tour.mapCluster}
-                mapRoute={tour.mapRoute}
-                active={viewMode === 'map'}
-                onRequestListView={listEnabled ? () => setViewMode('list') : undefined}
-                showLocateButton={showMapLocateButton && tour.mapLocateButton !== false}
-              />
-            </Suspense>
-          </MapLayer>
-        )}
-        {viewMode === 'list' && (
-        // Scrollable List (matches pre-map layout)
-        <ScrollableList
-          ref={containerRef}
-          className="no-scrollbar"
-          data-testid="stop-feed"
-          $compact={tour.showStopImage !== true}
-        >
-          {tour.stops
-            .filter(stop => !(stop.type === 'rating' && tour.collectFeedback === false))
-            .map((stop, index) => {
-            // Render audio stops with compact card
-            if (stop.type === 'audio') {
-              const stopIsPlaying = stop.id === currentStopId && isPlaying;
-              return (
-                <StopItemWrapper key={stop.id}>
-                  <AudioStopCard
-                    id={`stop-${stop.id}`}
-                    item={stop}
-                    index={index}
-                    isActive={stop.id === currentStopId}
-                    isPlaying={stopIsPlaying}
-                    isCompleted={isStopCompleted(stop.id)}
-                    onClick={() => handleStopClick(stop.id)}
-                    showImage={tour.showStopImage}
-                    showDuration={tour.showStopDuration}
-                    showNumber={tour.showStopNumber}
-                  />
-                </StopItemWrapper>
-              );
-            }
-
-            // Render other content types with StopCardRenderer
+    <ViewArea>
+      {mapEnabled && mapReady && (
+        <MapLayer $active={viewMode === 'map'}>
+          <Suspense fallback={<MapLoadingState>Loading map…</MapLoadingState>}>
+            <TourMapView
+              stops={tour.stops}
+              currentStopId={currentStopId}
+              isStopCompleted={isStopCompleted}
+              onStopClick={handleStopClick}
+              mapProvider={tour.mapProvider}
+              mapStyle={tour.mapStyle}
+              mapApiKey={tour.mapApiKey}
+              mapStyleId={tour.mapStyleId}
+              mapCenter={tour.mapCenter}
+              mapZoom={tour.mapZoom}
+              mapMarker={tour.mapMarker}
+              mapMarkerIcon={tour.mapMarkerIcon}
+              mapMarkerColors={tour.mapMarkerColors}
+              mapCluster={tour.mapCluster}
+              mapRoute={tour.mapRoute}
+              active={viewMode === 'map'}
+              onRequestListView={listEnabled ? () => setViewMode('list') : undefined}
+              showLocateButton={showMapLocateButton && tour.mapLocateButton !== false}
+            />
+          </Suspense>
+        </MapLayer>
+      )}
+      {viewMode === 'list' && (
+      // Scrollable List (matches pre-map layout)
+      <ScrollableList
+        ref={containerRef}
+        className="no-scrollbar"
+        data-testid="stop-feed"
+        $compact={tour.showStopImage !== true}
+      >
+        {tour.stops
+          .filter(stop => !(stop.type === 'rating' && tour.collectFeedback === false))
+          .map((stop, index) => {
+          // Render audio stops with compact card
+          if (stop.type === 'audio') {
+            const stopIsPlaying = stop.id === currentStopId && isPlaying;
             return (
               <StopItemWrapper key={stop.id}>
-                <StopCardRenderer
+                <AudioStopCard
+                  id={`stop-${stop.id}`}
                   item={stop}
                   index={index}
+                  isActive={stop.id === currentStopId}
+                  isPlaying={stopIsPlaying}
+                  isCompleted={isStopCompleted(stop.id)}
+                  onClick={() => handleStopClick(stop.id)}
+                  showImage={tour.showStopImage}
+                  showDuration={tour.showStopDuration}
                   showNumber={tour.showStopNumber}
-                  onOpenRatingSheet={onOpenRatingSheet}
-                  compactLayout={tour.showStopImage !== true}
                 />
               </StopItemWrapper>
             );
-          })}
+          }
 
-          <Signature
-            href="https://audioguidekit.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <HeadphonesIcon weight="bold" />
-            AudioGuideKit · open-source audio player
-          </Signature>
-        </ScrollableList>
-        )}
-      </ViewArea>
-    </Container>
+          // Render other content types with StopCardRenderer
+          return (
+            <StopItemWrapper key={stop.id}>
+              <StopCardRenderer
+                item={stop}
+                index={index}
+                showNumber={tour.showStopNumber}
+                onOpenRatingSheet={onOpenRatingSheet}
+                compactLayout={tour.showStopImage !== true}
+              />
+            </StopItemWrapper>
+          );
+        })}
+
+        <Signature
+          href="https://audioguidekit.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <HeadphonesIcon weight="bold" />
+          AudioGuideKit · open-source audio player
+        </Signature>
+      </ScrollableList>
+      )}
+    </ViewArea>
   );
-  }, (prevProps, nextProps) => {
-    // CRITICAL: isPlaying changes MUST trigger re-render for animations to stop
-    // Return true = skip re-render, Return false = do re-render
+}, (prevProps, nextProps) => {
+  // Return true = skip re-render, Return false = do re-render.
+  // tourProgress/consumedMinutes/totalMinutes aren't props here at all — that
+  // churn stays up in TourDetail, driving only the header.
+  if (prevProps.isPlaying !== nextProps.isPlaying) return false;
+  if (prevProps.currentStopId !== nextProps.currentStopId) return false;
+  if (prevProps.tour.id !== nextProps.tour.id) return false;
+  if (prevProps.showMapLocateButton !== nextProps.showMapLocateButton) return false;
+  if (prevProps.sheetExpanded !== nextProps.sheetExpanded) return false;
+  if (prevProps.scrollTrigger !== nextProps.scrollTrigger) return false;
+  if (prevProps.viewMode !== nextProps.viewMode) return false;
 
-    // Always re-render if these critical props change
-    if (prevProps.isPlaying !== nextProps.isPlaying) {
-      return false;
-    }
-    if (prevProps.currentStopId !== nextProps.currentStopId) {
-      return false;
-    }
-    if (prevProps.tour.id !== nextProps.tour.id) {
-      return false;
-    }
-    if (prevProps.showMapLocateButton !== nextProps.showMapLocateButton) {
-      return false;
-    }
-    if (prevProps.sheetExpanded !== nextProps.sheetExpanded) {
-      return false;
-    }
-    if (prevProps.scrollTrigger !== nextProps.scrollTrigger) {
-      return false;
-    }
+  // Re-render if completed state changes (affects checkmarks)
+  if (prevProps.completedStopsCount !== nextProps.completedStopsCount) return false;
 
-    // Re-render if completed state changes (affects checkmarks)
-    if (prevProps.completedStopsCount !== nextProps.completedStopsCount) {
-      return false;
-    }
+  // Skip re-render if only scroll target changes (but not trigger): App.tsx's
+  // handleTrackChange always bumps scrollTrigger in the same update as
+  // scrollToStopId, so a real scroll request is never missed by ignoring this.
+  // (prevProps.scrollToStopId !== nextProps.scrollToStopId intentionally not checked)
 
-    // Skip re-render if only progress/time updates (these animate smoothly via springs)
-    if (prevProps.tourProgress !== nextProps.tourProgress) return false;
-    if (prevProps.consumedMinutes !== nextProps.consumedMinutes) return false;
-    if (prevProps.totalMinutes !== nextProps.totalMinutes) return false;
-
-    // Skip re-render if only scroll target changes (but not trigger)
-    if (prevProps.scrollToStopId !== nextProps.scrollToStopId) return false;
-
-    // All relevant props are the same, skip re-render
-    // Note: Function props intentionally excluded from comparison
-    return true;
-  });
+  // All relevant props are the same, skip re-render
+  // Note: Function props (other than isStopCompleted's completedStopsCount
+  // proxy) and setViewMode/listEnabled/mapEnabled/onScrollComplete/
+  // onOpenRatingSheet/onStopClick are intentionally excluded from comparison.
+  return true;
+});

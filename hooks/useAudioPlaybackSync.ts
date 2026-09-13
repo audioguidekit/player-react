@@ -43,7 +43,16 @@ export const useAudioPlaybackSync = ({
   // ---------------------------------------------------------------------------
   // 1. Sync native audio events to React state.
   // Track if audio was playing before pause to distinguish real pauses from
-  // load()-induced pauses.
+  // load()-induced pauses. `audio.load()` (called by useAudioPlayer on every
+  // URL change and stall-recovery attempt) always fires a native 'pause' as a
+  // side effect, even mid-playback — useAudioPlayer marks the element with
+  // __loadTriggeredPause right before calling it so this handler can tell that
+  // apart from a real pause instead of reacting to it and flipping isPlaying
+  // false. (Previously this ref only tracked "did a play event ever fire",
+  // which is true throughout normal playback and so never actually filtered
+  // load()-induced pauses out — under real network stress this fed a genuine
+  // isPlaying feedback loop between this hook and useAudioPlayer's play/pause
+  // effect, reproducing as a "Maximum update depth exceeded" crash.)
   // ---------------------------------------------------------------------------
   const wasPlayingBeforePauseRef = useRef(false);
 
@@ -57,7 +66,11 @@ export const useAudioPlaybackSync = ({
     };
 
     const handleNativePause = () => {
-      const audio = audioPlayer.audioElement;
+      const audio = audioPlayer.audioElement as (HTMLAudioElement & { __loadTriggeredPause?: boolean }) | null;
+      if (audio?.__loadTriggeredPause) {
+        audio.__loadTriggeredPause = false;
+        return;
+      }
       // Only sync pause if audio was actually playing before.
       // Don't set isPlaying(false) if audio ended - let the ended handler manage
       // the transition.

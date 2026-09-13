@@ -69,7 +69,7 @@ const ActionButton = styled.button`
 `;
 
 const LanguageButton = styled.button<{ $iconOnly?: boolean }>`
-  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 transition-all active:scale-95`}
+  ${tw`backdrop-blur-md rounded-full flex items-center gap-2 transition-all`}
   height: 48px;
   padding: ${({ $iconOnly }) => $iconOnly ? '0 12px' : '0 12px'};
   background-color: ${({ theme }) => theme.startCard.overlay?.buttonBackground || 'rgba(0, 0, 0, 0.4)'};

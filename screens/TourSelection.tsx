@@ -78,7 +78,7 @@ const Subtitle = styled.p`
 `;
 
 const LanguageButton = styled.button`
-  ${tw`shrink-0 rounded-full flex items-center gap-2 transition-all active:scale-95`}
+  ${tw`shrink-0 rounded-full flex items-center gap-2 transition-all`}
   height: 44px;
   padding: 0 12px;
   background-color: ${({ theme }) => theme.cards.backgroundColor};

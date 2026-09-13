@@ -348,7 +348,7 @@ Available built-in styles: `jawg-streets`, `jawg-terrain`, `jawg-sunny`, `jawg-l
 
 ### MapTiler
 
-Requires an API key from [maptiler.com](https://www.maptiler.com/). Default style: `outdoor-v2`.
+Requires an API key from [maptiler.com](https://www.maptiler.com/). Default style: `outdoor-v4`.
 
 ```json
 "mapProvider": "maptiler",

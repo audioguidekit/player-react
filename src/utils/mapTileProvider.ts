@@ -39,7 +39,7 @@ const PROVIDERS: Record<MapProvider, (apiKey?: string, styleId?: string) => Tile
     maxZoom: 22,
   } : OSM_FALLBACK,
 
-  maptiler: (apiKey, styleId = 'outdoor-v2') => apiKey ? {
+  maptiler: (apiKey, styleId = 'outdoor-v4') => apiKey ? {
     url: `https://api.maptiler.com/maps/${styleId}/256/{z}/{x}/{y}.png?key=${apiKey}`,
     attribution: '© <a href="https://www.maptiler.com/">MapTiler</a> © OpenStreetMap',
     maxZoom: 22,

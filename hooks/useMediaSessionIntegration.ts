@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useMediaSession, useMediaMeta } from 'use-media-session';
 import { AudioStop } from '../types';
 import { UseAudioPlayerReturn } from './useAudioPlayer';
@@ -56,10 +56,16 @@ export const useMediaSessionIntegration = ({
   onNextTrack,
 }: UseMediaSessionIntegrationProps): void => {
   // Build artwork array for MediaSession metadata
-  const artworkType = getArtworkType(currentAudioStop?.image);
-  const mediaSessionArtwork = currentAudioStop?.image
-    ? [{ src: currentAudioStop.image, sizes: '512x512', type: artworkType || 'image/jpeg' }]
-    : [];
+  const mediaSessionArtwork = useMemo(() => {
+    const image = currentAudioStop?.image;
+    if (!image) return [];
+
+    return [{
+      src: image,
+      sizes: '512x512',
+      type: getArtworkType(image) || 'image/jpeg',
+    }];
+  }, [currentAudioStop?.image]);
 
   useMediaMeta({
     title: currentAudioStop?.title || '',

@@ -167,18 +167,35 @@ test.describe('Player — transcription', () => {
 });
 
 test.describe('Player — fullscreen', () => {
+  // The fullscreen player lays out for a phone-height frame: in the default 1280x720 desktop
+  // viewport its header sits outside the visible area, so the close button was un-clickable
+  // (and the drag sometimes did not register). Same viewport the content-type specs use.
+  test.use({ viewport: { width: 430, height: 900 } });
+
   test('dragging the expanded player up opens the fullscreen player', async ({ page, request }) => {
     const tourId = await getTourId(request);
     await startTour(page, tourId);
 
     const miniPlayer = page.getByTestId('mini-player');
     await expect(miniPlayer).toBeVisible();
-    const box = await miniPlayer.boundingBox();
-    expect(box).not.toBeNull();
+
+    // The fullscreen drag only exists on the EXPANDED player (MiniPlayer.handleDragEnd), which is
+    // how a tour starts. It is still animating open when it first becomes visible: measuring it
+    // then put the drag's starting point on a card that had moved, so the gesture missed the
+    // handle and the test skipped itself. Wait for the card to stop moving before dragging.
+    let previous = -1;
+    await expect.poll(async () => {
+      const box = (await miniPlayer.boundingBox())!;
+      const key = box.y * 10000 + box.height;
+      const settled = key === previous;
+      previous = key;
+      return settled;
+    }, { intervals: [200], timeout: 10000 }).toBe(true);
 
     // Drag upward from the handle past the open threshold (offset.y < -60).
-    const startX = box!.x + box!.width / 2;
-    const startY = box!.y + 14;
+    const box = (await miniPlayer.boundingBox())!;
+    const startX = box.x + box.width / 2;
+    const startY = box.y + 14;
     await page.mouse.move(startX, startY);
     await page.mouse.down();
     for (let i = 1; i <= 20; i++) {
@@ -188,8 +205,6 @@ test.describe('Player — fullscreen', () => {
     await page.mouse.up();
 
     const fullscreen = page.getByTestId('fullscreen-player');
-    const opened = await fullscreen.isVisible({ timeout: 4000 }).catch(() => false);
-    test.skip(!opened, 'fullscreen player disabled for this tour or drag not recognised');
     await expect(fullscreen).toBeVisible();
     // Closing via the caret-down header button returns to the mini player.
     await fullscreen.getByRole('button').first().click();

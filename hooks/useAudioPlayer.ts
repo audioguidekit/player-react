@@ -33,6 +33,12 @@ export interface UseAudioPlayerProps {
   onEnded?: () => void;
   onProgress?: (id: string | undefined, currentTime: number, duration: number, percentComplete: number) => void;
   onPlayBlocked?: (error: unknown) => void;
+  /**
+   * Speed to play at, 1 = normal. Applied as the element's `defaultPlaybackRate` as well as its
+   * `playbackRate`: `load()` (every new stop) resets the rate to the default one, so setting
+   * only `playbackRate` would drop back to 1x at the next stop.
+   */
+  playbackRate?: number;
 }
 
 export interface UseAudioPlayerReturn {
@@ -93,6 +99,7 @@ export const useAudioPlayer = ({
   onEnded,
   onProgress,
   onPlayBlocked,
+  playbackRate = 1,
 }: UseAudioPlayerProps): UseAudioPlayerReturn => {
   // Use singleton audio element - created synchronously, available immediately
   const audioRef = useRef<HTMLAudioElement>(getOrCreateAudioElement());
@@ -138,6 +145,12 @@ export const useAudioPlayer = ({
     idRef.current = id;
     onPlayBlockedRef.current = onPlayBlocked;
   }, [onEnded, onProgress, isPlaying, id, onPlayBlocked]);
+
+  // Declared before the source effect below so a new stop's load() already sees the right default rate.
+  useEffect(() => {
+    audioRef.current.defaultPlaybackRate = playbackRate;
+    audioRef.current.playbackRate = playbackRate;
+  }, [playbackRate]);
 
   // Attach event listeners ONCE (using module-level flag for singleton)
   useEffect(() => {

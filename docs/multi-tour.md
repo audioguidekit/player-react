@@ -60,7 +60,7 @@ default behavior.
 
 ```json
 {
-  "$schema": "../../schema/app-config.schema.json",
+  "$schema": "../../../packages/schema/src/schemas/app-config.schema.json",
   "themeId": "default-light",
   "defaultLanguage": "en",
   "title":    { "en": "Discover New York", "de": "Entdecke New York" },
@@ -89,6 +89,7 @@ default behavior.
 | `statusBarColor` | string | theme header color | Color (hex) for the iOS status bar / browser chrome (`theme-color`) **while the splash is shown**. Set it to match your splash. The picker itself uses the theme's header color. |
 | `tourOrder` | string[] | discovery order | Tour `id`s in display order. Listed ids come first; any remaining tours are appended. Unknown ids are ignored. |
 | `tourCard` | `TourCardConfig` | all shown | What every tour card displays — see below. |
+| `embedAllowlist` | string[] | no limit | Hostnames an embed stop (of any type, including YouTube and Spotify) may show (`"maps.example.org"`, `"*.example.org"`). Other embeds are replaced by a neutral notice. See [visitor-features.md](./visitor-features.md#embed-allowlist). |
 
 ### Where the images live
 

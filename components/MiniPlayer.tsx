@@ -12,6 +12,7 @@ import { ForwardIcon } from './icons/ForwardIcon';
 import { BackwardIcon } from './icons/BackwardIcon';
 import { SkipButton } from './player/SkipButton';
 import { PlayPauseButton } from './player/PlayPauseButton';
+import { PlaybackSpeedButton } from './player/PlaybackSpeedButton';
 import { RichText } from './RichText';
 import { ProgressRing } from './player/ProgressRing';
 import { iconVariants, iconTransition } from '../src/animations/variants';
@@ -52,6 +53,8 @@ interface MiniPlayerProps {
   // Adjacent artwork for drag peek
   nextStopImage?: string;
   prevStopImage?: string;
+  /** Show the playback speed control (tour setting `showPlaybackSpeed`, default true). */
+  showPlaybackSpeed?: boolean;
 }
 
 // Root wrapper — display:contents so children position against the MobileFrame parent
@@ -186,6 +189,10 @@ const TranscriptionButton = styled.button<{ $isExpanded: boolean }>(({ $isExpand
   },
 ]);
 
+const SpeedButtonInRow = styled(PlaybackSpeedButton)`
+  ${tw`absolute left-8`}
+`;
+
 const TranscriptionContainer = styled(motion.div)`
   ${tw`relative w-full overflow-hidden border-t mt-4`}
   border-color: ${({ theme }) => theme.colors.border?.light || 'rgba(0,0,0,0.1)'};
@@ -282,6 +289,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
   onSeek,
   nextStopImage,
   prevStopImage,
+  showPlaybackSpeed = true,
 }) => {
   // Use external state if provided, otherwise fall back to local state
   const [localIsExpanded, setLocalIsExpanded] = useState(true);
@@ -626,6 +634,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                   <ExpandedInner>
                     {/* Controls Row */}
                     <ControlsRow>
+                      {showPlaybackSpeed && <SpeedButtonInRow />}
                       <SkipButton direction="backward" onClick={onRewind} seconds={15}>
                         <BackwardIcon size={32} />
                       </SkipButton>
@@ -797,6 +806,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
                 stopNumber={stopNumber}
                 nextStopImage={nextStopImage}
                 prevStopImage={prevStopImage}
+                showPlaybackSpeed={showPlaybackSpeed}
               />
             </Suspense>
           </FullscreenOverlay>
@@ -821,6 +831,7 @@ export const MiniPlayer = React.memo<MiniPlayerProps>(({
     prevProps.isFullscreenOpen === nextProps.isFullscreenOpen &&
     prevProps.currentTime === nextProps.currentTime &&
     prevProps.duration === nextProps.duration &&
-    prevProps.tourTitle === nextProps.tourTitle
+    prevProps.tourTitle === nextProps.tourTitle &&
+    prevProps.showPlaybackSpeed === nextProps.showPlaybackSpeed
   );
 });

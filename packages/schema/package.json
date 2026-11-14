@@ -1,0 +1,37 @@
+{
+  "name": "@audioguidekit/schema",
+  "version": "0.1.0",
+  "description": "The AudioGuideKit data contract: TypeScript types, JSON Schemas, manifest validation and editor field descriptions shared by the player and editors.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./fields": {
+      "types": "./dist/fields/index.d.ts",
+      "default": "./dist/fields/index.js"
+    },
+    "./schemas/*": "./dist/schemas/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "schema": "bun scripts/generate-schema.ts && bun scripts/generate-fields.ts",
+    "test": "bun test",
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "ajv": "^8.20.0"
+  },
+  "devDependencies": {
+    "ts-json-schema-generator": "^2.9.0",
+    "typescript": "~5.8.2"
+  }
+}

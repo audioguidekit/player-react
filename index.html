@@ -15,7 +15,7 @@
             content="Explore rich history with immersive guided audio tours"
         />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="manifest" href="/manifest.webmanifest" />
+        <!-- The web app manifest link is added at build time: by vite-plugin-pwa in compiled builds, by manifestModeLink() (vite.config.ts) in manifest mode. Both in the page would link it twice. -->
 
         <!-- iOS Specific -->
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -45,10 +45,6 @@
         />
 
         <title>AudioGuideKit</title>
-        <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-        />
         <script>
             // Reset viewport zoom immediately on load (iOS Safari persists zoom across reloads)
             (function () {
@@ -102,16 +98,6 @@
                 /* Firefox */
             }
         </style>
-        <script type="importmap">
-            {
-                "imports": {
-                    "framer-motion": "https://aistudiocdn.com/framer-motion@^12.23.24",
-                    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-                    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-                    "react": "https://aistudiocdn.com/react@^19.2.0"
-                }
-            }
-        </script>
     </head>
 
     <body>
@@ -203,7 +189,11 @@
 
             if (
                 "serviceWorker" in navigator &&
-                !/localhost/.test(window.location)
+                !/localhost/.test(window.location) &&
+                // The preview host (the edge injects this tag only there) is an editor's
+                // frame, not an installed app: a worker would serve the precached
+                // index.html and with it never see the injected tag.
+                !document.querySelector('meta[name="agk-preview-origins"]')
             ) {
                 navigator.serviceWorker
                     .register("/sw.js", { scope: "/" })
@@ -373,35 +363,6 @@
                                 console.log(
                                     `  ... and ${requests.length - 10} more`,
                                 );
-                            }
-
-                            // Check specifically for CDN resources
-                            const cdnResources = requests.filter((req) =>
-                                req.url.includes("aistudiocdn.com"),
-                            );
-                            if (cdnResources.length > 0) {
-                                console.log(
-                                    `[APP] ✅ Found ${cdnResources.length} CDN resources in this cache`,
-                                );
-                            }
-                        }
-
-                        // Check for critical CDN resources
-                        const criticalUrls = [
-                            "https://aistudiocdn.com/react@^19.2.0",
-                            "https://aistudiocdn.com/react-dom@^19.2.0",
-                            "https://aistudiocdn.com/framer-motion@^12.23.24",
-                        ];
-
-                        console.log(
-                            "[APP] Checking for critical CDN resources...",
-                        );
-                        for (const url of criticalUrls) {
-                            const response = await caches.match(url);
-                            if (response) {
-                                console.log(`[APP] ✅ CACHED: ${url}`);
-                            } else {
-                                console.log(`[APP] ❌ NOT CACHED: ${url}`);
                             }
                         }
 

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "schema": "bun scripts/generate-schema.ts",
+    "schema": "bun packages/schema/scripts/generate-schema.ts && bun packages/schema/scripts/generate-fields.ts",
+    "schema:test": "bun run --cwd packages/schema test",
     "validate": "bun scripts/validate-tours.ts",
     "build": "bun run validate && vite build",
     "preview": "vite preview",
@@ -16,9 +17,18 @@
     "test:ui": "playwright test --ui --config config/playwright.config.ts",
     "test:headed": "playwright test --headed --config config/playwright.config.ts",
     "test:debug": "playwright test --debug --config config/playwright.config.ts",
-    "studio": "bun scripts/screenshot-studio/index.ts"
+    "studio": "bun scripts/screenshot-studio/index.ts",
+    "manifest": "bun scripts/build-manifest.ts",
+    "build:manifest": "VITE_DATA_SOURCE=manifest vite build",
+    "test:manifest": "playwright test --config config/playwright.manifest.config.ts",
+    "schema:build": "bun run --cwd packages/schema build"
   },
   "dependencies": {
+    "@audioguidekit/schema": "workspace:*",
+    "@fontsource/ibm-plex-sans": "5.3.0",
+    "@fontsource/inter": "5.3.0",
+    "@fontsource/jetbrains-mono": "5.3.0",
+    "@fontsource/space-grotesk": "5.3.0",
     "@google/model-viewer": "^4.1.0",
     "@maplibre/maplibre-gl-leaflet": "^0.1.4",
     "@phosphor-icons/react": "^2.1.10",
@@ -66,5 +76,8 @@
     "vite-plugin-babel-macros": "^1.0.6",
     "vite-plugin-pwa": "^0.19.8",
     "workbox-window": "^7.4.0"
-  }
+  },
+  "workspaces": [
+    "packages/*"
+  ]
 }

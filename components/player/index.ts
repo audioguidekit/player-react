@@ -2,3 +2,4 @@
 export { PlayPauseButton } from './PlayPauseButton';
 export { ProgressRing } from './ProgressRing';
 export { SkipButton } from './SkipButton';
+export { PlaybackSpeedButton } from './PlaybackSpeedButton';

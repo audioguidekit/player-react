@@ -31,6 +31,8 @@ export interface UseMediaSessionIntegrationProps {
   setIsPlaying: (value: boolean | ((prev: boolean) => boolean)) => void;
   onPreviousTrack: () => void;
   onNextTrack: () => void;
+  /** Speed the audio plays at; the OS scrubber needs it to advance at the right pace. */
+  playbackRate?: number;
 }
 
 /**
@@ -54,6 +56,7 @@ export const useMediaSessionIntegration = ({
   setIsPlaying,
   onPreviousTrack,
   onNextTrack,
+  playbackRate = 1,
 }: UseMediaSessionIntegrationProps): void => {
   // Build artwork array for MediaSession metadata
   const artworkType = getArtworkType(currentAudioStop?.image);
@@ -107,27 +110,30 @@ export const useMediaSessionIntegration = ({
 
   // Update MediaSession position state (throttled to once per second)
   const lastPositionUpdateRef = useRef(0);
+  const lastRateRef = useRef(playbackRate);
   useEffect(() => {
     if ('mediaSession' in navigator && 'setPositionState' in navigator.mediaSession) {
       const duration = audioPlayer.duration;
       const currentTime = audioPlayer.currentTime;
       const now = Date.now();
 
-      // Throttle to once per second
-      if (now - lastPositionUpdateRef.current < 1000) return;
+      // Throttle to once per second, but a new speed is reported at once
+      const rateChanged = lastRateRef.current !== playbackRate;
+      if (!rateChanged && now - lastPositionUpdateRef.current < 1000) return;
 
       if (duration > 0 && isFinite(duration) && isFinite(currentTime)) {
         try {
           navigator.mediaSession.setPositionState({
             duration: duration,
-            playbackRate: 1,
+            playbackRate,
             position: currentTime,
           });
           lastPositionUpdateRef.current = now;
+          lastRateRef.current = playbackRate;
         } catch {
           // Ignore errors
         }
       }
     }
-  }, [audioPlayer.currentTime, audioPlayer.duration]);
+  }, [audioPlayer.currentTime, audioPlayer.duration, playbackRate]);
 };

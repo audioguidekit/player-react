@@ -48,6 +48,8 @@ export const cs: Translations = {
     close: 'Zavřít',
     subscribed: 'Jste přihlášeni!',
     checkInbox: 'Zkontrolujte svou e-mailovou schránku.',
+    emailError: "Odeslání se nepovedlo. Zkontrolujte připojení a zkuste to znovu.",
+    emailConsent: "Souhlasím se zasíláním novinek o nových průvodcích e-mailem.",
   },
   tourComplete: {
     title: 'Prohlídka dokončena!',
@@ -67,5 +69,33 @@ export const cs: Translations = {
     title: 'Vyberte prohlídku',
     subtitle: 'Vyberte prohlídku a začněte svou návštěvu',
     tours: 'prohlídky',
+  },
+  playback: {
+    speed: "Rychlost",
+  },
+  stopSearch: {
+    label: "Hledat zastávky",
+    placeholder: "Hledat zastávky",
+    clear: "Vymazat hledání",
+    resultOne: "Nalezena 1 zastávka",
+    resultMany: "Nalezeno zastávek: {count}",
+    noResults: "Vašemu hledání neodpovídá žádná zastávka.",
+  },
+  textSize: {
+    label: "Velikost textu",
+    default: "Výchozí velikost textu",
+    large: "Velký text",
+    larger: "Největší text",
+  },
+  directions: {
+    label: "Navigovat",
+    to: "Navigovat k: {name}",
+    openIn: "Otevřít navigaci v",
+    googleMaps: "Google Maps",
+    appleMaps: "Apple Maps",
+    waze: "Waze",
+  },
+  embed: {
+    blocked: "Tento obsah zde není dostupný.",
   },
 } as const;

@@ -8,7 +8,7 @@ Each stop in a tour's `stops` array must have `id` and `type`. All other fields 
 |-------|------|----------|-------------|
 | `id` | string | ✓ | Unique within the tour; must match across all language files |
 | `type` | StopType | ✓ | Determines which component renders the stop |
-| `location` | `{ lat, lng }` | | GPS coordinates — `audio` stops with a location appear as map markers; all stop types with a location contribute to the route line |
+| `location` | `{ lat, lng }` | | GPS coordinates — `audio` stops with a location appear as map markers; all stop types with a location contribute to the route line and get a "Directions" button (see [visitor-features.md](./visitor-features.md#directions-open-in-maps)) |
 | `mapMarkerIcon` | string (URL) | | Per-stop custom marker image; overrides the tour-level `mapMarkerIcon` and any `mapMarker` mode (see [map.md](./map.md#precedence)) |
 
 ---
@@ -138,6 +138,7 @@ An inline video player.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `videoUrl` | string | ✓ | Direct video file URL (MP4, etc.) |
+| `subtitles` | `{ src, srclang, label }[]` | | WebVTT subtitle files for the captions menu; downloaded for offline use with the video. See [visitor-features.md](./visitor-features.md#video-subtitles) |
 | `caption` | string | | Caption below the player |
 
 ```json
@@ -158,7 +159,7 @@ An iframe embed — YouTube, Spotify, or any generic URL. The player sizes the i
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `embedUrl` | string | ✓ | The embed/iframe URL |
-| `embedType` | `"youtube"` \| `"spotify"` \| `"video"` \| `"generic"` | | Controls aspect ratio defaults |
+| `embedType` | `"youtube"` \| `"spotify"` \| `"video"` \| `"generic"` | | Controls aspect ratio defaults and the sandbox. `youtube` must be on a YouTube host (framed via `youtube-nocookie.com`) and `spotify` on `open.spotify.com`; any other host is treated as `generic` with the strict sandbox ([host rules](./visitor-features.md#embed-host-rules)). Every embed is subject to the app's `embedAllowlist` ([details](./visitor-features.md#embed-allowlist)) |
 | `aspectRatio` | string | | Override aspect ratio, e.g. `"16/9"` |
 | `caption` | string | | Caption below the embed |
 
@@ -294,6 +295,9 @@ An email capture form. Typically placed at the end of a tour alongside or instea
 | `description` | string | | Text above the input |
 | `placeholder` | string | | Input placeholder text |
 | `buttonText` | string | | Submit button label |
+| `consentText` | string | | Adds a checkbox with this text that must be ticked before the form can be submitted |
+
+The address is posted to the analytics endpoint (`POST /e`) when the build has one, and the visitor sees an error if that fails. Without an endpoint the form only shows its thank-you card. See [analytics.md](./analytics.md).
 
 ```json
 {

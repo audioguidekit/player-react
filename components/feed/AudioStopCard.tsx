@@ -5,6 +5,7 @@ import { AudioStop } from '../../types';
 import { AnimatedCheckmark } from '../AnimatedCheckmark';
 import { RichText } from '../RichText';
 import { motion, AnimatePresence } from 'framer-motion';
+import { scaled } from '../../src/textSize/textSize';
 
 interface AudioStopCardProps {
   item: AudioStop;
@@ -127,7 +128,7 @@ const NumberText = styled.span<{ $isPlaying: boolean }>`
 const Title = styled.h3`
   ${tw`leading-tight flex-1`}
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
-  font-size: ${({ theme }) => theme.cards.stopTitleFontSize || theme.cards.titleFontSize};
+  font-size: ${({ theme }) => scaled(theme.cards.stopTitleFontSize || theme.cards.titleFontSize)};
   font-weight: ${({ theme }) => theme.cards.stopTitleFontWeight || theme.cards.titleFontWeight};
   color: ${({ theme }) => theme.cards.textColor};
   text-wrap: balance;
@@ -231,7 +232,7 @@ export const AudioStopCard: React.FC<AudioStopCardProps> = ({
               />
             </NumberContainer>
           )}
-          <ThumbnailImage src={item.image} alt={item.imageAlt || item.title} />
+          {item.image && <ThumbnailImage src={item.image} alt={item.imageAlt || item.title} />}
           <Title style={{ flex: 1 }}>{item.title}</Title>
           {shouldShowDuration && <ListItemDuration>{item.duration}</ListItemDuration>}
         </ThumbnailListContainer>
@@ -294,7 +295,7 @@ export const AudioStopCard: React.FC<AudioStopCardProps> = ({
     <OuterContainer id={id}>
       <CardContainer onClick={onClick} className="group">
         <ImageContainer>
-          <Image src={item.image} alt={item.imageAlt || item.title} />
+          {item.image && <Image src={item.image} alt={item.imageAlt || item.title} />}
           {shouldShowDuration && (
             <DurationBadge>
               <AnimatePresence mode="wait">

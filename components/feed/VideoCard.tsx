@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { VideoStop } from '../../types';
 import { RichText } from '../RichText';
+import { subtitlesNeedCors, usableSubtitles } from '../../src/video/subtitles';
 
 interface VideoCardProps {
   item: VideoStop;
@@ -34,10 +35,16 @@ const Caption = styled.p`
 `;
 
 export const VideoCard = memo<VideoCardProps>(({ item }) => {
+  const subtitles = usableSubtitles(item.subtitles);
+  const crossOrigin = subtitlesNeedCors(subtitles, window.location.href) ? 'anonymous' : undefined;
+
   return (
     <Container>
       <VideoContainer>
-        <Video src={item.videoUrl} controls playsInline>
+        <Video src={item.videoUrl} controls playsInline crossOrigin={crossOrigin}>
+          {subtitles.map((track) => (
+            <track key={`${track.srclang}-${track.src}`} kind="subtitles" src={track.src} srcLang={track.srclang} label={track.label} />
+          ))}
           Your browser does not support the video tag.
         </Video>
       </VideoContainer>

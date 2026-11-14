@@ -4,7 +4,7 @@
   "title": "Fixture Tour (every stop type)",
   "description": "A hidden test-only tour exercising every content stop type. Not shown in the picker and excluded from production builds; loaded directly at /tour/_fixture by the E2E suite.",
   "totalDuration": "5 minutes",
-  "totalStops": 13,
+  "totalStops": 1,
   "transcriptAvailable": true,
   "fullscreenPlayer": true,
   "collectFeedback": true,

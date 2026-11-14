@@ -65,13 +65,20 @@ test.describe('Content stop types', () => {
     expect(await (await card(page, 'image-hotspot')).locator('button').count()).toBeGreaterThanOrEqual(1);
   });
 
-  test('rich media cards render their embeds', async ({ page }) => {
+  test('rich media cards render their embeds', async ({ page, browserName }) => {
     await startTour(page, FIXTURE);
 
     await expect((await card(page, 'video')).locator('video')).toHaveCount(1);
     await expect((await card(page, 'embed')).locator('iframe')).toHaveCount(1);
-    // model-viewer is a custom element registered by @google/model-viewer.
-    await expect((await card(page, '3d-object')).locator('model-viewer')).toHaveCount(1);
+    // model-viewer is a custom element registered by @google/model-viewer. WebKit can lose its
+    // WebGL context on heavy models, so ThreeDObjectCard deliberately renders a text fallback there.
+    const model = await card(page, '3d-object');
+    if (browserName === 'webkit') {
+      await expect(model.getByText(/3D preview is not available on Safari/)).toBeVisible();
+      await expect(model.locator('model-viewer')).toHaveCount(0);
+    } else {
+      await expect(model.locator('model-viewer')).toHaveCount(1);
+    }
   });
 
   test('interactive cards (email, rating) render their controls', async ({ page }) => {

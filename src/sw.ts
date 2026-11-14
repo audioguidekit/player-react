@@ -1,10 +1,13 @@
 /// <reference lib="webworker" />
 import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
-import { CacheFirst } from 'workbox-strategies';
+import { CacheFirst, NetworkFirst } from 'workbox-strategies';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 import { clientsClaim } from 'workbox-core';
+import { createPartialResponse } from 'workbox-range-requests';
+import { MANIFEST_CACHE, MANIFEST_URL } from './services/manifestLoader';
+import { isManifestRequest, isUsableManifestJson } from './services/manifestUrl';
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -17,41 +20,6 @@ if (DEV_MODE) {
   console.log(`[SW ${SW_VERSION}] ⚡ Storage-agnostic version - works with any CDN/storage provider`);
 }
 
-// Critical CDN dependencies that MUST be cached for offline use
-const CRITICAL_CDN_URLS = [
-  'https://aistudiocdn.com/react@^19.2.0',
-  'https://aistudiocdn.com/react-dom@^19.2.0',
-  'https://aistudiocdn.com/framer-motion@^12.23.24',
-];
-
-// Warmup cache: Pre-fetch critical CDN resources during install
-async function warmupCache() {
-  if (DEV_MODE) {
-    console.log(`[SW ${SW_VERSION}] 🔥 Warming up cache with CDN dependencies...`);
-  }
-  const cache = await caches.open('external-dependencies');
-
-  const fetchPromises = CRITICAL_CDN_URLS.map(async (url) => {
-    try {
-      if (DEV_MODE) console.log(`[SW ${SW_VERSION}] Fetching ${url}...`);
-      const response = await fetch(url, { mode: 'cors', credentials: 'omit' });
-      if (response.ok) {
-        await cache.put(url, response);
-        if (DEV_MODE) console.log(`[SW ${SW_VERSION}] ✅ Cached ${url}`);
-      } else {
-        console.error(`[SW ${SW_VERSION}] ❌ Failed to fetch ${url}: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(`[SW ${SW_VERSION}] ❌ Error fetching ${url}:`, error);
-    }
-  });
-
-  await Promise.all(fetchPromises);
-  if (DEV_MODE) {
-    console.log(`[SW ${SW_VERSION}] 🔥 Cache warmup complete!`);
-  }
-}
-
 // Force the new service worker to take control immediately
 self.skipWaiting();
 clientsClaim();
@@ -59,12 +27,11 @@ clientsClaim();
 // Clean up old caches from previous versions
 cleanupOutdatedCaches();
 
-// Log install event and warmup cache
+// Log install event
 self.addEventListener('install', (event) => {
   if (DEV_MODE) {
     console.log(`[SW ${SW_VERSION}] INSTALL event - precaching assets`);
   }
-  event.waitUntil(warmupCache());
 });
 
 // Log activate event
@@ -120,10 +87,127 @@ const isVideoFile = (url: URL) =>
   url.pathname.endsWith('.webm') ||
   url.pathname.endsWith('.mov');
 
+// Helper: Check if URL is a WebVTT subtitle file (video stops' <track>)
+const isSubtitleFile = (url: URL) => url.pathname.endsWith('.vtt');
+
 // Helper: Check if URL is a 3D model file
 const is3DModelFile = (url: URL) =>
   url.pathname.endsWith('.glb') ||
   url.pathname.endsWith('.gltf');
+
+// Runtime data (manifest mode) - Network First with cache fallback.
+// /data/manifest.json is the whole content of the app: a republish must show up
+// on the next visit, so the network wins whenever it answers, and the cached copy
+// from the last successful visit keeps the app opening offline. The short
+// timeout stops a flaky connection from stalling startup on a copy we already have.
+// The same goes for the web app manifest the host generates from the data.
+// Must be registered BEFORE the app-shell route below, which would otherwise
+// answer these from cache and never look at the network. The cache name is shared
+// with src/services/manifestLoader.ts, which also fills it on the very first visit
+// (before this worker controls the page).
+// The route follows the configured manifest URL (VITE_MANIFEST_URL), same origin or not.
+// Only a response that is a usable manifest may replace the cached copy: any 200 (a
+// captive portal's HTML, a broken publish, an unknown schemaVersion) would otherwise
+// destroy the last good one, and the offline app with it.
+registerRoute(
+  ({ url }) => isManifestRequest(url, MANIFEST_URL, self.location.origin),
+  new NetworkFirst({
+    cacheName: MANIFEST_CACHE,
+    networkTimeoutSeconds: 4,
+    plugins: [
+      {
+        cacheWillUpdate: async ({ response }) => {
+          if (response.status !== 200) return null;
+          try {
+            return isUsableManifestJson(await response.clone().json()) ? response : null;
+          } catch {
+            return null;
+          }
+        },
+      },
+    ],
+  })
+);
+
+// The web app manifest the host generates from the data: same network-first idea.
+registerRoute(
+  ({ url }) => isSameOrigin(url) && url.pathname === '/manifest.webmanifest',
+  new NetworkFirst({
+    cacheName: MANIFEST_CACHE,
+    networkTimeoutSeconds: 4,
+    plugins: [new CacheableResponsePlugin({ statuses: [200] })],
+  })
+);
+
+// Host-served identity (manifest mode): the favicon and the installed-app icons are per
+// tenant, generated by the host from `app.icon`. The app-shell route below would pin them
+// in cache for 30 days, so a changed logo would not show until then: network first, and
+// the saved copy only keeps them showing offline.
+registerRoute(
+  ({ url }) =>
+    isSameOrigin(url) &&
+    (url.pathname === '/favicon.svg' ||
+      url.pathname === '/apple-touch-icon.png' ||
+      url.pathname.startsWith('/icons/')),
+  new NetworkFirst({
+    cacheName: 'agk-identity',
+    networkTimeoutSeconds: 3,
+    plugins: [new CacheableResponsePlugin({ statuses: [200] })],
+  })
+);
+
+// Same-origin media (manifest mode behind one Worker: media lives at
+// /media/{orgId}/{sha256}.{ext} on the player's own origin). Registered BEFORE the
+// app-shell route, which would otherwise swallow it: that route is cache-first with
+// 50 entries, never looks in `tour-assets` (where downloaded tours live) and does
+// not answer Range requests. Same strategy and same cache as the cross-origin
+// routes below. Images under /media/ take the image path of the same helper.
+const isSameOriginMedia = (url: URL) =>
+  isSameOrigin(url) &&
+  (url.pathname.startsWith('/media/') ||
+    isAudioFile(url) ||
+    isVideoFile(url) ||
+    isSubtitleFile(url) ||
+    is3DModelFile(url));
+
+/**
+ * A downloaded copy from `tour-assets`, answering a Range request with the
+ * requested slice (the cache holds the whole file; <audio>/<video> ask for ranges).
+ */
+async function matchTourAsset(request: Request): Promise<Response | undefined> {
+  const cache = await caches.open('tour-assets');
+  const cached = await cache.match(request.url, { ignoreVary: true });
+  if (!cached) return undefined;
+  return request.headers.has('range') ? createPartialResponse(request, cached) : cached;
+}
+
+registerRoute(
+  ({ url }) => isSameOriginMedia(url),
+  async ({ request, url }) => {
+    const isAudio = isAudioFile(url);
+
+    // Offline audio, or any downloaded asset: the downloaded copy wins over the network for
+    // everything except online audio (which streams, so Safari's Range support is preserved).
+    if (!isAudio || !navigator.onLine) {
+      const cached = await matchTourAsset(request);
+      if (cached) return cached;
+    }
+
+    try {
+      const response = await fetch(request);
+      // Opportunistic caching for non-audio media (a 206 slice cannot be stored).
+      if (!isAudio && response.status === 200) {
+        const cache = await caches.open('tour-assets');
+        void cache.put(request.url, response.clone());
+      }
+      return response;
+    } catch (error) {
+      const cached = await matchTourAsset(request);
+      if (cached) return cached;
+      throw error;
+    }
+  }
+);
 
 // App Shell - Cache First (same-origin only)
 registerRoute(
@@ -134,23 +218,6 @@ registerRoute(
       new ExpirationPlugin({
         maxEntries: 50,
         maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
-      }),
-    ],
-  })
-);
-
-// External CDN Dependencies (React, Framer Motion) - Cache First
-registerRoute(
-  /^https:\/\/aistudiocdn\.com\/.*/i,
-  new CacheFirst({
-    cacheName: 'external-dependencies',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 50,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
       }),
     ],
   })
@@ -168,34 +235,6 @@ registerRoute(
       }),
       new CacheableResponsePlugin({
         statuses: [0, 200],
-      }),
-    ],
-  })
-);
-
-// Google Fonts Stylesheets - Cache First
-registerRoute(
-  /^https:\/\/fonts\.googleapis\.com\/.*/i,
-  new CacheFirst({
-    cacheName: 'google-fonts-stylesheets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 10,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
-      }),
-    ],
-  })
-);
-
-// Google Font Files - Cache First
-registerRoute(
-  /^https:\/\/fonts\.gstatic\.com\/.*/i,
-  new CacheFirst({
-    cacheName: 'google-fonts-webfonts',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 30,
-        maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
       }),
     ],
   })
@@ -298,9 +337,11 @@ registerRoute(
   }
 );
 
-// Video Files - Cache First (any external origin)
+// Video and subtitle Files - Cache First (any external origin). Subtitles ride along with the
+// video: the download manager fetches the .vtt files into the same cache, and an offline
+// <track> request is answered from it.
 registerRoute(
-  ({ url }) => !isSameOrigin(url) && isVideoFile(url),
+  ({ url }) => !isSameOrigin(url) && (isVideoFile(url) || isSubtitleFile(url)),
   async ({ request, url }) => {
     const cacheName = 'tour-assets';
     const cache = await caches.open(cacheName);
@@ -441,7 +482,7 @@ self.addEventListener('activate', (event) => {
         cacheNames
           .filter((cacheName) => {
             const shouldDelete = !cacheName.match(
-              /^(app-shell|external-dependencies|tour-images|google-fonts-stylesheets|google-fonts-webfonts|tour-assets|workbox-precache)/
+              /^(app-shell|agk-manifest|agk-identity|tour-images|tour-assets|workbox-precache)/
             );
             if (DEV_MODE && shouldDelete) {
               console.log(`[SW ${SW_VERSION}] Deleting old cache: ${cacheName}`);

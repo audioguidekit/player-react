@@ -29,11 +29,15 @@ export const useStopUrlSync = ({
     if (!tour) return;
 
     const effectiveTourId = tourId || tour.id;
+    // Carried over, not dropped: `?theme=` and `?lang=` are set once when the
+    // player is opened, so rewriting the path without them silently reverts
+    // the tour to its own theme the moment a stop starts playing.
+    const search = typeof window === 'undefined' ? '' : window.location.search;
 
     if (currentStopId && currentStopId !== urlStopId) {
-      navigate(`/tour/${effectiveTourId}/${currentStopId}`, { replace: true });
+      navigate(`/tour/${effectiveTourId}/${currentStopId}${search}`, { replace: true });
     } else if (!currentStopId && urlStopId && !hasStarted) {
-      navigate(`/tour/${effectiveTourId}`, { replace: true });
+      navigate(`/tour/${effectiveTourId}${search}`, { replace: true });
     }
   }, [currentStopId, urlStopId, tourId, tour, hasStarted, navigate]);
 };

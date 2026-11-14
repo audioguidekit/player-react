@@ -1,0 +1,2537 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/Manifest",
+  "definitions": {
+    "Manifest": {
+      "type": "object",
+      "properties": {
+        "schemaVersion": {
+          "type": "number",
+          "description": "Integer; the player rejects a version it does not know."
+        },
+        "app": {
+          "$ref": "#/definitions/AppConfigFile",
+          "description": "App-level config: landing screen and installed-app identity."
+        },
+        "themes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CustomTheme"
+          },
+          "description": "Custom themes, referenced by `themeId` (default: none)."
+        },
+        "ui": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/UiText"
+          },
+          "description": "Interface text overrides keyed by language code (default: none)."
+        },
+        "tours": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ManifestTour"
+          }
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "schemaVersion",
+        "tours"
+      ],
+      "additionalProperties": false,
+      "description": "Everything the player needs at runtime, in one JSON document served at `/data/manifest.json`. Media is referenced by URL, never inlined."
+    },
+    "AppConfigFile": {
+      "$ref": "#/definitions/AppConfig",
+      "description": "Shape of `src/data/tour/app.json` — app-level config for the landing screen and the installed-app identity."
+    },
+    "AppConfig": {
+      "type": "object",
+      "properties": {
+        "themeId": {
+          "type": "string"
+        },
+        "defaultLanguage": {
+          "type": "string"
+        },
+        "title": {
+          "$ref": "#/definitions/LocalizedString"
+        },
+        "subtitle": {
+          "$ref": "#/definitions/LocalizedString"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "hero": {
+          "type": "string"
+        },
+        "splash": {
+          "type": "string"
+        },
+        "splashArrowColor": {
+          "type": "string"
+        },
+        "statusBarColor": {
+          "type": "string"
+        },
+        "tourOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tourCard": {
+          "$ref": "#/definitions/TourCardConfig"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shortName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "themeColor": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "display": {
+          "$ref": "#/definitions/AppDisplayMode"
+        },
+        "orientation": {
+          "$ref": "#/definitions/AppOrientation"
+        },
+        "analytics": {
+          "type": "boolean",
+          "description": "Set false to turn off anonymous usage analytics (POST /e). On by default in manifest mode; compiled builds only send anything when the build has a VITE_ANALYTICS_ENDPOINT. Visitors with Global Privacy Control or Do Not Track on are never counted either way. See docs/analytics.md."
+        },
+        "embedAllowlist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EmbedHost"
+          },
+          "description": "Websites that embed stops of any type, including YouTube and Spotify, may show. When the list has entries, an embed from any other host is not rendered and the player shows a neutral \"not available here\" notice instead. The usual rules still apply on top: https only, never the player's own origin. An empty or missing list means no limit. See docs/stops.md."
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocalizedString": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A string localized per language code, e.g. { en: \"Choose a tour\", de: \"Wähle eine Tour\" }. The current language is looked up by code; missing codes fall back to defaults."
+    },
+    "TourCardConfig": {
+      "type": "object",
+      "properties": {
+        "showImage": {
+          "type": "boolean"
+        },
+        "showDescription": {
+          "type": "boolean"
+        },
+        "showMeta": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Controls which elements render on every tour card in the selection list. The title is always shown. All flags default to true (omitted = shown)."
+    },
+    "AppDisplayMode": {
+      "type": "string",
+      "enum": [
+        "standalone",
+        "minimal-ui",
+        "browser",
+        "fullscreen"
+      ],
+      "description": "Manifest `display`. Standalone is the usual one: no browser UI at all."
+    },
+    "AppOrientation": {
+      "type": "string",
+      "enum": [
+        "portrait",
+        "landscape",
+        "any"
+      ],
+      "description": "Manifest `orientation`. `any` lets the phone rotate the app."
+    },
+    "EmbedHost": {
+      "type": "string",
+      "description": "A website an embed may come from: a hostname such as `www.youtube.com`, or `*.example.org` for every subdomain of `example.org` (not `example.org` itself). No scheme, port or path.",
+      "pattern": "^(\\*\\.)?[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$"
+    },
+    "CustomTheme": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/ThemeId"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "header": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "iconColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "timeFontSize": {
+              "type": "string"
+            },
+            "timeFontWeight": {
+              "type": "string"
+            },
+            "hoverBackground": {
+              "type": "string"
+            },
+            "progressBar": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "highlightColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "mainContent": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "cards": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "borderRadius": {
+              "type": "string"
+            },
+            "shadow": {
+              "type": "string"
+            },
+            "titleFontSize": {
+              "type": "string"
+            },
+            "titleFontWeight": {
+              "type": "string"
+            },
+            "stopTitleFontSize": {
+              "type": "string"
+            },
+            "stopTitleFontWeight": {
+              "type": "string"
+            },
+            "durationBadgeFontSize": {
+              "type": "string"
+            },
+            "numberFontSize": {
+              "type": "string"
+            },
+            "numberFontWeight": {
+              "type": "string"
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "placeholderColor": {
+                  "type": "string"
+                },
+                "durationBadgeBackground": {
+                  "type": "string"
+                },
+                "durationBadgeText": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "thumbnail": {
+              "type": "object",
+              "properties": {
+                "borderRadius": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "stepIndicators": {
+          "type": "object",
+          "properties": {
+            "active": {
+              "type": "object",
+              "properties": {
+                "outlineColor": {
+                  "type": "string"
+                },
+                "numberColor": {
+                  "type": "string"
+                },
+                "backgroundColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "inactive": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "numberColor": {
+                  "type": "string"
+                },
+                "backgroundColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "completed": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "checkmarkColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapMarkers": {
+          "type": "object",
+          "properties": {
+            "active": {
+              "type": "object",
+              "properties": {
+                "outlineColor": {
+                  "type": "string"
+                },
+                "numberColor": {
+                  "type": "string"
+                },
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "shadow": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "inactive": {
+              "type": "object",
+              "properties": {
+                "borderColor": {
+                  "type": "string"
+                },
+                "numberColor": {
+                  "type": "string"
+                },
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "numberFontSize": {
+                  "type": "string"
+                },
+                "numberFontWeight": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "completed": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "checkmarkColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "cluster": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "numberColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                },
+                "shadow": {
+                  "type": "string"
+                },
+                "fontSize": {
+                  "type": "string"
+                },
+                "fontWeight": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number"
+                },
+                "maxClusterRadius": {
+                  "type": "number"
+                }
+              },
+              "additionalProperties": false
+            },
+            "userLocation": {
+              "type": "object",
+              "properties": {
+                "dotColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "route": {
+              "type": "object",
+              "properties": {
+                "completedColor": {
+                  "type": "string"
+                },
+                "upcomingColor": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "number"
+                },
+                "opacity": {
+                  "type": "number"
+                },
+                "dashArray": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "buttons": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "textColor": {
+                  "type": "string"
+                },
+                "hoverBackground": {
+                  "type": "string"
+                },
+                "iconColor": {
+                  "type": "string"
+                },
+                "fontSize": {
+                  "type": "string"
+                },
+                "fontWeight": {
+                  "type": "string"
+                },
+                "fontFamily": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "secondary": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "textColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                },
+                "hoverBackground": {
+                  "type": "string"
+                },
+                "fontSize": {
+                  "type": "string"
+                },
+                "fontWeight": {
+                  "type": "string"
+                },
+                "fontFamily": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "download": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "textColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                },
+                "hoverBackground": {
+                  "type": "string"
+                },
+                "iconColor": {
+                  "type": "string"
+                },
+                "fontSize": {
+                  "type": "string"
+                },
+                "fontWeight": {
+                  "type": "string"
+                },
+                "fontFamily": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "transcription": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "iconColor": {
+                  "type": "string"
+                },
+                "hoverBackground": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "typography": {
+          "type": "object",
+          "properties": {
+            "fontFamily": {
+              "type": "object",
+              "properties": {
+                "sans": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "heading": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "numbers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "branding": {
+          "type": "object",
+          "properties": {
+            "logoUrl": {
+              "type": "string"
+            },
+            "showLogoBorder": {
+              "type": "boolean"
+            },
+            "logoSize": {
+              "type": "string",
+              "enum": [
+                "fit",
+                "original"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "miniPlayer": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "titleFontSize": {
+              "type": "string"
+            },
+            "titleFontWeight": {
+              "type": "string"
+            },
+            "transcriptionFontSize": {
+              "type": "string"
+            },
+            "shadow": {
+              "type": "string"
+            },
+            "progressBar": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "highlightColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "controls": {
+              "type": "object",
+              "properties": {
+                "playButtonBackground": {
+                  "type": "string"
+                },
+                "playButtonIcon": {
+                  "type": "string"
+                },
+                "otherButtonsBackground": {
+                  "type": "string"
+                },
+                "otherButtonsIcon": {
+                  "type": "string"
+                },
+                "otherButtonsHoverBackground": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "minimized": {
+              "type": "object",
+              "properties": {
+                "playButtonIcon": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "sheets": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "handleColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "titleFontSize": {
+              "type": "string"
+            },
+            "titleFontWeight": {
+              "type": "string"
+            },
+            "backdropColor": {
+              "type": "string"
+            },
+            "shadow": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "status": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "string"
+            },
+            "error": {
+              "type": "string"
+            },
+            "warning": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "loading": {
+          "type": "object",
+          "properties": {
+            "spinnerColor": {
+              "type": "string"
+            },
+            "backgroundColor": {
+              "type": "string"
+            },
+            "messageFontSize": {
+              "type": "string"
+            },
+            "messageFontWeight": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "startCard": {
+          "type": "object",
+          "properties": {
+            "titleFontSize": {
+              "type": "string"
+            },
+            "titleFontWeight": {
+              "type": "string"
+            },
+            "titleLineHeight": {
+              "type": "string"
+            },
+            "metaFontSize": {
+              "type": "string"
+            },
+            "metaFontWeight": {
+              "type": "string"
+            },
+            "metaColor": {
+              "type": "string"
+            },
+            "descriptionFontSize": {
+              "type": "string"
+            },
+            "offlineMessage": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "borderColor": {
+                  "type": "string"
+                },
+                "textColor": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "overlay": {
+              "type": "object",
+              "properties": {
+                "buttonBackground": {
+                  "type": "string"
+                },
+                "buttonColor": {
+                  "type": "string"
+                },
+                "gradientTop": {
+                  "type": "string"
+                },
+                "gradientBottom": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "inputs": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "focusBorderColor": {
+              "type": "string"
+            },
+            "placeholderColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "richText": {
+          "type": "object",
+          "properties": {
+            "blockquoteBorderColor": {
+              "type": "string"
+            },
+            "blockquoteBackgroundColor": {
+              "type": "string"
+            },
+            "linkColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "imageCaption": {
+          "type": "object",
+          "properties": {
+            "textColor": {
+              "type": "string"
+            },
+            "creditColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "hotspot": {
+          "type": "object",
+          "properties": {
+            "pinColor": {
+              "type": "string"
+            },
+            "pinPulseColor": {
+              "type": "string"
+            },
+            "pinBorderColor": {
+              "type": "string"
+            },
+            "pinShadow": {
+              "type": "string"
+            },
+            "popoverBackground": {
+              "type": "string"
+            },
+            "popoverBorderColor": {
+              "type": "string"
+            },
+            "popoverShadow": {
+              "type": "string"
+            },
+            "popoverTitleColor": {
+              "type": "string"
+            },
+            "popoverTextColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tooltip": {
+          "type": "object",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "textColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "fullscreenPlayer": {
+          "type": "object",
+          "properties": {
+            "artworkBorderRadius": {
+              "type": "string"
+            },
+            "artworkShadow": {
+              "type": "string"
+            },
+            "adjacentArtworkOpacity": {
+              "type": "number"
+            },
+            "infoButton": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "iconColor": {
+                  "type": "string"
+                },
+                "backdropBlur": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "captionOverlay": {
+              "type": "object",
+              "properties": {
+                "backgroundColor": {
+                  "type": "string"
+                },
+                "borderRadius": {
+                  "type": "string"
+                },
+                "backdropBlur": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "transcriptionTextOpacity": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "colors": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "object",
+              "properties": {
+                "primary": {
+                  "type": "string"
+                },
+                "secondary": {
+                  "type": "string"
+                },
+                "tertiary": {
+                  "type": "string"
+                },
+                "inverse": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "border": {
+              "type": "object",
+              "properties": {
+                "light": {
+                  "type": "string"
+                },
+                "medium": {
+                  "type": "string"
+                },
+                "dark": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "background": {
+              "type": "object",
+              "properties": {
+                "primary": {
+                  "type": "string"
+                },
+                "secondary": {
+                  "type": "string"
+                },
+                "tertiary": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "extends": {
+          "$ref": "#/definitions/ThemeId",
+          "description": "What to inherit from: a built-in theme or another custom theme of the same manifest (a chain is fine, a cycle is not). Defaults to 'default-light'."
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "A custom theme as authored in JSON (`src/data/themes/<id>.json`): any subset of  {@link  ThemeConfig } , deep-merged over a built-in theme by the player."
+    },
+    "ThemeId": {
+      "type": "string"
+    },
+    "UiText": {
+      "type": "object",
+      "properties": {
+        "loading": {
+          "type": "object",
+          "properties": {
+            "tourData": {
+              "type": "string"
+            },
+            "preparing": {
+              "type": "string"
+            },
+            "audio": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "errors": {
+          "type": "object",
+          "properties": {
+            "loadFailed": {
+              "type": "string"
+            },
+            "tourLoadFailed": {
+              "type": "string"
+            },
+            "downloadFailed": {
+              "type": "string"
+            },
+            "retry": {
+              "type": "string"
+            },
+            "httpsTooltip": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "startCard": {
+          "type": "object",
+          "properties": {
+            "preparing": {
+              "type": "string"
+            },
+            "loadingTour": {
+              "type": "string"
+            },
+            "replayTour": {
+              "type": "string"
+            },
+            "resumeTour": {
+              "type": "string"
+            },
+            "downloadTour": {
+              "type": "string"
+            },
+            "startTour": {
+              "type": "string"
+            },
+            "offlineInfo": {
+              "type": "string"
+            },
+            "downloadForOffline": {
+              "type": "string"
+            },
+            "availableOffline": {
+              "type": "string"
+            },
+            "downloading": {
+              "type": "string"
+            },
+            "stops": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "rating": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "subtitle": {
+              "type": "string"
+            },
+            "tapToRate": {
+              "type": "string"
+            },
+            "shareDetails": {
+              "type": "string"
+            },
+            "feedbackPlaceholder": {
+              "type": "string"
+            },
+            "next": {
+              "type": "string"
+            },
+            "stayInLoop": {
+              "type": "string"
+            },
+            "emailInfo": {
+              "type": "string"
+            },
+            "emailPlaceholder": {
+              "type": "string"
+            },
+            "subscribe": {
+              "type": "string"
+            },
+            "skip": {
+              "type": "string"
+            },
+            "thankYou": {
+              "type": "string"
+            },
+            "appreciateFeedback": {
+              "type": "string"
+            },
+            "close": {
+              "type": "string"
+            },
+            "subscribed": {
+              "type": "string"
+            },
+            "checkInbox": {
+              "type": "string"
+            },
+            "emailError": {
+              "type": "string"
+            },
+            "emailConsent": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tourComplete": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "message": {
+              "type": "string"
+            },
+            "rateTour": {
+              "type": "string"
+            },
+            "skipRating": {
+              "type": "string"
+            },
+            "done": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tourHeader": {
+          "type": "object",
+          "properties": {
+            "minLeft": {
+              "type": "string"
+            },
+            "offline": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "map": {
+          "type": "object",
+          "properties": {
+            "locationError": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tourSelection": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "subtitle": {
+              "type": "string"
+            },
+            "tours": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "playback": {
+          "type": "object",
+          "properties": {
+            "speed": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "stopSearch": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "placeholder": {
+              "type": "string"
+            },
+            "clear": {
+              "type": "string"
+            },
+            "resultOne": {
+              "type": "string"
+            },
+            "resultMany": {
+              "type": "string"
+            },
+            "noResults": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "textSize": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "default": {
+              "type": "string"
+            },
+            "large": {
+              "type": "string"
+            },
+            "larger": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "directions": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            },
+            "openIn": {
+              "type": "string"
+            },
+            "googleMaps": {
+              "type": "string"
+            },
+            "appleMaps": {
+              "type": "string"
+            },
+            "waze": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "embed": {
+          "type": "object",
+          "properties": {
+            "blocked": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false,
+      "description": "Interface text overrides for one language, merged over the player's built-in locale (or over English for a language with no built-in locale)."
+    },
+    "ManifestTour": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Same as `metadata.id` and every language file's `id`."
+        },
+        "metadata": {
+          "$ref": "#/definitions/TourMetadataFile"
+        },
+        "languages": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/TourFile"
+          },
+          "description": "Language code → that language's tour file."
+        },
+        "route": {
+          "$ref": "#/definitions/RouteGeoJSON",
+          "description": "The walking route, inlined. Replaces the `mapRoute.geoJSON` relative path that `metadata.json` uses on disk (a manifest has no sibling files)."
+        }
+      },
+      "required": [
+        "id",
+        "metadata",
+        "languages"
+      ],
+      "additionalProperties": false,
+      "description": "One tour inside a manifest: shared metadata plus one file per language."
+    },
+    "TourMetadataFile": {
+      "$ref": "#/definitions/TourMetadata",
+      "description": "Shape of `src/data/tour/<id>/metadata.json` — properties shared across languages."
+    },
+    "TourMetadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "defaultLanguage": {
+          "type": "string"
+        },
+        "offlineMode": {
+          "$ref": "#/definitions/OfflineMode"
+        },
+        "transitionAudio": {
+          "type": "string"
+        },
+        "themeId": {
+          "type": "string"
+        },
+        "transcriptAvailable": {
+          "type": "boolean"
+        },
+        "collectFeedback": {
+          "type": "boolean"
+        },
+        "hapticsEnabled": {
+          "type": "boolean"
+        },
+        "showTextSize": {
+          "type": "boolean"
+        },
+        "showPlaybackSpeed": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string"
+        },
+        "showLanguageLabel": {
+          "type": "boolean"
+        },
+        "showStopImage": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "const": "thumbnail"
+            }
+          ]
+        },
+        "showStopDuration": {
+          "type": "boolean"
+        },
+        "showStopNumber": {
+          "type": "boolean"
+        },
+        "fullscreenPlayer": {
+          "type": "boolean"
+        },
+        "showProgressBar": {
+          "type": "boolean"
+        },
+        "imageColor": {
+          "type": "string"
+        },
+        "stopSearchThreshold": {
+          "type": "number",
+          "description": "Show a search field above the stop list when the tour has MORE than this many stops (default: 8). It filters by title and text. Use a large number to never show it.",
+          "minimum": 0
+        },
+        "listView": {
+          "type": "boolean"
+        },
+        "mapView": {
+          "type": "boolean"
+        },
+        "mapProvider": {
+          "type": "string",
+          "enum": [
+            "openfreemap",
+            "openstreetmap",
+            "mapbox",
+            "jawg",
+            "maptiler",
+            "carto"
+          ]
+        },
+        "mapStyle": {
+          "type": "string"
+        },
+        "mapApiKey": {
+          "type": "string"
+        },
+        "mapStyleId": {
+          "type": "string"
+        },
+        "mapCenter": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "additionalProperties": false
+        },
+        "mapZoom": {
+          "type": "number"
+        },
+        "mapMarker": {
+          "type": "string",
+          "enum": [
+            "number",
+            "image",
+            "empty"
+          ]
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "mapMarkerColors": {
+          "$ref": "#/definitions/MapMarkerColors"
+        },
+        "mapCluster": {
+          "type": "object",
+          "properties": {
+            "disableClusteringAtZoom": {
+              "type": "number"
+            },
+            "spiderfyOnMaxZoom": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapRoute": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/MapRouteConfig"
+            }
+          ]
+        },
+        "mapLocateButton": {
+          "type": "boolean"
+        },
+        "showDirections": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Tour metadata - shared properties across all language versions These can be overridden in individual language files",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "carto"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "rastertiles/voyager",
+                  "light_all",
+                  "dark_all",
+                  "light_nolabels",
+                  "dark_nolabels"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "OfflineMode": {
+      "type": "string",
+      "enum": [
+        "online-only",
+        "optional",
+        "offline-only"
+      ]
+    },
+    "MapMarkerColors": {
+      "type": "object",
+      "properties": {
+        "upcoming": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "string"
+        },
+        "active": {
+          "type": "string"
+        },
+        "cluster": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Per-tour overrides for the map marker background colors. Each field falls back to the theme's `mapMarkers.<state>.backgroundColor`. Number/checkmark colors stay with the theme (white in both shipped themes), so pick backgrounds dark enough for white text — for a deeper restyle give the tour its own `themeId`."
+    },
+    "MapRouteConfig": {
+      "type": "object",
+      "properties": {
+        "geoJSON": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/RouteGeoJSON"
+            }
+          ]
+        },
+        "minZoom": {
+          "type": "number"
+        },
+        "completedColor": {
+          "type": "string"
+        },
+        "upcomingColor": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number"
+        },
+        "dashArray": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Route polyline configuration. In metadata.json, `geoJSON` is a relative path string (\"./route.geojson\"). At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.\n\nThe style fields are optional per-tour overrides of the theme's `mapMarkers.route`. They exist because the basemap is per-tour (`mapProvider` / `mapStyleId`), so a tour on dark tiles can recolor its line without cloning a whole theme. Precedence: mapRoute → theme → built-in default."
+    },
+    "RouteGeoJSON": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "FeatureCollection"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "Feature"
+              },
+              "geometry": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "LineString"
+                  },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "description": "Coordinates in [lng, lat] order — GeoJSON standard."
+                  }
+                },
+                "required": [
+                  "type",
+                  "coordinates"
+                ],
+                "additionalProperties": false
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "type",
+              "geometry",
+              "properties"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "type",
+        "features"
+      ],
+      "additionalProperties": false,
+      "description": "GeoJSON FeatureCollection containing a single LineString (the walking route)."
+    },
+    "TourFile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalDuration": {
+          "type": "string"
+        },
+        "totalStops": {
+          "type": "number"
+        },
+        "offlineMode": {
+          "$ref": "#/definitions/OfflineMode"
+        },
+        "transitionAudio": {
+          "type": "string"
+        },
+        "themeId": {
+          "type": "string"
+        },
+        "transcriptAvailable": {
+          "type": "boolean"
+        },
+        "collectFeedback": {
+          "type": "boolean"
+        },
+        "hapticsEnabled": {
+          "type": "boolean"
+        },
+        "showTextSize": {
+          "type": "boolean"
+        },
+        "showPlaybackSpeed": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string"
+        },
+        "showLanguageLabel": {
+          "type": "boolean"
+        },
+        "showStopImage": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "const": "thumbnail"
+            }
+          ]
+        },
+        "showStopDuration": {
+          "type": "boolean"
+        },
+        "showStopNumber": {
+          "type": "boolean"
+        },
+        "fullscreenPlayer": {
+          "type": "boolean"
+        },
+        "showProgressBar": {
+          "type": "boolean"
+        },
+        "imageColor": {
+          "type": "string"
+        },
+        "stopSearchThreshold": {
+          "type": "number",
+          "description": "Show a search field above the stop list when the tour has MORE than this many stops (default: 8). It filters by title and text. Use a large number to never show it.",
+          "minimum": 0
+        },
+        "listView": {
+          "type": "boolean"
+        },
+        "mapView": {
+          "type": "boolean"
+        },
+        "mapProvider": {
+          "type": "string",
+          "enum": [
+            "openfreemap",
+            "openstreetmap",
+            "mapbox",
+            "jawg",
+            "maptiler",
+            "carto"
+          ]
+        },
+        "mapStyle": {
+          "type": "string"
+        },
+        "mapApiKey": {
+          "type": "string"
+        },
+        "mapStyleId": {
+          "type": "string"
+        },
+        "mapCenter": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "additionalProperties": false
+        },
+        "mapZoom": {
+          "type": "number"
+        },
+        "mapMarker": {
+          "type": "string",
+          "enum": [
+            "number",
+            "image",
+            "empty"
+          ]
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "mapMarkerColors": {
+          "$ref": "#/definitions/MapMarkerColors"
+        },
+        "mapCluster": {
+          "type": "object",
+          "properties": {
+            "disableClusteringAtZoom": {
+              "type": "number"
+            },
+            "spiderfyOnMaxZoom": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapRoute": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/MapRouteConfig"
+            }
+          ]
+        },
+        "mapLocateButton": {
+          "type": "boolean"
+        },
+        "showDirections": {
+          "type": "boolean"
+        },
+        "stops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuthoredStop"
+          }
+        }
+      },
+      "required": [
+        "description",
+        "id",
+        "language",
+        "stops",
+        "title",
+        "totalDuration",
+        "totalStops"
+      ],
+      "additionalProperties": false,
+      "description": "Shape of a language file, e.g. `src/data/tour/<id>/en.json`. Mirrors  {@link  TourData }  but with runtime-only stop state removed.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "carto"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "rastertiles/voyager",
+                  "light_all",
+                  "dark_all",
+                  "light_nolabels",
+                  "dark_nolabels"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "AuthoredStop": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TextStop"
+        },
+        {
+          "$ref": "#/definitions/ImageTextStop"
+        },
+        {
+          "$ref": "#/definitions/ThreeDObjectStop"
+        },
+        {
+          "$ref": "#/definitions/VideoStop"
+        },
+        {
+          "$ref": "#/definitions/HeadlineStop"
+        },
+        {
+          "$ref": "#/definitions/RatingStop"
+        },
+        {
+          "$ref": "#/definitions/EmailStop"
+        },
+        {
+          "$ref": "#/definitions/QuoteStop"
+        },
+        {
+          "$ref": "#/definitions/ImageGalleryStop"
+        },
+        {
+          "$ref": "#/definitions/ImageComparisonStop"
+        },
+        {
+          "$ref": "#/definitions/HotspotImageStop"
+        },
+        {
+          "$ref": "#/definitions/EmbedStop"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "audio"
+            },
+            "title": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "imageAlt": {
+              "type": "string"
+            },
+            "imageCaption": {
+              "type": "string"
+            },
+            "imageCredit": {
+              "type": "string"
+            },
+            "audioFile": {
+              "type": "string"
+            },
+            "transcription": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "location": {
+              "$ref": "#/definitions/StopLocation"
+            },
+            "mapMarkerIcon": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "title",
+            "duration",
+            "image",
+            "id"
+          ],
+          "additionalProperties": false,
+          "description": "An audio stop as authored in JSON, with runtime playback state removed."
+        }
+      ],
+      "description": "Any stop as authored in JSON."
+    },
+    "TextStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "text"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "StopLocation": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lng"
+      ],
+      "additionalProperties": false
+    },
+    "ImageTextStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-text"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "imageAlt": {
+          "type": "string"
+        },
+        "imageCaption": {
+          "type": "string"
+        },
+        "imageCredit": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "image",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ThreeDObjectStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "3d-object"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "modelUrl": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "modelUrl",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "VideoStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "video"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "videoUrl": {
+          "type": "string"
+        },
+        "subtitles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VideoSubtitle"
+          },
+          "description": "Subtitle files (WebVTT) offered in the video's captions menu. Included in offline downloads."
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "videoUrl"
+      ],
+      "additionalProperties": false
+    },
+    "VideoSubtitle": {
+      "type": "object",
+      "properties": {
+        "src": {
+          "type": "string",
+          "description": "Where the WebVTT file (.vtt) is. A file on another origin must be served with CORS headers (`Access-Control-Allow-Origin`), or the browser refuses it.",
+          "pattern": "^\\S+$"
+        },
+        "srclang": {
+          "type": "string",
+          "description": "The language of the subtitles as a BCP 47 code, e.g. `en` or `pt-BR`.",
+          "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "label": {
+          "type": "string",
+          "description": "What the captions menu calls it, e.g. \"English\"."
+        }
+      },
+      "required": [
+        "src",
+        "srclang",
+        "label"
+      ],
+      "additionalProperties": false,
+      "description": "One subtitle file of a video: WebVTT, in one language. The browser's own captions menu offers them."
+    },
+    "HeadlineStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "headline"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "RatingStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "rating"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "EmailStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "email"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "consentText": {
+          "type": "string",
+          "description": "Consent line shown next to a required checkbox, e.g. \"Send me news about new guides\". Without it the form has no checkbox."
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "QuoteStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "quote"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "id",
+        "quote",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ImageGalleryStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-gallery"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GalleryImage"
+          }
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "images",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "GalleryImage": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "credit": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "ImageComparisonStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-comparison"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "before": {
+          "type": "string"
+        },
+        "after": {
+          "type": "string"
+        },
+        "beforeLabel": {
+          "type": "string"
+        },
+        "afterLabel": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "after",
+        "before",
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "HotspotImageStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-hotspot"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "imageAlt": {
+          "type": "string"
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Hotspot"
+          }
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hotspots",
+        "id",
+        "image",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "Hotspot": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "title"
+      ],
+      "additionalProperties": false
+    },
+    "EmbedStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "embed"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "embedUrl": {
+          "type": "string",
+          "description": "The page to frame. Must be `https://` (the player also refuses a URL on its own origin, where a framed upload could run as the player). Empty = nothing to show yet. With `embedType` youtube/spotify the player only trusts YouTube hosts / open.spotify.com; another host is framed as generic (the type cannot be checked here, so the player enforces it).",
+          "pattern": "^(https://\\S+)?$"
+        },
+        "embedType": {
+          "type": "string",
+          "enum": [
+            "youtube",
+            "spotify",
+            "video",
+            "generic"
+          ]
+        },
+        "aspectRatio": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "embedUrl",
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { QuotesIcon } from '@phosphor-icons/react/dist/csr/Quotes';
 import { QuoteStop } from '../../types';
+import { scaled } from '../../src/textSize/textSize';
 
 interface QuoteCardProps {
   item: QuoteStop;
@@ -23,11 +24,13 @@ const QuoteMarkWrapper = styled.div`
 
 const QuoteText = styled.p`
   ${tw`text-lg leading-relaxed mb-6`}
+  font-size: ${scaled('1.125rem')};
   color: ${({ theme }) => theme.cards.textColor};
 `;
 
 const AuthorName = styled.div`
   ${tw`text-sm font-medium`}
+  font-size: ${scaled('0.875rem')};
   color: ${({ theme }) => theme.colors.text.secondary};
 `;
 

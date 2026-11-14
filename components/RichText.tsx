@@ -5,14 +5,23 @@ import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 import { useTheme } from 'styled-components';
 import { Tooltip } from './Tooltip';
+import { TEXT_SCALE_VARIABLE } from '../src/textSize/textSize';
 
 interface RichTextProps {
   content: string;
   className?: string;
 }
 
+// The visitor's text size step (src/textSize) multiplies whatever size the parent gives the text.
+const scaledSize = `font-size: calc(1em * var(${TEXT_SCALE_VARIABLE}, 1));`;
+
+const PlainText = styled.span`
+  ${scaledSize}
+`;
+
 const Wrapper = styled.span`
-  /* Inherit all parent text styles — no resets */
+  /* Inherit all parent text styles — no resets, except the visitor's text size */
+  ${scaledSize}
 
   a {
     color: ${({ theme }) => theme.richText.linkColor};
@@ -107,7 +116,7 @@ export const RichText: React.FC<RichTextProps> = ({ content, className }) => {
   );
 
   if (!hasHtml) {
-    return <span className={className}>{content}</span>;
+    return <PlainText className={className}>{content}</PlainText>;
   }
 
   const sanitized = sanitize(content);

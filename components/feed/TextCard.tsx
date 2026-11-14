@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { TextStop } from '../../types';
 import { RichText } from '../RichText';
+import { scaled } from '../../src/textSize/textSize';
 
 interface TextCardProps {
   item: TextStop;
@@ -46,7 +47,7 @@ const NumberText = styled.span`
 
 const Title = styled.h3`
   ${tw`leading-tight flex-1`}
-  font-size: ${({ theme }) => theme.cards.titleFontSize};
+  font-size: ${({ theme }) => scaled(theme.cards.titleFontSize)};
   font-weight: ${({ theme }) => theme.cards.titleFontWeight};
   color: ${({ theme }) => theme.cards.textColor};
 `;

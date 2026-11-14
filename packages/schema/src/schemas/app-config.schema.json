@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/AppConfigFile",
+  "definitions": {
+    "AppConfigFile": {
+      "$ref": "#/definitions/AppConfig",
+      "description": "Shape of `src/data/tour/app.json` — app-level config for the landing screen and the installed-app identity."
+    },
+    "AppConfig": {
+      "type": "object",
+      "properties": {
+        "themeId": {
+          "type": "string"
+        },
+        "defaultLanguage": {
+          "type": "string"
+        },
+        "title": {
+          "$ref": "#/definitions/LocalizedString"
+        },
+        "subtitle": {
+          "$ref": "#/definitions/LocalizedString"
+        },
+        "logo": {
+          "type": "string"
+        },
+        "hero": {
+          "type": "string"
+        },
+        "splash": {
+          "type": "string"
+        },
+        "splashArrowColor": {
+          "type": "string"
+        },
+        "statusBarColor": {
+          "type": "string"
+        },
+        "tourOrder": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tourCard": {
+          "$ref": "#/definitions/TourCardConfig"
+        },
+        "name": {
+          "type": "string"
+        },
+        "shortName": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "themeColor": {
+          "type": "string"
+        },
+        "backgroundColor": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "display": {
+          "$ref": "#/definitions/AppDisplayMode"
+        },
+        "orientation": {
+          "$ref": "#/definitions/AppOrientation"
+        },
+        "analytics": {
+          "type": "boolean",
+          "description": "Set false to turn off anonymous usage analytics (POST /e). On by default in manifest mode; compiled builds only send anything when the build has a VITE_ANALYTICS_ENDPOINT. Visitors with Global Privacy Control or Do Not Track on are never counted either way. See docs/analytics.md."
+        },
+        "embedAllowlist": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EmbedHost"
+          },
+          "description": "Websites that embed stops of any type, including YouTube and Spotify, may show. When the list has entries, an embed from any other host is not rendered and the player shows a neutral \"not available here\" notice instead. The usual rules still apply on top: https only, never the player's own origin. An empty or missing list means no limit. See docs/stops.md."
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "LocalizedString": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "A string localized per language code, e.g. { en: \"Choose a tour\", de: \"Wähle eine Tour\" }. The current language is looked up by code; missing codes fall back to defaults."
+    },
+    "TourCardConfig": {
+      "type": "object",
+      "properties": {
+        "showImage": {
+          "type": "boolean"
+        },
+        "showDescription": {
+          "type": "boolean"
+        },
+        "showMeta": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Controls which elements render on every tour card in the selection list. The title is always shown. All flags default to true (omitted = shown)."
+    },
+    "AppDisplayMode": {
+      "type": "string",
+      "enum": [
+        "standalone",
+        "minimal-ui",
+        "browser",
+        "fullscreen"
+      ],
+      "description": "Manifest `display`. Standalone is the usual one: no browser UI at all."
+    },
+    "AppOrientation": {
+      "type": "string",
+      "enum": [
+        "portrait",
+        "landscape",
+        "any"
+      ],
+      "description": "Manifest `orientation`. `any` lets the phone rotate the app."
+    },
+    "EmbedHost": {
+      "type": "string",
+      "description": "A website an embed may come from: a hostname such as `www.youtube.com`, or `*.example.org` for every subdomain of `example.org` (not `example.org` itself). No scheme, port or path.",
+      "pattern": "^(\\*\\.)?[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?(\\.[A-Za-z0-9]([A-Za-z0-9-]*[A-Za-z0-9])?)*$"
+    }
+  }
+}

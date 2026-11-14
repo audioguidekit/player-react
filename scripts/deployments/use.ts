@@ -32,8 +32,43 @@ function nonFixtureEntries(): string[] {
   return readdirSync(tourDataDir).filter((name) => name !== '_fixture');
 }
 
-/** Remove every non-fixture entry (optionally keeping one) plus the generated public/ asset dirs. */
+/**
+ * Tour folders this script is allowed to remove: the repo's own barcelona, and
+ * anything that came from a deployment under tours-content/. Everything else is
+ * somebody's own work.
+ */
+function replaceableEntries(): Set<string> {
+  const known = new Set<string>(['barcelona', 'app.json']);
+  if (existsSync(contentDir)) {
+    for (const name of readdirSync(contentDir)) {
+      const tours = join(contentDir, name, 'tours');
+      if (existsSync(tours)) for (const tourId of readdirSync(tours)) known.add(tourId);
+    }
+  }
+  return known;
+}
+
+/**
+ * Remove every non-fixture entry (optionally keeping one) plus the generated
+ * public/ asset dirs.
+ *
+ * Refuses to delete a tour it doesn't recognise. These folders are untracked,
+ * which used to mean "deployment leftovers, safe to delete" — but a tour
+ * written by hand is untracked too, and deleting one is
+ * unrecoverable. Same trap as `dev` running `tour:use` used to be.
+ */
 function clearActiveDeployment(keep?: string) {
+  const replaceable = replaceableEntries();
+  const unknown = nonFixtureEntries().filter((name) => name !== keep && !replaceable.has(name));
+
+  if (unknown.length > 0 && !process.argv.includes('--force')) {
+    console.error(`\nThese are in src/data/tour/ but did not come from a deployment:\n`);
+    for (const name of unknown) console.error(`  ${name}`);
+    console.error(`\nSwitching deployments would delete them, and they are not in git.`);
+    console.error(`Move them somewhere safe first, or re-run with --force to delete them.\n`);
+    process.exit(1);
+  }
+
   for (const name of nonFixtureEntries()) {
     if (name === keep) continue;
     rmSync(join(tourDataDir, name), { recursive: true, force: true });

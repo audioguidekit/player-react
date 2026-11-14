@@ -3,6 +3,7 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { ImageTextStop } from '../../types';
 import { RichText } from '../RichText';
+import { scaled } from '../../src/textSize/textSize';
 
 const ImageLightbox = lazy(() => import('../ImageLightbox').then(m => ({ default: m.ImageLightbox })));
 
@@ -61,7 +62,7 @@ const NumberText = styled.span`
 const Title = styled.h3`
   ${tw`leading-tight flex-1`}
   font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
-  font-size: ${({ theme }) => theme.cards.titleFontSize};
+  font-size: ${({ theme }) => scaled(theme.cards.titleFontSize)};
   font-weight: ${({ theme }) => theme.cards.titleFontWeight};
   color: ${({ theme }) => theme.cards.textColor};
 `;

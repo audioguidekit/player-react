@@ -2,11 +2,17 @@ import React, { useEffect, useLayoutEffect, useCallback, useMemo, useState, lazy
 import { useSpring, useTransform } from 'framer-motion';
 import tw from 'twin.macro';
 import styled from 'styled-components';
-import { TourData } from '../types';
+import { TourData, Stop } from '../types';
 import { StopCardRenderer } from '../components/feed/StopCardRenderer';
 import { TourHeader } from '../components/TourHeader';
 import { AudioStopCard } from '../components/feed/AudioStopCard';
 import { HeadphonesIcon } from '@phosphor-icons/react/dist/csr/Headphones';
+import { StopSearch } from '../components/StopSearch';
+import { TextSizeControl } from '../components/TextSizeControl';
+import { DirectionsAction } from '../components/DirectionsAction';
+import { isUsableLocation } from '../src/directions/links';
+import { useTranslation } from '../src/translations';
+import { showsStopSearch, stopMatches } from '../src/stopSearch/searchStops';
 
 const TourMapView = lazy(() =>
   import('../components/TourMapView').then(m => ({ default: m.TourMapView }))
@@ -53,6 +59,21 @@ const StopItemWrapper = styled.div`
   contain-intrinsic-size: 0 120px; /* Approximate height of a stop card */
 `;
 
+const ListToolbar = styled.div`
+  ${tw`flex items-center gap-2 px-4 pt-3 pb-2 shrink-0`}
+  background-color: ${({ theme }) => theme.mainContent.backgroundColor};
+`;
+
+// Right-aligned whether or not the search field is beside it.
+const TextSizeSlot = styled.div`
+  ${tw`ml-auto shrink-0`}
+`;
+
+const NoResults = styled.p`
+  ${tw`text-center py-10 text-base`}
+  color: ${({ theme }) => theme.colors.text.tertiary};
+`;
+
 const Signature = styled.a`
   ${tw`flex items-center justify-center gap-1.5 py-1 mt-2`}
   font-size: 12px;
@@ -70,11 +91,33 @@ const Signature = styled.a`
   }
 `;
 
+/** What to call a stop in a button label, when it has a name. */
+const stopName = (stop: Stop): string | undefined => {
+  switch (stop.type) {
+    case 'audio':
+    case 'text':
+    case 'image-text':
+    case 'email':
+      return stop.title;
+    case 'headline':
+      return stop.text;
+    default:
+      return undefined;
+  }
+};
+
 // Target scrollTop that centers a stop's card in the area above the mini-player.
 const computeStopScrollTop = (container: HTMLElement, element: HTMLElement, isFirstStop: boolean): number => {
   if (isFirstStop) return 0;
   const visibleHeight = container.clientHeight - 128; // 128 ≈ bottom padding behind the player
-  const elementRect = element.getBoundingClientRect();
+  // Non-audio cards render inside StopCardRenderer's `display: contents`
+  // wrapper, which has no box of its own — its rect is all zeros, which reads
+  // as "top of the list" and scrolls nowhere. Measure the card inside it.
+  const box =
+    element.getBoundingClientRect().height === 0
+      ? ((element.firstElementChild as HTMLElement | null) ?? element)
+      : element;
+  const elementRect = box.getBoundingClientRect();
   const containerRect = container.getBoundingClientRect();
   const relativeTop = elementRect.top - containerRect.top + container.scrollTop;
   return Math.max(0, relativeTop - visibleHeight / 2 + elementRect.height / 2);
@@ -237,6 +280,27 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
     if (sheetExpanded) setMapReady(true);
   }, [sheetExpanded]);
 
+  const { t } = useTranslation();
+  const [searchQuery, setSearchQuery] = useState('');
+  // Stops the visitor can see in the list, each with its place in the tour (the number on its card).
+  const listedStops = useMemo(
+    () => tour.stops.filter(stop => !(stop.type === 'rating' && tour.collectFeedback === false)).map((stop, index) => ({ stop, index })),
+    [tour.stops, tour.collectFeedback],
+  );
+  const searchEnabled = showsStopSearch(listedStops.length, tour.stopSearchThreshold);
+  const textSizeEnabled = tour.showTextSize !== false;
+  const directionsEnabled = tour.showDirections !== false;
+  // The "Directions" button under a stop that has a place on the map.
+  const directionsFor = (stop: Stop) =>
+    directionsEnabled && isUsableLocation(stop.location) ? (
+      <DirectionsAction location={stop.location} stopId={stop.id} stopName={stopName(stop)} />
+    ) : null;
+  const activeQuery = searchEnabled ? searchQuery : '';
+  const visibleStops = useMemo(
+    () => (activeQuery.trim() ? listedStops.filter(({ stop }) => stopMatches(stop, activeQuery)) : listedStops),
+    [listedStops, activeQuery],
+  );
+
   const containerRef = React.useRef<HTMLDivElement>(null);
   const rafIdRef = React.useRef<number | null>(null);
   // Latest currentStopId, read inside the view-switch scroll effect without making it
@@ -353,6 +417,12 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
           </Suspense>
         </MapLayer>
       )}
+      {viewMode === 'list' && (searchEnabled || textSizeEnabled) && (
+        <ListToolbar>
+          {searchEnabled && <StopSearch query={searchQuery} onQueryChange={setSearchQuery} resultCount={visibleStops.length} />}
+          {textSizeEnabled && <TextSizeSlot><TextSizeControl /></TextSizeSlot>}
+        </ListToolbar>
+      )}
       {viewMode === 'list' && (
       // Scrollable List (matches pre-map layout)
       <ScrollableList
@@ -361,9 +431,10 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
         data-testid="stop-feed"
         $compact={tour.showStopImage !== true}
       >
-        {tour.stops
-          .filter(stop => !(stop.type === 'rating' && tour.collectFeedback === false))
-          .map((stop, index) => {
+        {activeQuery.trim() && visibleStops.length === 0 && (
+          <NoResults data-testid="stop-search-empty">{t.stopSearch.noResults}</NoResults>
+        )}
+        {visibleStops.map(({ stop, index }) => {
           // Render audio stops with compact card
           if (stop.type === 'audio') {
             const stopIsPlaying = stop.id === currentStopId && isPlaying;
@@ -381,6 +452,7 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
                   showDuration={tour.showStopDuration}
                   showNumber={tour.showStopNumber}
                 />
+                {directionsFor(stop)}
               </StopItemWrapper>
             );
           }
@@ -395,6 +467,7 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
                 onOpenRatingSheet={onOpenRatingSheet}
                 compactLayout={tour.showStopImage !== true}
               />
+              {directionsFor(stop)}
             </StopItemWrapper>
           );
         })}

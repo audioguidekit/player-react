@@ -120,6 +120,16 @@ const Button = styled.button<{ $disabled?: boolean }>(({ $disabled, theme }) => 
   !$disabled && tw`active:scale-[0.98]`,
 ]);
 
+const ConsentLabel = styled.label`
+  ${tw`w-full flex items-start gap-3 mt-4 text-sm text-left cursor-pointer`}
+  font-family: ${({ theme }) => theme?.typography?.fontFamily?.sans?.join(', ')};
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  input {
+    ${tw`mt-0.5 w-4 h-4 shrink-0`}
+  }
+`;
+
 const SkipButton = styled.button`
   ${tw`w-full py-4 px-6 rounded-full active:scale-[0.98] transition-all`}
   background-color: ${({ theme }) => theme.buttons.secondary.backgroundColor};
@@ -173,12 +183,14 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
   const triggerHaptic = useHaptics();
 
   const [step, setStep] = useState<RatingStep>('RATING');
+  const [consent, setConsent] = useState(false);
 
   // Sync step with submission state
   useEffect(() => {
     if (isOpen) {
       // Always start at RATING step to allow users to see/edit their previous submission
       setStep('RATING');
+      setConsent(false);
     }
   }, [isOpen]);
 
@@ -188,12 +200,13 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
   };
 
   const handleEmailSubmit = () => {
-    submitRating(); // Use context submit
+    if (!canSubscribe) return;
+    submitRating(true);
     setStep('THANKS');
   };
 
   const handleSkip = () => {
-    submitRating(); // Submit without email
+    submitRating(false); // Submit without email: whatever was typed is discarded
     setStep('THANKS');
   };
 
@@ -206,6 +219,9 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
 
   // Email validation (simple check)
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  // GDPR: the address is only sent after an explicit, unchecked-by-default consent.
+  const canSubscribe = isEmailValid && consent;
 
   return (
     <BottomSheet isOpen={isOpen} onClose={onClose}>
@@ -336,14 +352,19 @@ export const RatingSheet = React.memo<RatingSheetProps>(({ isOpen, onClose, onSu
                   placeholder={t.rating.emailPlaceholder}
                 />
 
+                <ConsentLabel>
+                  <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+                  <span>{t.rating.emailConsent}</span>
+                </ConsentLabel>
+
                 <ButtonGroup>
                   <Button
                     onClick={() => {
                       triggerHaptic();
                       handleEmailSubmit();
                     }}
-                    disabled={!isEmailValid}
-                    $disabled={!isEmailValid}
+                    disabled={!canSubscribe}
+                    $disabled={!canSubscribe}
                   >
                     {t.rating.subscribe}
                   </Button>

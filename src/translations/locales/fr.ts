@@ -48,6 +48,8 @@ export const fr: Translations = {
     close: 'Fermer',
     subscribed: 'Vous êtes abonné !',
     checkInbox: 'Vérifiez votre boîte de réception.',
+    emailError: "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
+    emailConsent: "J'accepte de recevoir par e-mail des nouvelles sur les nouveaux guides.",
   },
   tourComplete: {
     title: 'Visite terminée !',
@@ -67,5 +69,33 @@ export const fr: Translations = {
     title: 'Choisissez une visite',
     subtitle: 'Sélectionnez une visite pour commencer',
     tours: 'visites',
+  },
+  playback: {
+    speed: "Vitesse",
+  },
+  stopSearch: {
+    label: "Rechercher des étapes",
+    placeholder: "Rechercher une étape",
+    clear: "Effacer la recherche",
+    resultOne: "1 étape trouvée",
+    resultMany: "{count} étapes trouvées",
+    noResults: "Aucune étape ne correspond à votre recherche.",
+  },
+  textSize: {
+    label: "Taille du texte",
+    default: "Taille du texte par défaut",
+    large: "Grand texte",
+    larger: "Très grand texte",
+  },
+  directions: {
+    label: "Itinéraire",
+    to: "Itinéraire vers {name}",
+    openIn: "Ouvrir l’itinéraire dans",
+    googleMaps: "Google Maps",
+    appleMaps: "Plans",
+    waze: "Waze",
+  },
+  embed: {
+    blocked: "Ce contenu n’est pas disponible ici.",
   },
 } as const;

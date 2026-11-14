@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { TourData } from '../types';
 import { storageService } from '../src/services/storageService';
+import { extractTourAssetUrls } from '../src/services/tourAssets';
 
 interface DownloadProgress {
   downloaded: number;
@@ -54,53 +55,8 @@ export const useDownloadManager = (
     checkDownloadStatus();
   }, [tour]);
 
-  /**
-   * Extract all asset URLs from tour data
-   */
-  const extractAssetUrls = useCallback((tourData: TourData): string[] => {
-    const urls: Set<string> = new Set();
-
-    // Add tour header image
-    if (tourData.image) {
-      urls.add(tourData.image);
-    }
-
-    // Add transition audio if present
-    if (tourData.transitionAudio) {
-      urls.add(tourData.transitionAudio);
-    }
-
-    // Extract assets from each stop
-    tourData.stops.forEach((stop) => {
-      switch (stop.type) {
-        case 'audio':
-          if (stop.image) urls.add(stop.image);
-          if (stop.audioFile) urls.add(stop.audioFile);
-          break;
-        case 'image-text':
-          if (stop.image) urls.add(stop.image);
-          break;
-        case 'video':
-          if (stop.videoUrl) urls.add(stop.videoUrl);
-          break;
-        case '3d-object':
-          if (stop.modelUrl) urls.add(stop.modelUrl);
-          break;
-        case 'image-gallery':
-          stop.images.forEach((img) => { if (img.url) urls.add(img.url); });
-          break;
-        case 'image-comparison':
-          if (stop.before) urls.add(stop.before);
-          if (stop.after) urls.add(stop.after);
-          break;
-        case 'image-hotspot':
-          if (stop.image) urls.add(stop.image);
-          break;
-      }
-    });
-
-    return Array.from(urls);
-  }, []);
+  /** Every file the tour needs offline (see src/services/tourAssets.ts). */
+  const extractAssetUrls = useCallback((tourData: TourData): string[] => extractTourAssetUrls(tourData), []);
 
   /**
    * Download and cache a single asset

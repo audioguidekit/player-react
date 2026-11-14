@@ -39,31 +39,26 @@ tests/
 ├── lightbox-backdrop-blur.spec.ts # Image lightbox backdrop blur
 ├── lightbox-zoom.spec.ts         # Image lightbox double-tap zoom
 └── locate-button-debug.spec.ts   # Map locate-me button diagnostics
+
+tests-manifest/                   # `bun run test:manifest`: the manifest-mode build
+├── visitor-helpers.ts            # open the player with a manifest the test edits first (preview bridge)
+├── playback-speed.spec.ts        # speed control, audio element, Media Session, persistence, tour setting
+├── stop-search.spec.ts           # matching rules, threshold, keyboard and screen reader behaviour
+├── text-size.spec.ts             # steps, scaling of rich text/transcripts/titles, OS text size, setting
+├── video-subtitles.spec.ts       # schema, <track>, cues, offline download of the .vtt files
+├── directions.spec.ts            # deep links, buttons, keyboard, setting
+└── embed-security.spec.ts        # embed rules and the app's embedAllowlist
 ```
+
+The visitor-feature specs use `openDraft()` / `startDraft()` from `tests-manifest/visitor-helpers.ts`: they take the built manifest, let the test change it (a tour's stops, a setting) and hand it to the running player through the live-preview bridge, so each test has its own content without a rebuild.
 
 > Tests are generic — they use `helpers.ts` to discover tour IDs and languages at runtime rather than hardcoding values.
 
 ## Configuration
 
-Key settings in `playwright.config.ts`:
+`config/playwright.config.ts` starts its own Vite dev server (`HTTP=1 vite --port 3217 --strictPort`) and never reuses a running one, so it cannot test another project's server. Set `PLAYWRIGHT_PORT` if 3217 is taken. The manifest-mode suite (`bun run test:manifest`) does the same with `MANIFEST_TEST_PORT` (default 4173).
 
-```typescript
-{
-  testDir: './tests',
-  fullyParallel: true,
-  retries: process.env.CI ? 2 : 0,
-  use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
-  },
-  webServer: {
-    command: 'bun run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-  },
-}
-```
+`config-flags`, `stop-card-display` and `tour-card-display` rewrite the `_fixture` tour (or `app.json`) on disk and wait for Vite to re-bundle. Each rewrite reloads every open page, so these specs run in their own projects, one after the other, once the read-only projects have finished. A new spec that writes to `src/data` belongs in that list (`MUTATING` in the config).
 
 Device profiles: **Chromium** (1280×720), **Mobile Chrome** (Pixel 5, 393×851), **Mobile Safari** (iPhone 12, 390×844).
 

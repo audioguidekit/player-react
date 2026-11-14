@@ -1,6 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import { TourData, Language } from '../types';
 import { dataService } from '../src/services/dataService';
+import { refreshTourData } from '../src/services/tourDiscovery';
+
+/**
+ * Live preview: an embedding editor posts `agk:data-changed` into its preview iframe after
+ * every save. Re-reading the JSON and bumping this version re-runs the loaders
+ * in place, so an edit shows up without reloading the page — the frame keeps
+ * its scroll position, the open stop and the sheet it was on.
+ */
+let dataVersion = 0;
+const dataVersionListeners = new Set<() => void>();
+
+if (typeof window !== 'undefined' && import.meta.env.DEV) {
+  window.addEventListener('message', async (event: MessageEvent) => {
+    if (event.data?.type !== 'agk:data-changed') return;
+    await refreshTourData();
+    dataService.clearCache();
+    dataVersion += 1;
+    dataVersionListeners.forEach(notify => notify());
+  });
+}
+
+function useDataVersion(): number {
+  return useSyncExternalStore(
+    listener => {
+      dataVersionListeners.add(listener);
+      return () => dataVersionListeners.delete(listener);
+    },
+    () => dataVersion,
+    () => 0,
+  );
+}
 
 /**
  * Generic loading state interface
@@ -29,17 +60,27 @@ export function useTourData(tourId?: string, languageCode?: string): LoadingStat
     error: null,
   });
 
+  const version = useDataVersion();
+  // A version bump is a refresh of the tour already on screen, so it keeps the
+  // current data visible instead of flashing the loading state; a different
+  // tour or language is a real load.
+  const requestKey = `${tourId ?? ''}|${languageCode ?? ''}`;
+  const lastRequestRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!languageCode) {
       setState({ data: null, loading: false, error: null });
       return;
     }
 
+    const isRefresh = lastRequestRef.current === requestKey;
+    lastRequestRef.current = requestKey;
+
     let cancelled = false;
 
     const loadData = async () => {
       try {
-        setState(prev => ({ ...prev, loading: true, error: null }));
+        if (!isRefresh) setState(prev => ({ ...prev, loading: true, error: null }));
         const tour = tourId
           ? await dataService.getTourById(tourId, languageCode)
           : await dataService.getTourByLanguage(languageCode);
@@ -63,7 +104,7 @@ export function useTourData(tourId?: string, languageCode?: string): LoadingStat
     return () => {
       cancelled = true;
     };
-  }, [tourId, languageCode]);
+  }, [tourId, languageCode, requestKey, version]);
 
   return state;
 }

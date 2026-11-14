@@ -3,6 +3,9 @@ import tw from 'twin.macro';
 import styled from 'styled-components';
 import { EmbedStop } from '../../types';
 import { RichText } from '../RichText';
+import { resolveEmbed } from './embedSecurity';
+import { getAppConfig } from '../../src/services/tourDiscovery';
+import { useTranslation } from '../../src/translations';
 
 interface EmbedCardProps {
   item: EmbedStop;
@@ -25,6 +28,11 @@ const StyledIframe = styled.iframe`
   ${tw`absolute inset-0 w-full h-full border-0`}
 `;
 
+const Notice = styled.p`
+  ${tw`px-6 py-8 text-sm text-center m-0`}
+  color: ${({ theme }) => theme.imageCaption.textColor};
+`;
+
 const CaptionArea = styled.div`
   ${tw`px-6 py-3`}
 `;
@@ -44,31 +52,36 @@ function parseAspectRatio(ratio?: string): string {
   return `${(h / w) * 100}%`;
 }
 
-function toPrivacyUrl(url: string): string {
-  // YouTube → youtube-nocookie.com
-  return url
-    .replace('://www.youtube.com/', '://www.youtube-nocookie.com/')
-    .replace('://youtube.com/', '://www.youtube-nocookie.com/');
-}
-
-function getAllowList(embedType?: string): string {
+function getAllowList(embedType: string): string {
   if (embedType === 'youtube') return 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
   if (embedType === 'spotify') return 'encrypted-media';
   return '';
 }
 
 export const EmbedCard = memo<EmbedCardProps>(({ item }) => {
-  const isSpotify = item.embedType === 'spotify';
+  const { t } = useTranslation();
+  const allowlist = getAppConfig().embedAllowlist;
+  const resolution = useMemo(
+    () => resolveEmbed(item.embedUrl, item.embedType, window.location.origin, allowlist),
+    [item.embedUrl, item.embedType, allowlist],
+  );
 
-  const paddingTop = useMemo(() => {
-    if (isSpotify) return '80px'; // Fixed compact height for Spotify
-    return parseAspectRatio(item.aspectRatio);
-  }, [item.aspectRatio, isSpotify]);
+  // Not https, or on the player's own origin: show nothing rather than frame it.
+  if (resolution.kind === 'invalid') return null;
 
-  const embedUrl = useMemo(() => {
-    if (item.embedType === 'youtube') return toPrivacyUrl(item.embedUrl);
-    return item.embedUrl;
-  }, [item.embedUrl, item.embedType]);
+  // The app limits embeds to certain websites and this one is not among them: a neutral notice,
+  // without the address, instead of the content.
+  if (resolution.kind === 'blocked') {
+    return (
+      <Container data-testid="embed-blocked">
+        <Notice role="note">{t.embed.blocked}</Notice>
+      </Container>
+    );
+  }
+  const { frame } = resolution;
+  // The type the embed was framed as: a "spotify" embed on another host is generic here too.
+  const isSpotify = frame.type === 'spotify';
+  const paddingTop = parseAspectRatio(item.aspectRatio);
 
   const wrapperStyle = isSpotify ? { paddingTop: 0, height: '80px' } : {};
 
@@ -76,10 +89,10 @@ export const EmbedCard = memo<EmbedCardProps>(({ item }) => {
     <Container>
       <IframeWrapper $paddingTop={isSpotify ? '0' : paddingTop} style={wrapperStyle}>
         <StyledIframe
-          src={embedUrl}
+          src={frame.src}
           loading="lazy"
-          sandbox="allow-scripts allow-same-origin"
-          allow={getAllowList(item.embedType)}
+          sandbox={frame.sandbox}
+          allow={getAllowList(frame.type)}
           style={isSpotify ? { position: 'relative', height: '80px' } : undefined}
         />
       </IframeWrapper>

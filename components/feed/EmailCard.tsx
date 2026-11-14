@@ -6,6 +6,8 @@ import styled from 'styled-components';
 import { EmailStop } from '../../types';
 import { useTranslation } from '../../src/translations';
 import { RichText } from '../RichText';
+import { useRating } from '../../context/RatingContext';
+import { submitNow } from '../../src/analytics';
 
 interface EmailCardProps {
   item: EmailStop;
@@ -82,6 +84,21 @@ const EmailInput = styled.input`
   }
 `;
 
+const ConsentLabel = styled.label`
+  ${tw`flex items-start gap-3 text-sm text-left cursor-pointer`}
+  color: ${({ theme }) => theme.colors.text.secondary};
+
+  input {
+    ${tw`mt-1 w-4 h-4 shrink-0`}
+    accent-color: ${({ theme }) => theme.buttons.primary.backgroundColor};
+  }
+`;
+
+const ErrorText = styled.p`
+  ${tw`text-sm text-center`}
+  color: ${({ theme }) => theme.status.error};
+`;
+
 const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid, theme }) => [
   tw`w-full py-4 rounded-full font-semibold text-base transition-all duration-300`,
   !$isValid && {
@@ -99,18 +116,31 @@ const SubmitButton = styled.button<{ $isValid: boolean }>(({ $isValid, theme }) 
 
 export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
   const [email, setEmail] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const { t } = useTranslation();
+  const [consent, setConsent] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const { t, currentLanguage } = useTranslation();
+  const { tourId } = useRating();
 
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // A consent line in the stop config adds a checkbox that must be ticked first.
+  const needsConsent = !!item.consentText;
+  const canSubmit = isEmailValid && (!needsConsent || consent) && status !== 'sending';
 
-  const handleSubmit = () => {
-    if (!isEmailValid) return;
-    console.log('Email submitted:', email);
-    setIsSubmitted(true);
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    setStatus('sending');
+    const result = await submitNow('email_submit', {
+      email,
+      consent: needsConsent ? consent : true, // no checkbox: the form itself is the opt-in
+      tourId: tourId ?? undefined,
+      stopId: item.id,
+      language: currentLanguage,
+    });
+    // 'unavailable': this build has no endpoint to send to. It behaves as before analytics existed.
+    setStatus(result === 'failed' ? 'error' : 'sent');
   };
 
-  if (isSubmitted) {
+  if (status === 'sent') {
     return (
       <SuccessContainer
         initial={{ opacity: 0, scale: 0.95 }}
@@ -145,11 +175,19 @@ export const EmailCard = React.memo<EmailCardProps>(({ item }) => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder={item.placeholder || t.rating.emailPlaceholder}
+            aria-label={item.placeholder || t.rating.emailPlaceholder}
           />
+          {needsConsent && (
+            <ConsentLabel>
+              <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+              <span>{item.consentText}</span>
+            </ConsentLabel>
+          )}
+          {status === 'error' && <ErrorText role="alert">{t.rating.emailError}</ErrorText>}
           <SubmitButton
             onClick={handleSubmit}
-            disabled={!isEmailValid}
-            $isValid={isEmailValid}
+            disabled={!canSubmit}
+            $isValid={canSubmit}
           >
             {item.buttonText || t.rating.subscribe}
           </SubmitButton>

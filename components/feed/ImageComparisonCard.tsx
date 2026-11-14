@@ -129,8 +129,8 @@ export const ImageComparisonCard = memo<ImageComparisonCardProps>(({ item }) => 
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
       >
-        <BaseImage src={item.before} alt={item.beforeLabel || 'Before'} />
-        <OverlayImage src={item.after} alt={item.afterLabel || 'After'} $position={position} />
+        {item.before && <BaseImage src={item.before} alt={item.beforeLabel || 'Before'} />}
+        {item.after && <OverlayImage src={item.after} alt={item.afterLabel || 'After'} $position={position} />}
 
         <SliderLine $position={position}>
           <SliderHandle $dragging={dragging}>

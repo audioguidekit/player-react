@@ -1,53 +1,25 @@
 /**
  * Tour Discovery Service
  *
- * Uses Vite's import.meta.glob to automatically discover tour JSON files at build time.
- * Tours are indexed by their internal `id` and `language` fields, not by filename.
- * This allows flexible file organization while maintaining language-based tour loading.
+ * Holds the in-memory registries every screen reads: tours by id and language,
+ * the app config, custom themes and UI text overrides.
  *
- * Supports metadata.json files for shared properties across language versions.
- * Properties in language files override metadata properties.
+ * The registries are filled by ONE function, `installManifest()`, from a
+ * `Manifest` (see @audioguidekit/schema). Where the manifest comes from is the
+ * data source's business, chosen at build time (VITE_DATA_SOURCE):
+ *
+ *   compiled (default)  src/data/** is read with import.meta.glob and assembled
+ *                       into a manifest by ./compiledData
+ *   manifest            /data/manifest.json is fetched at startup by
+ *                       ./manifestLoader (see docs/manifest-mode.md)
+ *
+ * Tours are indexed by their internal `id` and `language` fields, not by
+ * filename. Properties in a language file override the tour's metadata.
  */
 
-import { TourData, TourMetadata, AppConfig, Language, RouteGeoJSON, MapRouteConfig } from '../../types';
-
-// Import all tour JSON files at build time (language-specific files)
-// Uses /src/data/tour/ path - files must be in src directory for Vite to import them
-// Excludes metadata.json and any original/backup files
-const tourModules = import.meta.glob<TourData>(
-  '/src/data/tour/**/*.json',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
-
-// Import metadata files separately
-const metadataModules = import.meta.glob<TourMetadata>(
-  '/src/data/tour/**/metadata.json',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
-
-// App-level config for the tour-selection landing screen (optional, single file)
-const appConfigModules = import.meta.glob<AppConfig>(
-  '/src/data/tour/app.json',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
-
-// Import GeoJSON route files (resolved at build time, so no runtime fetch needed)
-const geojsonModules = import.meta.glob<RouteGeoJSON>(
-  '/src/data/tour/**/*.geojson',
-  {
-    eager: true,
-    import: 'default',
-  }
-);
+import type { TourData, TourMetadata, AppConfig, Language, MapRouteConfig } from '../../types';
+import type { Manifest, CustomTheme, UiText } from '@audioguidekit/schema';
+import { DATA_SOURCE } from './dataSource';
 
 /**
  * Tour registry structure: { [tourId]: { [languageCode]: TourData } }
@@ -70,62 +42,128 @@ const MAP_ENV_KEYS: Partial<Record<string, string>> = {
   carto:     import.meta.env.VITE_CARTO_API_KEY,
 };
 
+let metadataRegistry: MetadataRegistry = {};
+let tourRegistry: TourRegistry = {};
+let appConfig: AppConfig = {};
+let customThemes: CustomTheme[] = [];
+let uiOverrides: Record<string, UiText> = {};
+
 /**
- * Resolve a mapRoute.geoJSON relative path string to the parsed GeoJSON object.
- * Called during metadata registry build so the resolved object flows into TourData at runtime.
+ * The default language of the installed data. A live binding: it changes when
+ * a new manifest is installed (live preview), and is read at call time.
  */
-function resolveMapRouteGeoJSON(metadata: TourMetadata, metadataPath: string): TourMetadata {
-  if (!metadata.mapRoute || typeof metadata.mapRoute === 'boolean') return metadata;
-  const config = metadata.mapRoute as MapRouteConfig;
-  if (typeof config.geoJSON !== 'string') return metadata; // already resolved or absent
+export let defaultLanguage: string = FALLBACK_DEFAULT_LANGUAGE;
 
-  // Resolve the relative path against the metadata file's directory
-  const dir = metadataPath.substring(0, metadataPath.lastIndexOf('/'));
-  const relativePath = config.geoJSON.replace(/^\.\//, '');
-  const resolvedPath = `${dir}/${relativePath}`;
+type DataListener = () => void;
+const listeners = new Set<DataListener>();
 
-  const parsed = geojsonModules[resolvedPath];
-  if (!parsed) {
-    console.warn(`[TourDiscovery] mapRoute.geoJSON not found: ${resolvedPath} — falling back to straight lines`);
-    const { geoJSON: _, ...rest } = config;
+/**
+ * Run `listener` after every `installManifest()`. Modules that derive their own
+ * state from the data (languages, themes, default tour, haptics) subscribe so a
+ * re-installed manifest reaches them. Returns an unsubscribe function.
+ */
+export function onDataInstalled(listener: DataListener): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/**
+ * Resolve the tour's route: the manifest inlines it as `tour.route`, replacing
+ * the `mapRoute.geoJSON` relative path that metadata.json uses on disk.
+ */
+function resolveMapRoute(tour: Manifest['tours'][number]): TourMetadata {
+  const metadata = tour.metadata;
+  const { route } = tour;
+  const current = metadata.mapRoute;
+
+  if (route && current) {
+    const config: MapRouteConfig = typeof current === 'boolean' ? {} : current;
+    return { ...metadata, mapRoute: { ...config, geoJSON: route } };
+  }
+
+  // A path with no inlined route can't be resolved (a manifest has no sibling
+  // files). Draw straight lines rather than hand the map a string.
+  if (current && typeof current !== 'boolean' && typeof current.geoJSON === 'string') {
+    console.warn(`[TourDiscovery] ${metadata.id}: mapRoute.geoJSON is a path but no route was supplied — falling back to straight lines`);
+    const { geoJSON: _, ...rest } = current;
     return { ...metadata, mapRoute: rest };
   }
 
-  return { ...metadata, mapRoute: { ...config, geoJSON: parsed } };
+  return metadata;
 }
 
 /**
- * Build metadata registry from discovered metadata files
+ * THE normalisation step, shared by every data source: merges each tour's
+ * metadata under its language files, resolves routes, applies env overrides,
+ * and fills the registries. Replaces whatever was installed before.
  */
-function buildMetadataRegistry(): MetadataRegistry {
-  const registry: MetadataRegistry = {};
+export function installManifest(manifest: Manifest): void {
+  const nextMetadata: MetadataRegistry = {};
+  const nextTours: TourRegistry = {};
 
-  for (const [path, metadata] of Object.entries(metadataModules)) {
-    if (!metadata?.id) {
-      console.warn(`[TourDiscovery] Skipping metadata ${path}: missing id field`);
+  for (const tour of manifest.tours) {
+    if (!tour?.id) {
+      console.warn('[TourDiscovery] Skipping tour: missing id field');
       continue;
     }
 
-    registry[metadata.id] = resolveMapRouteGeoJSON(metadata, path);
-    console.log(`[TourDiscovery] Loaded metadata for tour: ${metadata.id}`);
+    // Hidden fixture/test tours (id prefixed with "_") are kept in dev and test
+    // builds — routable by URL via getTour() — but excluded from production so
+    // they never ship in a customer app.
+    const hidden = import.meta.env.PROD && tour.id.startsWith('_');
+
+    const metadata = resolveMapRoute(tour);
+    nextMetadata[tour.id] = metadata;
+
+    for (const [language, file] of Object.entries(tour.languages ?? {})) {
+      if (hidden) continue;
+
+      // Merge metadata with tour data (tour data properties override metadata)
+      const merged: TourData = { ...metadata, ...file } as TourData;
+
+      // A style.json URL from the env overrides the basemap for every tour — the way
+      // to bring your own map without committing its API key to metadata.json.
+      if (import.meta.env.VITE_MAP_STYLE) {
+        merged.mapStyle = import.meta.env.VITE_MAP_STYLE;
+      }
+
+      // Inject map API key from env var if available (env takes priority over metadata.json)
+      if (merged.mapProvider) {
+        const envKey = MAP_ENV_KEYS[merged.mapProvider];
+        if (envKey) merged.mapApiKey = envKey;
+      }
+
+      (nextTours[tour.id] ??= {})[language] = merged;
+    }
   }
 
-  return registry;
+  metadataRegistry = nextMetadata;
+  tourRegistry = nextTours;
+  appConfig = manifest.app ?? {};
+  customThemes = manifest.themes ?? [];
+  uiOverrides = manifest.ui ?? {};
+  defaultLanguage = getDefaultLanguage();
+
+  listeners.forEach((notify) => notify());
 }
-
-// Build metadata registry once at module load
-const metadataRegistry = buildMetadataRegistry();
-
-// The optional app.json (first match wins; there should only ever be one).
-const appConfig: AppConfig = Object.values(appConfigModules)[0] ?? {};
 
 /**
  * Get the app-level config for the tour-selection landing screen.
- * Returns an empty object when no src/data/tour/app.json is present, so callers
- * can read fields with optional chaining and fall back to their own defaults.
+ * Returns an empty object when there is none, so callers can read fields with
+ * optional chaining and fall back to their own defaults.
  */
 export function getAppConfig(): AppConfig {
   return appConfig;
+}
+
+/** Custom themes from the installed data, to be registered by the theme registry. */
+export function getCustomThemes(): CustomTheme[] {
+  return customThemes;
+}
+
+/** UI text overrides from the installed data, keyed by language code. */
+export function getUiOverrides(): Record<string, UiText> {
+  return uiOverrides;
 }
 
 /**
@@ -146,78 +184,23 @@ export function getDefaultLanguage(): string {
   return FALLBACK_DEFAULT_LANGUAGE;
 }
 
-// Cache the default language at module load for consistent behavior
-export const defaultLanguage = getDefaultLanguage();
-
 /**
- * Build the tour registry from discovered modules
- * Merges metadata with language-specific files (language files override metadata)
+ * Dev-only: re-read every tour JSON from disk and install it again.
+ *
+ * An embedding editor may run the player with HMR off, so nothing
+ * invalidates the eagerly imported JSON modules when the editor writes a file.
+ * Re-importing each path under a fresh query string is what picks an edit up
+ * without reloading the frame — which would throw away where the visitor had
+ * scrolled to and which stop was open.
+ *
+ * Compiled data source only; a manifest-mode preview is fed whole manifests
+ * (see previewBridge).
  */
-function buildTourRegistry(): TourRegistry {
-  const registry: TourRegistry = {};
-
-  for (const [path, tourData] of Object.entries(tourModules)) {
-    // Skip metadata, app config, index files and backups
-    if (
-      path.includes('metadata.json') ||
-      path.includes('app.json') ||
-      path.includes('index.json') ||
-      path.includes('-original')
-    ) {
-      continue;
-    }
-
-    // Validate tour data has required fields
-    if (!tourData?.id || !tourData?.language) {
-      console.warn(`[TourDiscovery] Skipping ${path}: missing id or language field`);
-      continue;
-    }
-
-    const { id, language } = tourData;
-
-    // Hidden fixture/test tours (id prefixed with "_") are kept in dev and test
-    // builds — routable by URL via getTour() — but excluded from production so
-    // they never ship in a customer app.
-    if (import.meta.env.PROD && id.startsWith('_')) {
-      continue;
-    }
-
-    // Initialize tour entry if needed
-    if (!registry[id]) {
-      registry[id] = {};
-    }
-
-    // Get metadata for this tour (if exists)
-    const metadata = metadataRegistry[id];
-
-    // Merge metadata with tour data (tour data properties override metadata)
-    const mergedTourData: TourData = metadata
-      ? { ...metadata, ...tourData }
-      : tourData;
-
-    // A style.json URL from the env overrides the basemap for every tour — the way
-    // to bring your own map without committing its API key to metadata.json.
-    if (import.meta.env.VITE_MAP_STYLE) {
-      mergedTourData.mapStyle = import.meta.env.VITE_MAP_STYLE;
-    }
-
-    // Inject map API key from env var if available (env takes priority over metadata.json)
-    if (mergedTourData.mapProvider) {
-      const envKey = MAP_ENV_KEYS[mergedTourData.mapProvider];
-      if (envKey) mergedTourData.mapApiKey = envKey;
-    }
-
-    // Store merged tour by language
-    registry[id][language] = mergedTourData;
-
-    console.log(`[TourDiscovery] Registered: ${id} (${language}) from ${path}${metadata ? ' (with metadata)' : ''}`);
-  }
-
-  return registry;
+export async function refreshTourData(): Promise<void> {
+  if (!import.meta.env.DEV || DATA_SOURCE !== 'compiled') return;
+  const { reloadCompiledManifest } = await import('./compiledData');
+  installManifest(await reloadCompiledManifest());
 }
-
-// Build registry once at module load
-const tourRegistry = buildTourRegistry();
 
 /**
  * Get all available tour IDs.

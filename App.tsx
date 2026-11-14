@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion, useMotionValue } from 'framer-motion';
 import { SheetType, Language, AudioStop } from './types';
 
@@ -18,10 +18,14 @@ import { DEFAULT_TOUR_ID } from './src/config/tours';
 import { getAvailableTourIds } from './src/services/tourDiscovery';
 import { defaultLanguage } from './src/config/languages';
 import { useAudioPlayer } from './hooks/useAudioPlayer';
+import { usePlaybackSpeed } from './src/playback/playbackSpeed';
+import { useApplyTextSize } from './src/textSize/textSize';
 import { useBackgroundAudio } from './hooks/useBackgroundAudio';
 import { MobileFrame } from './components/shared/MobileFrame';
 import { useProgressTracking } from './hooks/useProgressTracking';
 import { useDownloadManager } from './hooks/useDownloadManager';
+import { track } from './src/analytics';
+import { useTourAnalytics } from './src/analytics/useTourAnalytics';
 import { useTourNavigation } from './hooks/useTourNavigation';
 import { useAudioPreloader } from './hooks/useAudioPreloader';
 import { useMediaSessionIntegration } from './hooks/useMediaSessionIntegration';
@@ -56,6 +60,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
   // Get route params
   const { tourId, stopId: urlStopId } = useParams<{ tourId: string; stopId?: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // Load languages first
   const { data: languages, loading: languagesLoading, error: languagesError } = useLanguages();
@@ -170,6 +175,25 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
   // Eager asset preloading hook
   const { assetsReady } = useEagerAssetPreloader({ tour });
 
+  // ?stop=<id> opens the tour at that stop without playing it, for any stop
+  // type. Unlike the /tour/:tourId/:stopId deep link — audio only, and it
+  // starts playback — this just shows the card, which is what an editor's preview
+  // panel needs while someone is editing that stop.
+  const previewStopId = searchParams.get('stop');
+  useEffect(() => {
+    if (!tour || !previewStopId) return;
+    if (!tour.stops.some(s => s.id === previewStopId)) return;
+    setHasStarted(true);
+    // Two passes. The first waits the 600ms the deep link waits — the list
+    // only mounts as the sheet expands, and a scroll request for a card that
+    // isn't in the DOM yet is dropped rather than retried. The second corrects
+    // for the images above the target finishing their load and pushing it down.
+    const timers = [600, 1600].map(delay =>
+      setTimeout(() => setScrollToStopId({ id: previewStopId, timestamp: Date.now() }), delay),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, [tour, previewStopId]);
+
   // Deep link hook - handles initial deep link on page load only
   useDeepLink({
     urlStopId,
@@ -213,6 +237,14 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
 
   const canGoPrev = useMemo(() => currentAudioIndex > 0, [currentAudioIndex]);
 
+  const analytics = useTourAnalytics({
+    tourId: tour?.id,
+    language: tour?.language,
+    currentStopId,
+    isPlaying,
+    isTransitioning,
+  });
+
   // Handle audio progress
   const handleAudioProgress = useCallback((id: string | undefined, currentTime: number, duration: number, percentComplete: number) => {
     if (isTransitioning) return;
@@ -235,6 +267,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
       handleAdvanceToNextTrack();
     } else {
       // A normal track ended - start transition if available, otherwise advance directly
+      analytics.audioEnded();
       if (tour?.transitionAudio) {
         handleTrackTransition();
       } else {
@@ -242,7 +275,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
         handleAdvanceToNextTrack();
       }
     }
-  }, [tour, handleTrackTransition, handleAdvanceToNextTrack]);
+  }, [tour, handleTrackTransition, handleAdvanceToNextTrack, analytics]);
 
   // Memoize onPlayBlocked to prevent effect re-runs
   const handlePlayBlocked = useCallback((error: unknown) => {
@@ -250,6 +283,12 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
     console.warn('[handlePlayBlocked] Setting isPlaying to FALSE');
     setIsPlaying(false);
   }, [setIsPlaying]);
+
+  // The visitor's speed (per device); a tour that hides the control always plays at 1x.
+  const showPlaybackSpeed = tour?.showPlaybackSpeed !== false;
+  const chosenSpeed = usePlaybackSpeed();
+  const playbackRate = showPlaybackSpeed ? chosenSpeed : 1;
+  useApplyTextSize(tour?.showTextSize !== false);
 
   // Audio Player
   const audioPlayer = useAudioPlayer({
@@ -261,6 +300,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
     onEnded: handleAudioEnded,
     onProgress: handleAudioProgress,
     onPlayBlocked: handlePlayBlocked,
+    playbackRate,
   });
 
   // Low-level coordination between the singleton audio element and isPlaying:
@@ -283,6 +323,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
     setIsPlaying,
     onPreviousTrack: handlePrevStop,
     onNextTrack: handleNextStop,
+    playbackRate,
   });
 
   // Background audio keep-alive for iOS
@@ -387,6 +428,8 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
   }, [tour, progressTracking, setCurrentStopId, setHasStarted, setAllowAutoPlay, setHasShownCompletionSheet, setActiveSheet]);
 
   const handleLanguageChange = useCallback((language: Language) => {
+    if (language.code !== selectedLanguage?.code) analytics.languageChanged(language.code);
+
     // Stop playback if audio is currently playing
     if (isPlaying) {
       setIsPlaying(false);
@@ -406,7 +449,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
     // Change language (this will trigger tour reload via useTourData dependency)
     setSelectedLanguage(language);
     setActiveSheet('NONE');
-  }, [isPlaying, setIsPlaying, currentStopId, audioPlayer.audioElement, setSelectedLanguage, setActiveSheet]);
+  }, [isPlaying, setIsPlaying, currentStopId, audioPlayer.audioElement, setSelectedLanguage, setActiveSheet, selectedLanguage?.code, analytics]);
 
   const handleRatingSubmit = useCallback((rating: number) => {
     console.log('Rated:', rating);
@@ -449,7 +492,9 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
   }, [setActiveSheet]);
 
   // Download manager - no auto-start on completion, let user decide when to start
-  const downloadManager = useDownloadManager(tour);
+  const downloadManager = useDownloadManager(tour, {
+    onDownloadComplete: () => track('offline_download', { tourId: tour?.id, language: tour?.language }),
+  });
 
   // Memoize progress
   const tourProgress = useMemo(() => {
@@ -478,9 +523,10 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
 
   // Tour completion callback
   const handleTourComplete = useCallback(() => {
+    analytics.tourCompleted();
     setActiveSheet('TOUR_COMPLETE');
     setHasShownCompletionSheet(true);
-  }, [setActiveSheet, setHasShownCompletionSheet]);
+  }, [setActiveSheet, setHasShownCompletionSheet, analytics]);
 
   // Get theme ID from tour data (fallback to 'default')
   const themeId = tour?.themeId || 'default';
@@ -641,6 +687,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
                     currentTime={audioPlayer.currentTime}
                     duration={audioPlayer.duration}
                     onSeek={handleSeek}
+                    showPlaybackSpeed={showPlaybackSpeed}
                   />
                 )}
               </AnimatePresence>

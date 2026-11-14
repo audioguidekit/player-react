@@ -1,0 +1,979 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/TourFile",
+  "definitions": {
+    "TourFile": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "totalDuration": {
+          "type": "string"
+        },
+        "totalStops": {
+          "type": "number"
+        },
+        "offlineMode": {
+          "$ref": "#/definitions/OfflineMode"
+        },
+        "transitionAudio": {
+          "type": "string"
+        },
+        "themeId": {
+          "type": "string"
+        },
+        "transcriptAvailable": {
+          "type": "boolean"
+        },
+        "collectFeedback": {
+          "type": "boolean"
+        },
+        "hapticsEnabled": {
+          "type": "boolean"
+        },
+        "showTextSize": {
+          "type": "boolean"
+        },
+        "showPlaybackSpeed": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string"
+        },
+        "showLanguageLabel": {
+          "type": "boolean"
+        },
+        "showStopImage": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "const": "thumbnail"
+            }
+          ]
+        },
+        "showStopDuration": {
+          "type": "boolean"
+        },
+        "showStopNumber": {
+          "type": "boolean"
+        },
+        "fullscreenPlayer": {
+          "type": "boolean"
+        },
+        "showProgressBar": {
+          "type": "boolean"
+        },
+        "imageColor": {
+          "type": "string"
+        },
+        "stopSearchThreshold": {
+          "type": "number",
+          "description": "Show a search field above the stop list when the tour has MORE than this many stops (default: 8). It filters by title and text. Use a large number to never show it.",
+          "minimum": 0
+        },
+        "listView": {
+          "type": "boolean"
+        },
+        "mapView": {
+          "type": "boolean"
+        },
+        "mapProvider": {
+          "type": "string",
+          "enum": [
+            "openfreemap",
+            "openstreetmap",
+            "mapbox",
+            "jawg",
+            "maptiler",
+            "carto"
+          ]
+        },
+        "mapStyle": {
+          "type": "string"
+        },
+        "mapApiKey": {
+          "type": "string"
+        },
+        "mapStyleId": {
+          "type": "string"
+        },
+        "mapCenter": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "additionalProperties": false
+        },
+        "mapZoom": {
+          "type": "number"
+        },
+        "mapMarker": {
+          "type": "string",
+          "enum": [
+            "number",
+            "image",
+            "empty"
+          ]
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "mapMarkerColors": {
+          "$ref": "#/definitions/MapMarkerColors"
+        },
+        "mapCluster": {
+          "type": "object",
+          "properties": {
+            "disableClusteringAtZoom": {
+              "type": "number"
+            },
+            "spiderfyOnMaxZoom": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapRoute": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/MapRouteConfig"
+            }
+          ]
+        },
+        "mapLocateButton": {
+          "type": "boolean"
+        },
+        "showDirections": {
+          "type": "boolean"
+        },
+        "stops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AuthoredStop"
+          }
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "description",
+        "id",
+        "language",
+        "stops",
+        "title",
+        "totalDuration",
+        "totalStops"
+      ],
+      "additionalProperties": false,
+      "description": "Shape of a language file, e.g. `src/data/tour/<id>/en.json`. Mirrors  {@link  TourData }  but with runtime-only stop state removed.",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "carto"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "rastertiles/voyager",
+                  "light_all",
+                  "dark_all",
+                  "light_nolabels",
+                  "dark_nolabels"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "OfflineMode": {
+      "type": "string",
+      "enum": [
+        "online-only",
+        "optional",
+        "offline-only"
+      ]
+    },
+    "MapMarkerColors": {
+      "type": "object",
+      "properties": {
+        "upcoming": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "string"
+        },
+        "active": {
+          "type": "string"
+        },
+        "cluster": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Per-tour overrides for the map marker background colors. Each field falls back to the theme's `mapMarkers.<state>.backgroundColor`. Number/checkmark colors stay with the theme (white in both shipped themes), so pick backgrounds dark enough for white text — for a deeper restyle give the tour its own `themeId`."
+    },
+    "MapRouteConfig": {
+      "type": "object",
+      "properties": {
+        "geoJSON": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/RouteGeoJSON"
+            }
+          ]
+        },
+        "minZoom": {
+          "type": "number"
+        },
+        "completedColor": {
+          "type": "string"
+        },
+        "upcomingColor": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number"
+        },
+        "dashArray": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Route polyline configuration. In metadata.json, `geoJSON` is a relative path string (\"./route.geojson\"). At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.\n\nThe style fields are optional per-tour overrides of the theme's `mapMarkers.route`. They exist because the basemap is per-tour (`mapProvider` / `mapStyleId`), so a tour on dark tiles can recolor its line without cloning a whole theme. Precedence: mapRoute → theme → built-in default."
+    },
+    "RouteGeoJSON": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "FeatureCollection"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "Feature"
+              },
+              "geometry": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "LineString"
+                  },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "description": "Coordinates in [lng, lat] order — GeoJSON standard."
+                  }
+                },
+                "required": [
+                  "type",
+                  "coordinates"
+                ],
+                "additionalProperties": false
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "type",
+              "geometry",
+              "properties"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "type",
+        "features"
+      ],
+      "additionalProperties": false,
+      "description": "GeoJSON FeatureCollection containing a single LineString (the walking route)."
+    },
+    "AuthoredStop": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/TextStop"
+        },
+        {
+          "$ref": "#/definitions/ImageTextStop"
+        },
+        {
+          "$ref": "#/definitions/ThreeDObjectStop"
+        },
+        {
+          "$ref": "#/definitions/VideoStop"
+        },
+        {
+          "$ref": "#/definitions/HeadlineStop"
+        },
+        {
+          "$ref": "#/definitions/RatingStop"
+        },
+        {
+          "$ref": "#/definitions/EmailStop"
+        },
+        {
+          "$ref": "#/definitions/QuoteStop"
+        },
+        {
+          "$ref": "#/definitions/ImageGalleryStop"
+        },
+        {
+          "$ref": "#/definitions/ImageComparisonStop"
+        },
+        {
+          "$ref": "#/definitions/HotspotImageStop"
+        },
+        {
+          "$ref": "#/definitions/EmbedStop"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "audio"
+            },
+            "title": {
+              "type": "string"
+            },
+            "duration": {
+              "type": "string"
+            },
+            "image": {
+              "type": "string"
+            },
+            "imageAlt": {
+              "type": "string"
+            },
+            "imageCaption": {
+              "type": "string"
+            },
+            "imageCredit": {
+              "type": "string"
+            },
+            "audioFile": {
+              "type": "string"
+            },
+            "transcription": {
+              "type": "string"
+            },
+            "content": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "location": {
+              "$ref": "#/definitions/StopLocation"
+            },
+            "mapMarkerIcon": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "type",
+            "title",
+            "duration",
+            "image",
+            "id"
+          ],
+          "additionalProperties": false,
+          "description": "An audio stop as authored in JSON, with runtime playback state removed."
+        }
+      ],
+      "description": "Any stop as authored in JSON."
+    },
+    "TextStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "text"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "StopLocation": {
+      "type": "object",
+      "properties": {
+        "lat": {
+          "type": "number"
+        },
+        "lng": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "lat",
+        "lng"
+      ],
+      "additionalProperties": false
+    },
+    "ImageTextStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-text"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "imageAlt": {
+          "type": "string"
+        },
+        "imageCaption": {
+          "type": "string"
+        },
+        "imageCredit": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "image",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ThreeDObjectStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "3d-object"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "modelUrl": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "modelUrl",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "VideoStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "video"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "videoUrl": {
+          "type": "string"
+        },
+        "subtitles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/VideoSubtitle"
+          },
+          "description": "Subtitle files (WebVTT) offered in the video's captions menu. Included in offline downloads."
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "videoUrl"
+      ],
+      "additionalProperties": false
+    },
+    "VideoSubtitle": {
+      "type": "object",
+      "properties": {
+        "src": {
+          "type": "string",
+          "description": "Where the WebVTT file (.vtt) is. A file on another origin must be served with CORS headers (`Access-Control-Allow-Origin`), or the browser refuses it.",
+          "pattern": "^\\S+$"
+        },
+        "srclang": {
+          "type": "string",
+          "description": "The language of the subtitles as a BCP 47 code, e.g. `en` or `pt-BR`.",
+          "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+        },
+        "label": {
+          "type": "string",
+          "description": "What the captions menu calls it, e.g. \"English\"."
+        }
+      },
+      "required": [
+        "src",
+        "srclang",
+        "label"
+      ],
+      "additionalProperties": false,
+      "description": "One subtitle file of a video: WebVTT, in one language. The browser's own captions menu offers them."
+    },
+    "HeadlineStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "headline"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "RatingStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "rating"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "EmailStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "email"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "buttonText": {
+          "type": "string"
+        },
+        "consentText": {
+          "type": "string",
+          "description": "Consent line shown next to a required checkbox, e.g. \"Send me news about new guides\". Without it the form has no checkbox."
+        }
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "QuoteStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "quote"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "year": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "id",
+        "quote",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "ImageGalleryStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-gallery"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GalleryImage"
+          }
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "images",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "GalleryImage": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "credit": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "additionalProperties": false
+    },
+    "ImageComparisonStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-comparison"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "before": {
+          "type": "string"
+        },
+        "after": {
+          "type": "string"
+        },
+        "beforeLabel": {
+          "type": "string"
+        },
+        "afterLabel": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "after",
+        "before",
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "HotspotImageStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "image-hotspot"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "imageAlt": {
+          "type": "string"
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Hotspot"
+          }
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "hotspots",
+        "id",
+        "image",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "Hotspot": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "title"
+      ],
+      "additionalProperties": false
+    },
+    "EmbedStop": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "const": "embed"
+        },
+        "location": {
+          "$ref": "#/definitions/StopLocation"
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "embedUrl": {
+          "type": "string",
+          "description": "The page to frame. Must be `https://` (the player also refuses a URL on its own origin, where a framed upload could run as the player). Empty = nothing to show yet. With `embedType` youtube/spotify the player only trusts YouTube hosts / open.spotify.com; another host is framed as generic (the type cannot be checked here, so the player enforces it).",
+          "pattern": "^(https://\\S+)?$"
+        },
+        "embedType": {
+          "type": "string",
+          "enum": [
+            "youtube",
+            "spotify",
+            "video",
+            "generic"
+          ]
+        },
+        "aspectRatio": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "embedUrl",
+        "id",
+        "type"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

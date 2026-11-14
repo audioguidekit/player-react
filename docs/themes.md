@@ -214,12 +214,24 @@ typography: {
 
 Font sizes and weights are defined per component (see each section above), not here.
 
-Load fonts in `index.html`:
+**Fonts are self-hosted, nothing is loaded from Google.** The app bundles these
+families (`src/fonts/index.ts`, via `@fontsource`, weights 400-700, latin and
+latin-ext so Czech and other Central European text renders correctly):
 
-```html
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-```
+| Name to use in `fontFamily` | Style |
+|---|---|
+| `Inter` | neutral sans (the default) |
+| `IBM Plex Sans` | humanist sans |
+| `Space Grotesk` | geometric, good for headings and numbers |
+| `JetBrains Mono` | monospace |
+
+A theme chooses a font by writing its name first in the stack, e.g.
+`heading: ['Space Grotesk', 'Inter', 'sans-serif']`; in a JSON custom theme or manifest,
+`"typography": { "fontFamily": { "heading": ["Space Grotesk", "sans-serif"] } }`.
+A name that is not bundled (and not installed on the visitor's device) silently falls
+back to the next entry, so end every stack with a generic family. To bundle another
+family: `bun add --exact @fontsource/<name>`, add its imports to `src/fonts/index.ts`.
+There is no font upload.
 
 ---
 

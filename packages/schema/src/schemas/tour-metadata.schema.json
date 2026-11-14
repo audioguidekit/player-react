@@ -1,0 +1,354 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/TourMetadataFile",
+  "definitions": {
+    "TourMetadataFile": {
+      "$ref": "#/definitions/TourMetadata",
+      "description": "Shape of `src/data/tour/<id>/metadata.json` — properties shared across languages."
+    },
+    "TourMetadata": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "defaultLanguage": {
+          "type": "string"
+        },
+        "offlineMode": {
+          "$ref": "#/definitions/OfflineMode"
+        },
+        "transitionAudio": {
+          "type": "string"
+        },
+        "themeId": {
+          "type": "string"
+        },
+        "transcriptAvailable": {
+          "type": "boolean"
+        },
+        "collectFeedback": {
+          "type": "boolean"
+        },
+        "hapticsEnabled": {
+          "type": "boolean"
+        },
+        "showTextSize": {
+          "type": "boolean"
+        },
+        "showPlaybackSpeed": {
+          "type": "boolean"
+        },
+        "image": {
+          "type": "string"
+        },
+        "showLanguageLabel": {
+          "type": "boolean"
+        },
+        "showStopImage": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "const": "thumbnail"
+            }
+          ]
+        },
+        "showStopDuration": {
+          "type": "boolean"
+        },
+        "showStopNumber": {
+          "type": "boolean"
+        },
+        "fullscreenPlayer": {
+          "type": "boolean"
+        },
+        "showProgressBar": {
+          "type": "boolean"
+        },
+        "imageColor": {
+          "type": "string"
+        },
+        "stopSearchThreshold": {
+          "type": "number",
+          "description": "Show a search field above the stop list when the tour has MORE than this many stops (default: 8). It filters by title and text. Use a large number to never show it.",
+          "minimum": 0
+        },
+        "listView": {
+          "type": "boolean"
+        },
+        "mapView": {
+          "type": "boolean"
+        },
+        "mapProvider": {
+          "type": "string",
+          "enum": [
+            "openfreemap",
+            "openstreetmap",
+            "mapbox",
+            "jawg",
+            "maptiler",
+            "carto"
+          ]
+        },
+        "mapStyle": {
+          "type": "string"
+        },
+        "mapApiKey": {
+          "type": "string"
+        },
+        "mapStyleId": {
+          "type": "string"
+        },
+        "mapCenter": {
+          "type": "object",
+          "properties": {
+            "lat": {
+              "type": "number"
+            },
+            "lng": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "lat",
+            "lng"
+          ],
+          "additionalProperties": false
+        },
+        "mapZoom": {
+          "type": "number"
+        },
+        "mapMarker": {
+          "type": "string",
+          "enum": [
+            "number",
+            "image",
+            "empty"
+          ]
+        },
+        "mapMarkerIcon": {
+          "type": "string"
+        },
+        "mapMarkerColors": {
+          "$ref": "#/definitions/MapMarkerColors"
+        },
+        "mapCluster": {
+          "type": "object",
+          "properties": {
+            "disableClusteringAtZoom": {
+              "type": "number"
+            },
+            "spiderfyOnMaxZoom": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapRoute": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "$ref": "#/definitions/MapRouteConfig"
+            }
+          ]
+        },
+        "mapLocateButton": {
+          "type": "boolean"
+        },
+        "showDirections": {
+          "type": "boolean"
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "additionalProperties": false,
+      "description": "Tour metadata - shared properties across all language versions These can be overridden in individual language files",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "openfreemap"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "bright",
+                  "liberty",
+                  "positron",
+                  "fiord",
+                  "dark"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mapProvider": {
+                "const": "carto"
+              }
+            },
+            "required": [
+              "mapProvider"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mapStyleId": {
+                "enum": [
+                  "rastertiles/voyager",
+                  "light_all",
+                  "dark_all",
+                  "light_nolabels",
+                  "dark_nolabels"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "OfflineMode": {
+      "type": "string",
+      "enum": [
+        "online-only",
+        "optional",
+        "offline-only"
+      ]
+    },
+    "MapMarkerColors": {
+      "type": "object",
+      "properties": {
+        "upcoming": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "string"
+        },
+        "active": {
+          "type": "string"
+        },
+        "cluster": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Per-tour overrides for the map marker background colors. Each field falls back to the theme's `mapMarkers.<state>.backgroundColor`. Number/checkmark colors stay with the theme (white in both shipped themes), so pick backgrounds dark enough for white text — for a deeper restyle give the tour its own `themeId`."
+    },
+    "MapRouteConfig": {
+      "type": "object",
+      "properties": {
+        "geoJSON": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/definitions/RouteGeoJSON"
+            }
+          ]
+        },
+        "minZoom": {
+          "type": "number"
+        },
+        "completedColor": {
+          "type": "string"
+        },
+        "upcomingColor": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number"
+        },
+        "opacity": {
+          "type": "number"
+        },
+        "dashArray": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "Route polyline configuration. In metadata.json, `geoJSON` is a relative path string (\"./route.geojson\"). At runtime (after build-time resolution) it becomes a parsed RouteGeoJSON object.\n\nThe style fields are optional per-tour overrides of the theme's `mapMarkers.route`. They exist because the basemap is per-tour (`mapProvider` / `mapStyleId`), so a tour on dark tiles can recolor its line without cloning a whole theme. Precedence: mapRoute → theme → built-in default."
+    },
+    "RouteGeoJSON": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "FeatureCollection"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "Feature"
+              },
+              "geometry": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "const": "LineString"
+                  },
+                  "coordinates": {
+                    "type": "array",
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      },
+                      "minItems": 2,
+                      "maxItems": 2
+                    },
+                    "description": "Coordinates in [lng, lat] order — GeoJSON standard."
+                  }
+                },
+                "required": [
+                  "type",
+                  "coordinates"
+                ],
+                "additionalProperties": false
+              },
+              "properties": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "type",
+              "geometry",
+              "properties"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "type",
+        "features"
+      ],
+      "additionalProperties": false,
+      "description": "GeoJSON FeatureCollection containing a single LineString (the walking route)."
+    }
+  }
+}

@@ -13,9 +13,12 @@
  */
 
 import type { Translations, LanguageCode } from '../translations/types';
+import { deepMerge } from '../utils/deepMerge';
 import {
   defaultLanguage as tourDefaultLanguage,
   getAllAvailableLanguageCodes,
+  getUiOverrides,
+  onDataInstalled,
 } from '../services/tourDiscovery';
 
 // Import all available UI translations
@@ -81,25 +84,46 @@ function resolveDefaultLanguage(): LanguageCode {
  * - User's browser language is not supported
  * - A tour is not available in the requested language
  * - No language preference has been set
+ *
+ * A live binding: recomputed whenever data is (re)installed.
  */
-export const defaultLanguage: LanguageCode = resolveDefaultLanguage();
+export let defaultLanguage: LanguageCode = FALLBACK_LANGUAGE;
 
 /**
- * Build supported languages based on what's available in tours.
- * Only languages that have corresponding tour files will be included.
+ * Supported UI languages for this build, derived from the installed tour data:
+ * only languages that have corresponding tour content are included, with UI
+ * text overrides (src/data/ui/<code>.json, or the manifest's `ui`) merged over
+ * the built-in locale.
+ *
+ * One object, refilled in place by `rebuildLanguages()`, so references taken
+ * at import time (the translation provider holds one) stay current.
  */
-function buildSupportedLanguages(): Partial<Record<LanguageCode, Translations>> {
+export const supportedLanguages: Partial<Record<LanguageCode, Translations>> = {};
+
+function rebuildLanguages(): void {
+  defaultLanguage = resolveDefaultLanguage();
+
+  const uiOverrides = getUiOverrides();
   const tourLanguages = getAllAvailableLanguageCodes();
   const supported: Partial<Record<LanguageCode, Translations>> = {};
 
   for (const code of tourLanguages) {
-    if (code in allTranslations) {
-      supported[code as LanguageCode] = allTranslations[code];
+    const builtIn = allTranslations[code];
+    const override = uiOverrides[code];
+
+    if (builtIn || override) {
+      // A language with no built-in locale still gets a usable interface:
+      // English text, which the override then replaces string by string. That
+      // beats the old behaviour of dropping the language from the switcher,
+      // and gives whoever is translating a sensible starting point rather than
+      // a blank screen.
+      const base = builtIn ?? allTranslations[defaultLanguage];
+      supported[code as LanguageCode] = override ? deepMerge(base, override) : base;
     } else {
-      // Language exists in tours but no UI translation - use default as fallback
       console.warn(
         `[Languages] Tour uses language "${code}" but no UI translation exists. ` +
-        `UI will fall back to "${defaultLanguage}".`
+        `UI will fall back to "${defaultLanguage}". Add src/data/ui/${code}.json ` +
+        `(or use the editor) to translate the interface.`
       );
     }
   }
@@ -109,14 +133,12 @@ function buildSupportedLanguages(): Partial<Record<LanguageCode, Translations>> 
     supported[defaultLanguage] = allTranslations[defaultLanguage];
   }
 
-  return supported;
+  for (const key of Object.keys(supportedLanguages)) delete supportedLanguages[key as LanguageCode];
+  Object.assign(supportedLanguages, supported);
 }
 
-/**
- * Supported UI languages for this build.
- * Automatically derived from tour files at build time.
- */
-export const supportedLanguages = buildSupportedLanguages();
+rebuildLanguages();
+onDataInstalled(rebuildLanguages);
 
 /**
  * Type representing the languages available in this build.

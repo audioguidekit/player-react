@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { storageService } from '../src/services/storageService';
+import { track, submitNow } from '../src/analytics';
 
 interface RatingContextType {
     tourId: string | null;
@@ -11,7 +12,8 @@ interface RatingContextType {
     email: string;
     setEmail: (email: string) => void;
     isSubmitted: boolean;
-    submitRating: () => void;
+    /** `withEmail`: the visitor ticked the consent box and pressed subscribe; otherwise the typed address is discarded. */
+    submitRating: (withEmail?: boolean) => void;
     resetRating: () => void;
 }
 
@@ -40,7 +42,7 @@ export const RatingProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         }
     }, [tourId]);
 
-    const submitRating = useCallback(() => {
+    const submitRating = useCallback((withEmail = false) => {
         if (!tourId) {
             console.warn('Cannot submit rating: tourId is not set');
             return;
@@ -50,13 +52,19 @@ export const RatingProvider: React.FC<{ children: ReactNode }> = ({ children }) 
             tourId,
             rating,
             feedback,
-            email,
+            email: withEmail ? email : '',
             submittedAt: new Date().toISOString(),
         };
 
+        // Count a rating once per device and tour: the localStorage guard is the saved rating.
+        const alreadyRated = storageService.getTourRating(tourId) !== null;
         storageService.saveTourRating(tourId, ratingData);
+        if (!alreadyRated && rating >= 1 && rating <= 5) {
+            track('feedback_submit', { tourId, value: rating, comment: feedback });
+            // Only a ticked consent box (the sheet's subscribe button) gets here with withEmail.
+            if (withEmail && email) void submitNow('email_submit', { tourId, email, consent: true });
+        }
         setIsSubmitted(true);
-        console.log('Rating saved to localStorage:', ratingData);
     }, [tourId, rating, feedback, email]);
 
     const resetRating = useCallback(() => {

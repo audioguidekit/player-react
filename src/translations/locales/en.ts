@@ -47,6 +47,8 @@ export const en: Translations = {
     close: 'Close',
     subscribed: "You're subscribed!",
     checkInbox: 'Check your inbox for updates.',
+    emailError: "Couldn't send that. Check your connection and try again.",
+    emailConsent: "I agree to receive news about new guides by email.",
   },
   tourComplete: {
     title: 'Tour completed!',
@@ -66,5 +68,33 @@ export const en: Translations = {
     title: 'Choose a tour',
     subtitle: 'Select a tour to begin your visit',
     tours: 'tours',
+  },
+  playback: {
+    speed: "Speed",
+  },
+  stopSearch: {
+    label: "Search stops",
+    placeholder: "Search stops",
+    clear: "Clear search",
+    resultOne: "1 stop found",
+    resultMany: "{count} stops found",
+    noResults: "No stops match your search.",
+  },
+  textSize: {
+    label: "Text size",
+    default: "Default text size",
+    large: "Large text",
+    larger: "Largest text",
+  },
+  directions: {
+    label: "Directions",
+    to: "Directions to {name}",
+    openIn: "Open directions in",
+    googleMaps: "Google Maps",
+    appleMaps: "Apple Maps",
+    waze: "Waze",
+  },
+  embed: {
+    blocked: "This content is not available here.",
   },
 } as const;

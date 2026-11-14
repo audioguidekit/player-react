@@ -1,4 +1,4 @@
-import { getTourRegistry, defaultLanguage } from '../services/tourDiscovery';
+import { getTourRegistry, defaultLanguage, onDataInstalled } from '../services/tourDiscovery';
 
 /**
  * Reads `hapticsEnabled` from the first tour's metadata and returns it as a
@@ -36,8 +36,13 @@ function computeHapticsEnabled(): boolean {
 
 /**
  * Whether haptic feedback is enabled for this tour.
- * Evaluated once at module load time from tour metadata.
+ * Evaluated from tour metadata whenever data is installed.
  * Consumed exclusively via `useHaptics()` — do not import directly.
  */
-export const hapticsEnabled: boolean = computeHapticsEnabled();
+export let hapticsEnabled: boolean = computeHapticsEnabled();
+
+// Re-evaluated when data is (re)installed (live preview).
+onDataInstalled(() => {
+  hapticsEnabled = computeHapticsEnabled();
+});
 

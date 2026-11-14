@@ -15,6 +15,19 @@ A mobile-first lightweight audio guide player built in React for the web. Runs o
 - **Layout options** — List, thumbnail row, or large image cards; optional fullscreen player
 - **Interactive map** — Optional map tab with GPS stop markers, clustering, and multiple tile providers
 - **Theming** — Fully customizable themes: colors, typography, markers, and more
+- **Visitor comfort** — Playback speed, stop search, adjustable text size, video subtitles, and "Directions" to Google Maps, Apple Maps or Waze, each switchable per tour
+
+## What's new
+
+- **Playback speed** 0.75× to 2× in both players, remembered per device and shown on the lock screen (`showPlaybackSpeed`)
+- **Stop search** on tours with more than 8 stops (`stopSearchThreshold`)
+- **Text size** control with three steps, on top of the device's own text size (`showTextSize`)
+- **Video subtitles**: `subtitles: [{ src, srclang, label }]` on video stops, included in offline downloads
+- **Directions** button on stops with a `location` (`showDirections`)
+- **Embed allowlist**: `embedAllowlist` in `app.json` limits which websites embeds (any type) may show
+- **Analytics** are sent every 60 seconds instead of 10; nothing is lost when the tab closes
+
+Details and settings: [docs/visitor-features.md](docs/visitor-features.md).
 
 ## Quick start
 
@@ -37,6 +50,7 @@ Open http://localhost:3000
 | Guide | Description |
 |-------|-------------|
 | [Adding tours](docs/adding-tours.md) | Tour setup: `metadata.json` fields, file structure, display options, validation |
+| [Visitor features](docs/visitor-features.md) | Playback speed, stop search, text size, subtitles, directions, embed allowlist and their settings |
 | [Stop types](docs/stops.md) | All 13 stop types with required/optional fields and JSON examples |
 | [Languages](docs/languages.md) | Multi-language setup, selection order, adding new languages |
 | [Map view](docs/map.md) | Interactive map tab: tile providers, GPS markers, clustering |

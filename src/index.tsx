@@ -1,11 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
-import { AppRoutes } from './routes';
 import { swManager } from './utils/swManager';
-import { ErrorBoundary } from '../components/ErrorBoundary';
-import { ViewportManager } from '../components/ViewportManager';
-import { RatingProvider } from '../context/RatingContext';
+import { BootApp } from './boot/BootApp';
+import './fonts';
 import './index.css';
 
 // Service worker is now registered in index.html for better reliability
@@ -38,15 +35,10 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
+// BootApp gets the data in first (compiled in, or fetched as a manifest) and
+// only then mounts the app — see boot/BootApp.tsx.
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <ViewportManager />
-      <RatingProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </RatingProvider>
-    </ErrorBoundary>
+    <BootApp />
   </React.StrictMode>
 );

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { ThemeProvider as StyledThemeProvider } from 'styled-components';
 import * as tokens from './tokens';
 import { ThemeConfig, ThemeId } from './types';
-import { getTheme } from './themes';
+import { getTheme, themes } from './themes';
 
 // Extend the theme to include platform tokens for backward compatibility
 export interface ExtendedTheme extends ThemeConfig {
@@ -36,8 +36,18 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   themeId = 'default-light',
   theme: customTheme
 }) => {
+  // A `?theme=` query parameter overrides the tour's theme. This exists so the
+  // editor can preview a theme live, including one no tour uses yet — without
+  // it, previewing a theme would show whatever theme the tour happens to have.
+  // An unknown id is ignored rather than falling back, so a typo doesn't
+  // silently show the default and look like the theme is broken.
+  const override = typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('theme')
+    : null;
+  const effectiveThemeId = override && themes[override] ? override : themeId;
+
   // Use custom theme if provided, otherwise get theme by ID
-  const selectedTheme = customTheme || getTheme(themeId);
+  const selectedTheme = customTheme || getTheme(effectiveThemeId);
 
   // Memoize extended theme to prevent unnecessary re-renders of styled-components
   const extendedTheme = useMemo<ExtendedTheme>(() => ({
@@ -49,8 +59,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   // Memoize context value to prevent unnecessary consumer re-renders
   const contextValue = useMemo<ThemeContextValue>(() => ({
     currentTheme: selectedTheme,
-    themeId: customTheme?.id || themeId,
-  }), [selectedTheme, customTheme?.id, themeId]);
+    themeId: customTheme?.id || effectiveThemeId,
+  }), [selectedTheme, customTheme?.id, effectiveThemeId]);
 
   return (
     <ThemeContext.Provider value={contextValue}>

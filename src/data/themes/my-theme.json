@@ -1,0 +1,21 @@
+{
+  "id": "my-theme",
+  "name": "My theme",
+  "buttons": {
+    "primary": {
+      "backgroundColor": "#c42121"
+    }
+  },
+  "header": {
+    "textColor": "#be1313",
+    "backgroundColor": "#ae7e7e"
+  },
+  "mainContent": {
+    "backgroundColor": "#b81919"
+  },
+  "colors": {
+    "text": {
+      "primary": "#c51b1b"
+    }
+  }
+}

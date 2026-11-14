@@ -55,6 +55,10 @@ Shared properties across all language versions. Individual language files can ov
 | `listView` | boolean | `true` | Enable the list view (see [map.md](./map.md#view-modes)) |
 | `mapView` | boolean | `false` | Enable the map view (see [map.md](./map.md)) |
 | `hapticsEnabled` | boolean | `true` | Enable haptic feedback on taps |
+| `showPlaybackSpeed` | boolean | `true` | Playback speed control (0.75x to 2x) in the players. See [visitor-features.md](./visitor-features.md#playback-speed) |
+| `stopSearchThreshold` | number | `8` | Show a stop search field when the tour has more stops than this. See [visitor-features.md](./visitor-features.md#stop-search) |
+| `showTextSize` | boolean | `true` | Text size control (3 steps) above the stop list. See [visitor-features.md](./visitor-features.md#text-size) |
+| `showDirections` | boolean | `true` | "Directions" button (Google Maps, Apple Maps, Waze) on stops with a `location`. See [visitor-features.md](./visitor-features.md#directions-open-in-maps) |
 | `image` | string | — | Default tour cover image URL. Can be overridden per language by adding `"image"` to the language file. |
 
 ### Stop card display options
@@ -131,7 +135,7 @@ For stop fields, types, and per-type JSON examples see [stops.md](./stops.md). F
 - [ ] All required fields present
 - [ ] Tour `id` matches across `metadata.json` and all language files
 - [ ] Stop `id` values are consistent across languages
-- [ ] `totalStops` matches the actual number of stops
+- [ ] `totalStops` equals the number of **`audio`** stops (not the length of `stops`) — it is the progress-bar denominator and only audio stops can be completed
 - [ ] All image URLs are HTTPS and load successfully
 - [ ] Audio files play correctly
 - [ ] No console errors: `bun run test`

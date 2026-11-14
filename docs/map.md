@@ -259,7 +259,7 @@ To keep the key out of git, set it in `.env.local` instead (this applies to ever
 tour and overrides any `mapStyle` in `metadata.json`):
 
 ```bash
-VITE_MAP_STYLE=https://api.maptiler.com/maps/streets-v2/style.json?key=YOUR_KEY
+VITE_MAP_STYLE=https://api.maptiler.com/maps/streets-v4/style.json?key=YOUR_KEY
 ```
 
 Any style.json works — MapTiler, Mapbox, Stadia, Protomaps, a self-hosted one, or
@@ -353,15 +353,13 @@ Requires an API key from [maptiler.com](https://www.maptiler.com/). Default styl
 ```json
 "mapProvider": "maptiler",
 "mapApiKey": "your-maptiler-api-key",
-"mapStyleId": "topo-v2"
+"mapStyleId": "topo-v4"
 ```
 
 ### CARTO
 
 Requires an API key from [carto.com/basemaps/apikey](https://carto.com/basemaps/apikey)
-since August 2026 — free up to 5M tiles/month. Without one, CARTO serves tiles
-watermarked "API KEY REQUIRED". CARTO is also retiring raster basemaps.
-Default style: `rastertiles/voyager`.
+since August 2026 — free up to 5M tiles/month. Default style: `rastertiles/voyager`.
 
 Available raster styles:
 

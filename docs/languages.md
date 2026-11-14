@@ -86,7 +86,7 @@ Language preference is stored under key `app-preferences`:
 All language files for the same tour must have:
 - The same `id`
 - The same stop `id` values
-- The same number of stops (`totalStops`)
+- The same number of stops, and therefore the same `totalStops` (which counts `audio` stops only, not the length of `stops`)
 
 ## Troubleshooting
 

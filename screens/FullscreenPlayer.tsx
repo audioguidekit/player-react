@@ -15,6 +15,7 @@ import { ProgressRing } from '../components/player/ProgressRing';
 import { ForwardIcon } from '../components/icons/ForwardIcon';
 import { BackwardIcon } from '../components/icons/BackwardIcon';
 import { SkipButton } from '../components/player/SkipButton';
+import { PlaybackSpeedButton } from '../components/player/PlaybackSpeedButton';
 
 export interface FullscreenPlayerContentProps {
   onClose: () => void;
@@ -44,6 +45,8 @@ export interface FullscreenPlayerContentProps {
   // Adjacent artwork for drag peek
   nextStopImage?: string;
   prevStopImage?: string;
+  /** Show the playback speed control (tour setting `showPlaybackSpeed`, default true). */
+  showPlaybackSpeed?: boolean;
 }
 
 // Format seconds to mm:ss
@@ -432,6 +435,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
   stopNumber,
   nextStopImage,
   prevStopImage,
+  showPlaybackSpeed = true,
 }) => {
   const [seekValue, setSeekValue] = useState<number | null>(null);
   const [localIsTranscriptionOpen, setLocalIsTranscriptionOpen] = useState(false);
@@ -575,7 +579,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
         >
           <CaretDownIcon size={28} weight="bold" />
         </HeaderButton>
-        <div />
+        {showPlaybackSpeed ? <PlaybackSpeedButton variant="plain" /> : <div />}
         {hasTranscription ? (
           <TranscriptionToggle
             $active={isTranscriptionOpen}
@@ -812,6 +816,7 @@ export const FullscreenPlayerContent = React.memo<FullscreenPlayerContentProps>(
     prevProps.isTranscriptionOpen === nextProps.isTranscriptionOpen &&
     prevProps.stopNumber === nextProps.stopNumber &&
     prevProps.nextStopImage === nextProps.nextStopImage &&
-    prevProps.prevStopImage === nextProps.prevStopImage
+    prevProps.prevStopImage === nextProps.prevStopImage &&
+    prevProps.showPlaybackSpeed === nextProps.showPlaybackSpeed
   );
 });

@@ -349,7 +349,10 @@ const RedirectToTour: React.FC<{ tourId?: string; navigate: ReturnType<typeof us
   React.useEffect(() => {
     if (hasRedirectedRef.current) return;
     hasRedirectedRef.current = true;
-    navigate(`/tour/${tourId ?? ''}`, { replace: true });
+    // Carry the query string across. Without it a single-tour deployment threw
+    // away `?lang=` on the way in, so a link shared as `yoursite.com/?lang=fr`
+    // landed the visitor in whatever language their localStorage last held.
+    navigate(`/tour/${tourId ?? ''}${window.location.search}`, { replace: true });
   }, [tourId, navigate]);
   return null;
 };

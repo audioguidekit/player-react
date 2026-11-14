@@ -4,7 +4,7 @@
   "title": "Unlimited Barcelona",
   "description": "Discover the rich history and culture of Barcelona from ancient times to modern day",
   "totalDuration": "20 minutes",
-  "totalStops": 10,
+  "totalStops": 11,
   "stops": [
     {
       "id": "1",
@@ -101,6 +101,29 @@
       "type": "rating",
       "question": "How did you like this tour?",
       "description": "We'd love to hear your thoughts about this tour!"
+    },
+    {
+      "id": "12",
+      "type": "embed",
+      "embedUrl": ""
+    },
+    {
+      "id": "13",
+      "type": "audio",
+      "title": "",
+      "duration": "",
+      "image": ""
+    },
+    {
+      "id": "14",
+      "type": "email",
+      "title": "Test"
+    },
+    {
+      "id": "15",
+      "type": "image-comparison",
+      "before": "",
+      "after": ""
     }
   ]
 }

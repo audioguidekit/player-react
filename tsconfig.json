@@ -22,6 +22,12 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@audioguidekit/schema": [
+        "./packages/schema/src/index.ts"
+      ],
+      "@audioguidekit/schema/fields": [
+        "./packages/schema/src/fields/index.ts"
       ]
     },
     "allowImportingTsExtensions": true,

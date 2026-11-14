@@ -9,6 +9,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+dist-manifest
 *.local
 
 # Editor directories and files
@@ -61,6 +62,7 @@ create-audioguidekit-player/
 scripts/*
 !scripts/generate-schema.ts
 !scripts/validate-tours.ts
+!scripts/build-manifest.ts
 !scripts/deployments/
 scripts/deployments/*
 !scripts/deployments/use.ts
@@ -83,3 +85,6 @@ tours-content/
 # from tours-content/ (or absent entirely for the repo's own R2-hosted demo tour).
 public/images/
 public/audio/
+
+# Schema package build output (the player reads packages/schema/src directly)
+packages/schema/dist/

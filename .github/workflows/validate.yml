@@ -12,6 +12,8 @@ jobs:
       - run: bun install --frozen-lockfile
       # Regenerate schemas from types.ts and fail if the committed copies are stale.
       - run: bun run schema
-      - run: git diff --exit-code -- src/schema || (echo "::error::Schemas are stale — run 'bun run schema' and commit src/schema/*.schema.json" && exit 1)
+      - run: git diff --exit-code -- packages/schema/src/schemas || (echo "::error::Schemas are stale — run 'bun run schema' and commit packages/schema/src/schemas/*.schema.json" && exit 1)
+      # The schema package must build to ESM + .d.ts for external consumers.
+      - run: bun run schema:build
       # Validate every tour data file against the schemas.
       - run: bun run validate

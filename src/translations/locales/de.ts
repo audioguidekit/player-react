@@ -48,6 +48,8 @@ export const de: Translations = {
     close: 'Schließen',
     subscribed: 'Sie sind angemeldet!',
     checkInbox: 'Überprüfen Sie Ihren Posteingang.',
+    emailError: "Das hat nicht geklappt. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+    emailConsent: "Ich stimme zu, E-Mails mit Neuigkeiten zu neuen Guides zu erhalten.",
   },
   tourComplete: {
     title: 'Tour abgeschlossen!',
@@ -67,5 +69,33 @@ export const de: Translations = {
     title: 'Tour auswählen',
     subtitle: 'Wählen Sie eine Tour, um Ihren Besuch zu beginnen',
     tours: 'Touren',
+  },
+  playback: {
+    speed: "Geschwindigkeit",
+  },
+  stopSearch: {
+    label: "Stopps durchsuchen",
+    placeholder: "Stopps suchen",
+    clear: "Suche löschen",
+    resultOne: "1 Stopp gefunden",
+    resultMany: "{count} Stopps gefunden",
+    noResults: "Kein Stopp entspricht Ihrer Suche.",
+  },
+  textSize: {
+    label: "Textgröße",
+    default: "Standardtextgröße",
+    large: "Großer Text",
+    larger: "Größter Text",
+  },
+  directions: {
+    label: "Route",
+    to: "Route zu {name}",
+    openIn: "Route öffnen in",
+    googleMaps: "Google Maps",
+    appleMaps: "Apple Karten",
+    waze: "Waze",
+  },
+  embed: {
+    blocked: "Dieser Inhalt ist hier nicht verfügbar.",
   },
 } as const;

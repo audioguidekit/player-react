@@ -74,6 +74,12 @@ export interface TourMetadata {
   showStopImage?: boolean | 'thumbnail'; // Show stop image: true=full card, false=list, 'thumbnail'=compact with thumbnail (default: true)
   showStopDuration?: boolean;  // Show duration on cards (default: true)
   showStopNumber?: boolean;    // Show number indicator (default: true)
+  /**
+   * 'guided' (default): a route — stops are numbered, one plays after another, the map draws the route line.
+   * 'free': free exploration — visitors start each stop themselves; no auto-play of the next stop, no numbers, no route
+   * line. The transition sound still plays when a stop ends.
+   */
+  tourStructure?: 'guided' | 'free';
   fullscreenPlayer?: boolean;  // Show fullscreen player on stop click (default: false)
   showProgressBar?: boolean;   // Show progress bar in tour header (default: true)
   imageColor?: string;         // Solid color for the iOS status bar area and TourStart background when no image (e.g. '#1a2634')

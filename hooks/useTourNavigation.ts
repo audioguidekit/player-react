@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { Stop, TourData } from '../types';
+import { isFreeExploration } from '../src/utils/tourStructure';
 
 interface UseTourNavigationOptions {
     tour: TourData | null;
@@ -154,8 +155,9 @@ export const useTourNavigation = ({
             transitionTimeoutRef.current = null;
         }
 
+        // Free exploration: nothing plays next on its own, the visitor picks the next stop (src/utils/tourStructure.ts)
         const currentIndex = tour.stops.findIndex(s => s.id === currentStopId);
-        const nextAudioStop = tour.stops.slice(currentIndex + 1).find(
+        const nextAudioStop = isFreeExploration(tour) ? undefined : tour.stops.slice(currentIndex + 1).find(
             s => s.type === 'audio' && !(isStopCompleted?.(s.id))
         );
 
@@ -181,7 +183,7 @@ export const useTourNavigation = ({
 
             onTrackChange?.(nextAudioStop.id);
         } else {
-            // End of tour - reset all transition states
+            // End of tour (or free exploration) - reset all transition states
             setIsTransitioning(false);
             setIsAudioCompleting(false);
             setIsPlaying(false);

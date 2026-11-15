@@ -41,7 +41,8 @@ Shared properties across all language versions. Individual language files can ov
 | `id` | string | — | Unique tour identifier |
 | `defaultLanguage` | string | `"en"` | Fallback language code |
 | `offlineMode` | `"optional"` \| `"online-only"` \| `"offline-only"` | `"optional"` | Offline behavior |
-| `transitionAudio` | string | — | Audio played between stops |
+| `tourStructure` | `"guided"` \| `"free"` | `"guided"` | Guided route or free exploration. See [visitor-features.md](./visitor-features.md#tour-structure-guided-route-or-free-exploration) |
+| `transitionAudio` | string | — | Audio played when a stop ends: between stops on a guided route, as a "finished" signal in free exploration |
 | `themeId` | string | — | `"default-light"` or `"default-dark"` |
 | `imageColor` | string | — | Status bar / start screen background (e.g. `"#1A2634"`) |
 | `transcriptAvailable` | boolean | — | Show transcription toggle |

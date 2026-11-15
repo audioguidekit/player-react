@@ -4,6 +4,7 @@ Controls and behaviours for the people using a tour. Each one has a sensible def
 
 | Feature | Default | Setting | Where |
 |---|---|---|---|
+| [Tour structure](#tour-structure-guided-route-or-free-exploration) | guided route | tour `tourStructure` | stop list, player, map |
 | [Playback speed](#playback-speed) | on | tour `showPlaybackSpeed` | mini player, full player |
 | [Stop search](#stop-search) | from 9 stops | tour `stopSearchThreshold` (default `8`) | above the stop list |
 | [Text size](#text-size) | on | tour `showTextSize` | above the stop list |
@@ -12,6 +13,19 @@ Controls and behaviours for the people using a tour. Each one has a sensible def
 | [Embed allowlist](#embed-allowlist) | no limit | app `embedAllowlist` | embed stops |
 
 Every setting has a field descriptor in `@audioguidekit/schema` (`FIELD_CATALOG`), so editors built on it pick them up. Interface texts are in all six built-in languages and can be overridden per language through `manifest.ui` (see [languages.md](./languages.md)).
+
+## Tour structure: guided route or free exploration
+
+How visitors move through the tour.
+
+- **Guided route** (`"guided"`, the default): the stops are a route. They are numbered, and when a stop ends the next one plays on its own. On the map the route line connects the stops (if `mapRoute` is on).
+- **Free exploration** (`"free"`): for a museum or a gallery, where visitors pick the stop in front of them. Nothing plays next on its own: when a stop ends the player stops, and the visitor starts the next one. Stops carry no numbers (in the list, the player and on numbered map markers) and the map draws no route line.
+
+```json
+{ "tourStructure": "free" }
+```
+
+The transition sound (`transitionAudio`) plays in both: between stops on a guided route, and once as a "this stop has finished" signal in free exploration. The previous and next buttons stay in free exploration, because the visitor presses them. Free exploration only overrides what it shows: `showStopNumber` and `mapRoute` keep their values and apply again when the tour goes back to a guided route. A photo marker (`mapMarker: "image"`) or a custom marker icon stays in free exploration.
 
 ## Playback speed
 

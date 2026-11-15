@@ -13,6 +13,7 @@ import { DirectionsAction } from '../components/DirectionsAction';
 import { isUsableLocation } from '../src/directions/links';
 import { useTranslation } from '../src/translations';
 import { showsStopSearch, stopMatches } from '../src/stopSearch/searchStops';
+import { structureDisplay } from '../src/utils/tourStructure';
 
 const TourMapView = lazy(() =>
   import('../components/TourMapView').then(m => ({ default: m.TourMapView }))
@@ -270,6 +271,8 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
   viewMode,
   setViewMode,
 }) => {
+  // Free exploration hides the numbers and the route line (src/utils/tourStructure.ts)
+  const display = structureDisplay(tour);
   // Mount the map only once the sheet has actually been opened, then keep it
   // mounted. A WebGL/canvas map behind the collapsed start card promotes the
   // whole sheet to a composited layer, which drops subpixel antialiasing and
@@ -405,11 +408,11 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
               mapStyleId={tour.mapStyleId}
               mapCenter={tour.mapCenter}
               mapZoom={tour.mapZoom}
-              mapMarker={tour.mapMarker}
+              mapMarker={display.mapMarker}
               mapMarkerIcon={tour.mapMarkerIcon}
               mapMarkerColors={tour.mapMarkerColors}
               mapCluster={tour.mapCluster}
-              mapRoute={tour.mapRoute}
+              mapRoute={display.mapRoute}
               active={viewMode === 'map'}
               onRequestListView={listEnabled ? () => setViewMode('list') : undefined}
               showLocateButton={showMapLocateButton && tour.mapLocateButton !== false}
@@ -450,7 +453,7 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
                   onClick={() => handleStopClick(stop.id)}
                   showImage={tour.showStopImage}
                   showDuration={tour.showStopDuration}
-                  showNumber={tour.showStopNumber}
+                  showNumber={display.showStopNumber}
                 />
                 {directionsFor(stop)}
               </StopItemWrapper>
@@ -463,7 +466,7 @@ const TourDetailBody = React.memo<TourDetailBodyProps>(({
               <StopCardRenderer
                 item={stop}
                 index={index}
-                showNumber={tour.showStopNumber}
+                showNumber={display.showStopNumber}
                 onOpenRatingSheet={onOpenRatingSheet}
                 compactLayout={tour.showStopImage !== true}
               />

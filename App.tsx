@@ -46,6 +46,7 @@ import { useAutoResume } from './hooks/useAutoResume';
 import { TourProgressTracker } from './components/TourProgressTracker';
 import { ThemeColorSync } from './components/ThemeColorSync';
 import { StatusBarController } from './components/StatusBarController';
+import { structureDisplay } from './src/utils/tourStructure';
 
 interface AppProps {
   /**
@@ -681,7 +682,7 @@ const App: React.FC<AppProps> = ({ frameless = false }) => {
                     isFullscreenOpen={tour?.fullscreenPlayer ? isFullscreenPlayerOpen : undefined}
                     onFullscreenChange={tour?.fullscreenPlayer ? setIsFullscreenPlayerOpen : undefined}
                     tourTitle={tour?.title}
-                    stopNumber={tour?.showStopNumber !== false && currentAudioStop ? audioPlaylist.findIndex(s => s.id === currentAudioStop.id) + 1 : undefined}
+                    stopNumber={tour && structureDisplay(tour).showStopNumber !== false && currentAudioStop ? audioPlaylist.findIndex(s => s.id === currentAudioStop.id) + 1 : undefined}
                     nextStopImage={canGoNext ? audioPlaylist[currentAudioIndex + 1]?.image : undefined}
                     prevStopImage={canGoPrev ? audioPlaylist[currentAudioIndex - 1]?.image : undefined}
                     currentTime={audioPlayer.currentTime}

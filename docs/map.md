@@ -393,7 +393,7 @@ Marker colors (active, inactive, completed, clusters, user location dot) are con
 
 ## Route line and progress indicator
 
-An optional polyline connecting all stops in sequence. The line is split into two visual segments: a solid section for stops already visited, and a dashed section for stops still to come — functioning as a progress indicator along the route.
+An optional polyline connecting all stops in sequence. It belongs to a guided route: a tour set to free exploration (`"tourStructure": "free"`, see [visitor-features.md](./visitor-features.md#tour-structure-guided-route-or-free-exploration)) never draws it. The line is split into two visual segments: a solid section for stops already visited, and a dashed section for stops still to come — functioning as a progress indicator along the route.
 
 The line is only shown at street-level zoom (controlled by `minZoom`) and is hidden when zoomed out, keeping the map uncluttered at overview zoom levels.
 

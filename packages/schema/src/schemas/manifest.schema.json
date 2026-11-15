@@ -1403,6 +1403,14 @@
         "showStopNumber": {
           "type": "boolean"
         },
+        "tourStructure": {
+          "type": "string",
+          "enum": [
+            "guided",
+            "free"
+          ],
+          "description": "'guided' (default): a route — stops are numbered, one plays after another, the map draws the route line. 'free': free exploration — visitors start each stop themselves; no auto-play of the next stop, no numbers, no route line. The transition sound still plays when a stop ends."
+        },
         "fullscreenPlayer": {
           "type": "boolean"
         },
@@ -1755,6 +1763,14 @@
         },
         "showStopNumber": {
           "type": "boolean"
+        },
+        "tourStructure": {
+          "type": "string",
+          "enum": [
+            "guided",
+            "free"
+          ],
+          "description": "'guided' (default): a route — stops are numbered, one plays after another, the map draws the route line. 'free': free exploration — visitors start each stop themselves; no auto-play of the next stop, no numbers, no route line. The transition sound still plays when a stop ends."
         },
         "fullscreenPlayer": {
           "type": "boolean"

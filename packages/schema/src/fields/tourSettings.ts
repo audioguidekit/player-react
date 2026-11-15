@@ -66,9 +66,22 @@ export const SETTINGS_SECTIONS: SettingsSection[] = [
     ],
   },
   {
+    title: 'Tour structure',
+    fields: [
+      {
+        key: 'tourStructure', label: 'Tour structure', kind: 'select', default: 'guided',
+        options: [
+          { value: 'guided', label: 'Guided route' },
+          { value: 'free', label: 'Free exploration' },
+        ],
+        help: 'Guided route: numbered stops play one after another, and the map shows the route line. Free exploration: visitors start each stop themselves, with no numbers and no route line.',
+      },
+    ],
+  },
+  {
     title: 'Playback',
     fields: [
-      { key: 'transitionAudio', label: 'Transition sound', kind: 'audio', help: 'Played between stops.' },
+      { key: 'transitionAudio', label: 'Transition sound', kind: 'audio', help: 'Played when a stop ends: between stops on a guided route, as a "finished" signal in free exploration.' },
       { key: 'transcriptAvailable', label: 'Offer transcripts', kind: 'boolean', defaultsOn: false, help: 'Lets visitors read along. Only useful if your stops have transcripts.' },
       { key: 'fullscreenPlayer', label: 'Open a full-screen player', kind: 'boolean', defaultsOn: false, help: 'Tapping a stop fills the screen instead of using the bar at the bottom.' },
       { key: 'showTextSize', label: 'Text size control', kind: 'boolean', defaultsOn: true, help: 'Lets visitors make stop texts, transcripts and titles larger (three steps). Their choice is remembered on their device and adds to the phone\'s own text size setting.' },

@@ -215,8 +215,9 @@ typography: {
 Font sizes and weights are defined per component (see each section above), not here.
 
 **Fonts are self-hosted, nothing is loaded from Google.** The app bundles these
-families (`src/fonts/index.ts`, via `@fontsource`, weights 400-700, latin and
-latin-ext so Czech and other Central European text renders correctly):
+families (`src/fonts/index.ts`, via `@fontsource`, weights 400-700; subsets latin,
+latin-ext, cyrillic, cyrillic-ext, greek and vietnamese where the package ships them,
+Space Grotesk only latin, latin-ext and vietnamese):
 
 | Name to use in `fontFamily` | Style |
 |---|---|

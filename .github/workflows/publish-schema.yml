@@ -30,5 +30,13 @@ jobs:
       - run: bun run schema
       - run: git diff --exit-code -- packages/schema/src || (echo "::error::Schemas are stale, run 'bun run schema'" && exit 1)
       - run: bun run schema:test
-      - run: npm publish
+      # A version already on npm (e.g. 1.0.0, published by hand to create the package) is skipped, not failed.
+      - name: Publish unless this version is on npm
         working-directory: packages/schema
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "@audioguidekit/schema@$version" version >/dev/null 2>&1; then
+            echo "::notice::@audioguidekit/schema@$version is already on npm, nothing to publish"
+          else
+            npm publish
+          fi

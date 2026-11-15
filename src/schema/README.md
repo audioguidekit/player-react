@@ -64,3 +64,14 @@ the generated schemas are the authority.
 - OpenFreeMap and CARTO `mapStyleId` values are constrained to the sets documented
   in `docs/map.md`; keep `PROVIDER_STYLES` in `packages/schema/scripts/generate-schema.ts`
   in sync.
+
+## Publishing to npm
+
+The package is published as [`@audioguidekit/schema`](https://www.npmjs.com/package/@audioguidekit/schema)
+by `.github/workflows/publish-schema.yml`, through npm trusted publishing (no token; npm adds
+provenance). Its version is separate from the player's.
+
+1. Bump `version` in `packages/schema/package.json` (semver; a new `SCHEMA_VERSION` is a major).
+2. Commit, merge to `main`, then tag and push: `git tag schema-v1.2.3 && git push origin schema-v1.2.3`.
+3. The workflow checks the tag matches the version, regenerates the schemas, runs the tests and
+   publishes. Then add an entry to the changelog on audioguidekit.org.

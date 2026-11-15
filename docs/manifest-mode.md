@@ -217,13 +217,8 @@ const result = validateManifest(manifest);   // { valid, errors: string[] }
   the coverage test. `bun run schema` regenerates the schemas **and** the large generated lists
   (`src/fields/generated/`); `bun run schema:test` fails for any schema path without a
   descriptor and for any descriptor whose path is not in a schema.
-- **Consuming it now**, before it is on npm: it is a Bun workspace package. From another
-  repo, depend on the folder and build it once:
-
-  ```bash
-  # in the consumer's package.json:  "@audioguidekit/schema": "file:../player-react/packages/schema"
-  bun run --cwd ../player-react/packages/schema build     # tsc → dist/ (ESM + .d.ts)
-  ```
-
-  The built package imports in plain Node ESM. When published to npm only the
-  dependency line changes.
+- **Install** it from npm: `npm install @audioguidekit/schema` (ESM, Node 20.10+). The JSON Schema
+  files are also importable as `@audioguidekit/schema/schemas/<name>.schema.json`. Inside this repo it
+  is a Bun workspace package, so the player always uses the local copy.
+- **Versions**: the package follows semver; a new `SCHEMA_VERSION` (a breaking manifest change) is
+  a new major version. How a version is published: [src/schema/README.md](../src/schema/README.md#publishing-to-npm).

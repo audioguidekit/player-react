@@ -1,0 +1,34 @@
+# Publishes packages/schema to npm as @audioguidekit/schema.
+# Trigger: push a tag schema-v<version> matching packages/schema/package.json (e.g. schema-v1.0.0).
+# Auth: npm trusted publishing (OIDC), no token; npm adds provenance on its own.
+# The package and its trusted publisher (this repo, this workflow file) must exist on npmjs.com first.
+name: Publish schema
+on:
+  push:
+    tags: ['schema-v*']
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: bun install --frozen-lockfile
+      - name: Tag matches package version
+        run: |
+          version=$(node -p "require('./packages/schema/package.json').version")
+          if [ "schema-v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match packages/schema version $version"; exit 1
+          fi
+      # Schemas must be current, tests green, build clean, before anything is published.
+      - run: bun run schema
+      - run: git diff --exit-code -- packages/schema/src || (echo "::error::Schemas are stale, run 'bun run schema'" && exit 1)
+      - run: bun run schema:test
+      - run: npm publish
+        working-directory: packages/schema

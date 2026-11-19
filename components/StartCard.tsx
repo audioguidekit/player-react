@@ -247,6 +247,7 @@ export const StartCard = React.memo<StartCardProps>(({
 
   // Get offline mode for the tour (defaults to 'optional')
   const offlineMode = getOfflineMode(tour);
+  const stopsCount = tour.stops.filter(item => item.type !== 'rating').length;
 
   return (
     // No fixed height. We let the content define the height, and the parent measures it.
@@ -270,7 +271,7 @@ export const StartCard = React.memo<StartCardProps>(({
         </MetaItem>
         <MetaItem>
           <PathIcon size={18} />
-          <span>{tour.stops.length} {t.startCard.stops}</span>
+          <span>{stopsCount} {t.startCard.stops}</span>
         </MetaItem>
       </MetaContainer>
       <Description>

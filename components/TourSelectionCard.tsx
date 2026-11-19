@@ -93,6 +93,7 @@ export const TourSelectionCard = React.memo<TourSelectionCardProps>(({ tour, onC
   const showImage = tourCard?.showImage !== false;
   const showDescription = tourCard?.showDescription !== false;
   const showMeta = tourCard?.showMeta !== false;
+  const stopsCount = tour.stops.filter(item => item.type !== 'rating').length;
 
   return (
     <Card
@@ -118,7 +119,7 @@ export const TourSelectionCard = React.memo<TourSelectionCardProps>(({ tour, onC
               </MetaItem>
               <MetaItem>
                 <PathIcon size={16} />
-                <span>{tour.stops.length} {t.startCard.stops}</span>
+                <span>{stopsCount} {t.startCard.stops}</span>
               </MetaItem>
             </MetaContainer>
           )}
